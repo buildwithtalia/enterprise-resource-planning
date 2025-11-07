@@ -3,7 +3,9 @@
     "id": "25a06674-613d-4aa4-b059-08e5855d6eea"
   },
   "entities": {
-    "collections": [],
+    "collections": [
+      "../postman/collections/Enterprise Resource Planning API.postman_collection.json"
+    ],
     "environments": [],
     "specs": [],
     "flows": [],
