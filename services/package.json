@@ -1,0 +1,41 @@
+{
+  "name": "erp-microservices",
+  "version": "1.0.0",
+  "description": "ERP Microservices Architecture",
+  "private": true,
+  "workspaces": [
+    "services/*"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm install --workspaces",
+    "dev": "concurrently \"npm run dev --workspace=services/api-gateway\" \"npm run dev --workspace=services/auth-service\" \"npm run dev --workspace=services/employee-service\" \"npm run dev --workspace=services/payroll-service\" \"npm run dev --workspace=services/accounting-service\" \"npm run dev --workspace=services/billing-service\" \"npm run dev --workspace=services/procurement-service\" \"npm run dev --workspace=services/inventory-service\" \"npm run dev --workspace=services/supply-chain-service\" \"npm run dev --workspace=services/finance-service\"",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "prisma:generate": "npm run prisma:generate --workspaces",
+    "migrate:all": "npm run migrate --workspaces",
+    "migrate:reset": "npm run migrate:reset --workspaces",
+    "setup:env": "node scripts/setup-env.js",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

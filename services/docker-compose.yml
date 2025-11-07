@@ -1,0 +1,334 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: erp-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_MULTIPLE_DATABASES: employee_db,payroll_db,accounting_db,billing_db,procurement_db,inventory_db,supply_chain_db,finance_db,auth_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: erp-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: erp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      NODE_ENV: production
+      PORT: 3009
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/auth_db
+      JWT_PRIVATE_KEY_PATH: /app/keys/private.pem
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+      JWT_ACCESS_TOKEN_EXPIRY: 1h
+      JWT_REFRESH_TOKEN_EXPIRY: 7d
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3009:3009"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+      AUTH_SERVICE_URL: http://auth-service:3009
+      EMPLOYEE_SERVICE_URL: http://employee-service:3001
+      PAYROLL_SERVICE_URL: http://payroll-service:3002
+      ACCOUNTING_SERVICE_URL: http://accounting-service:3003
+      BILLING_SERVICE_URL: http://billing-service:3004
+      PROCUREMENT_SERVICE_URL: http://procurement-service:3005
+      INVENTORY_SERVICE_URL: http://inventory-service:3006
+      SUPPLY_CHAIN_SERVICE_URL: http://supply-chain-service:3007
+      FINANCE_SERVICE_URL: http://finance-service:3008
+      REDIS_URL: redis://redis:6379
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - redis
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+  # Employee Service
+  employee-service:
+    build:
+      context: ./services/employee-service
+      dockerfile: Dockerfile
+    container_name: employee-service
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/employee_db
+      RABBITMQ_URL: amqp://rabbitmq:rabbitmq@rabbitmq:5672
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+  # Payroll Service
+  payroll-service:
+    build:
+      context: ./services/payroll-service
+      dockerfile: Dockerfile
+    container_name: payroll-service
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/payroll_db
+      RABBITMQ_URL: amqp://rabbitmq:rabbitmq@rabbitmq:5672
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+      EMPLOYEE_SERVICE_URL: http://employee-service:3001
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      employee-service:
+        condition: service_started
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+  # Accounting Service
+  accounting-service:
+    build:
+      context: ./services/accounting-service
+      dockerfile: Dockerfile
+    container_name: accounting-service
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/accounting_db
+      RABBITMQ_URL: amqp://rabbitmq:rabbitmq@rabbitmq:5672
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+  # Billing Service
+  billing-service:
+    build:
+      context: ./services/billing-service
+      dockerfile: Dockerfile
+    container_name: billing-service
+    environment:
+      NODE_ENV: production
+      PORT: 3004
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/billing_db
+      RABBITMQ_URL: amqp://rabbitmq:rabbitmq@rabbitmq:5672
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+    ports:
+      - "3004:3004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+  # Procurement Service
+  procurement-service:
+    build:
+      context: ./services/procurement-service
+      dockerfile: Dockerfile
+    container_name: procurement-service
+    environment:
+      NODE_ENV: production
+      PORT: 3005
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/procurement_db
+      RABBITMQ_URL: amqp://rabbitmq:rabbitmq@rabbitmq:5672
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+    ports:
+      - "3005:3005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+  # Inventory Service
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+      dockerfile: Dockerfile
+    container_name: inventory-service
+    environment:
+      NODE_ENV: production
+      PORT: 3006
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/inventory_db
+      RABBITMQ_URL: amqp://rabbitmq:rabbitmq@rabbitmq:5672
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+      PROCUREMENT_SERVICE_URL: http://procurement-service:3005
+    ports:
+      - "3006:3006"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+  # Supply Chain Service
+  supply-chain-service:
+    build:
+      context: ./services/supply-chain-service
+      dockerfile: Dockerfile
+    container_name: supply-chain-service
+    environment:
+      NODE_ENV: production
+      PORT: 3007
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/supply_chain_db
+      RABBITMQ_URL: amqp://rabbitmq:rabbitmq@rabbitmq:5672
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+    ports:
+      - "3007:3007"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+  # Finance Service
+  finance-service:
+    build:
+      context: ./services/finance-service
+      dockerfile: Dockerfile
+    container_name: finance-service
+    environment:
+      NODE_ENV: production
+      PORT: 3008
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/finance_db
+      RABBITMQ_URL: amqp://rabbitmq:rabbitmq@rabbitmq:5672
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+      ACCOUNTING_SERVICE_URL: http://accounting-service:3003
+    ports:
+      - "3008:3008"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - erp-network
+    volumes:
+      - ./keys:/app/keys:ro
+    restart: unless-stopped
+
+networks:
+  erp-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  redis_data:
