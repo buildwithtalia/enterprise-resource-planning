@@ -16,6 +16,16 @@ export interface AuthenticatedRequest extends Request {
  */
 export const authenticate = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
+    // Development mode: bypass authentication if DISABLE_AUTH is true
+    if (process.env.DISABLE_AUTH === 'true') {
+      req.user = {
+        id: 'dev-user-id',
+        email: 'dev@company.com',
+        role: 'admin',
+      };
+      return next();
+    }
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

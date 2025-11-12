@@ -1,11 +1,33 @@
 import { Request, Response } from 'express';
 import { PayrollService } from './payroll.service';
-import { asyncHandler } from '../../middleware/errorHandler';
+import { asyncHandler, AppError } from '../../middleware/errorHandler';
 
 const payrollService = new PayrollService();
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const processPayroll = asyncHandler(async (req: Request, res: Response) => {
   const { employeeId, payPeriodStart, payPeriodEnd, deductions } = req.body;
+
+  // Validate required fields
+  if (!employeeId) {
+    throw new AppError(400, 'employeeId is required');
+  }
+
+  if (!payPeriodStart) {
+    throw new AppError(400, 'payPeriodStart is required');
+  }
+
+  if (!payPeriodEnd) {
+    throw new AppError(400, 'payPeriodEnd is required');
+  }
+
+  // Validate UUID format
+  if (!UUID_REGEX.test(employeeId)) {
+    throw new AppError(400, 'employeeId must be a valid UUID format');
+  }
+
   const payroll = await payrollService.processPayroll({
     employeeId,
     payPeriodStart: new Date(payPeriodStart),

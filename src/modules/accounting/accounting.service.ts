@@ -73,6 +73,7 @@ export class AccountingService {
     grossPay: number;
     taxes: number;
     netPay: number;
+    deductions?: number;
     date: Date;
     employeeName: string;
   }): Promise<AccountingTransaction[]> {
@@ -80,25 +81,36 @@ export class AccountingService {
       payrollId: data.payrollId,
     });
 
+    const entries = [
+      {
+        accountCode: '5000',
+        accountName: 'Payroll Expense',
+        debitAmount: data.grossPay,
+      },
+      {
+        accountCode: '2100',
+        accountName: 'Payroll Taxes Payable',
+        creditAmount: data.taxes,
+      },
+      {
+        accountCode: '1000',
+        accountName: 'Cash',
+        creditAmount: data.netPay,
+      },
+    ];
+
+    // Add deductions entry if present
+    if (data.deductions && data.deductions > 0) {
+      entries.push({
+        accountCode: '2150',
+        accountName: 'Other Deductions Payable',
+        creditAmount: data.deductions,
+      });
+    }
+
     return this.createJournalEntry({
       transactionDate: data.date,
-      entries: [
-        {
-          accountCode: '5000',
-          accountName: 'Payroll Expense',
-          debitAmount: data.grossPay,
-        },
-        {
-          accountCode: '2100',
-          accountName: 'Payroll Taxes Payable',
-          creditAmount: data.taxes,
-        },
-        {
-          accountCode: '2000',
-          accountName: 'Cash',
-          creditAmount: data.netPay,
-        },
-      ],
+      entries,
       description: `Payroll for ${data.employeeName}`,
       transactionType: 'payroll',
       referenceId: data.payrollId,

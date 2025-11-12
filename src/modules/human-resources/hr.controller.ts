@@ -1,10 +1,53 @@
 import { Request, Response } from 'express';
 import { HRService } from './hr.service';
-import { asyncHandler } from '../../middleware/errorHandler';
+import { asyncHandler, AppError } from '../../middleware/errorHandler';
 
 const hrService = new HRService();
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const createEmployee = asyncHandler(async (req: Request, res: Response) => {
+  const { firstName, lastName, email, departmentId, jobTitle, salary, hireDate, phoneNumber } = req.body;
+
+  // Validate required fields
+  if (!firstName) {
+    throw new AppError(400, 'firstName is required');
+  }
+
+  if (!lastName) {
+    throw new AppError(400, 'lastName is required');
+  }
+
+  if (!email) {
+    throw new AppError(400, 'email is required');
+  }
+
+  if (!departmentId) {
+    throw new AppError(400, 'departmentId is required');
+  }
+
+  if (!jobTitle) {
+    throw new AppError(400, 'jobTitle is required');
+  }
+
+  if (!salary) {
+    throw new AppError(400, 'salary is required');
+  }
+
+  if (!hireDate) {
+    throw new AppError(400, 'hireDate is required');
+  }
+
+  if (!phoneNumber) {
+    throw new AppError(400, 'phoneNumber is required');
+  }
+
+  // Validate UUID format for departmentId
+  if (!UUID_REGEX.test(departmentId)) {
+    throw new AppError(400, 'departmentId must be a valid UUID format');
+  }
+
   const employee = await hrService.createEmployee(req.body);
   res.status(201).json(employee);
 });

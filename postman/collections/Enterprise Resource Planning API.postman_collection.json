@@ -1,0 +1,2695 @@
+{
+  "info": {
+    "_postman_id": "6751eadb-0b2b-4465-836c-1ec8f1915539",
+    "name": "Enterprise Resource Planning API",
+    "description": "Complete API collection for the Enterprise Resource Planning (ERP) monolithic application. This API provides comprehensive endpoints for managing HR, Payroll, Accounting, Finance, Billing, Procurement, Supply Chain, and Inventory operations.\n\n## Authentication\nAll endpoints (except health check and API info) require authentication. Include an authentication token in your requests.\n\n## Base URL\nUse the `{{baseUrl}}` variable to set your API base URL.\n\n## Modules\n- **Human Resources**: Employee and department management\n- **Payroll**: Salary processing and tax calculations\n- **Accounting**: General ledger and financial transactions\n- **Finance**: Budgeting and financial reporting\n- **Billing**: Invoicing and customer billing\n- **Procurement**: Purchase orders and vendor management\n- **Supply Chain**: Shipments and logistics\n- **Inventory**: Stock management and automatic reordering",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Check the health status of the ERP service. Returns service status and timestamp."
+          }
+        },
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api"
+              ]
+            },
+            "description": "Get information about the API including version, architecture, available modules, and their relationships."
+          }
+        },
+        {
+          "name": "Mock Stats",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/mock-stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mock-stats"
+              ]
+            },
+            "description": "Get mock statistics for demo purposes when database is not configured."
+          }
+        }
+      ],
+      "description": "System-level endpoints for health checks and API information"
+    },
+    {
+      "name": "Demo Data",
+      "item": [
+        {
+          "name": "Get Demo Employees",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "employees"
+              ]
+            },
+            "description": "Get mock employee data for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Departments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/departments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "departments"
+              ]
+            },
+            "description": "Get mock department data for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Payroll",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/payroll",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "payroll"
+              ]
+            },
+            "description": "Get mock payroll records for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Transactions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "transactions"
+              ]
+            },
+            "description": "Get mock transaction data for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Budgets",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/budgets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "budgets"
+              ]
+            },
+            "description": "Get mock budget data for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Customers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "customers"
+              ]
+            },
+            "description": "Get mock customer data for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Invoices",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "invoices"
+              ]
+            },
+            "description": "Get mock invoice data for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Vendors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/vendors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "vendors"
+              ]
+            },
+            "description": "Get mock vendor data for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Purchase Orders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/purchase-orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "purchase-orders"
+              ]
+            },
+            "description": "Get mock purchase order data for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Inventory",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/inventory",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "inventory"
+              ]
+            },
+            "description": "Get mock inventory data for demo purposes"
+          }
+        },
+        {
+          "name": "Get Demo Shipments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/demo/shipments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "demo",
+                "shipments"
+              ]
+            },
+            "description": "Get mock shipment data for demo purposes"
+          }
+        }
+      ],
+      "description": "Demo/mock data endpoints for testing when database is not configured"
+    },
+    {
+      "name": "Human Resources",
+      "item": [
+        {
+          "name": "Employees",
+          "item": [
+            {
+              "name": "Create Employee",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Pre-request script for Create Employee",
+                      "// Generates random employee data before each request",
+                      "",
+                      "// List of common first names",
+                      "const firstNames = [",
+                      "    \"James\", \"Mary\", \"John\", \"Patricia\", \"Robert\", \"Jennifer\", \"Michael\", \"Linda\",",
+                      "    \"William\", \"Elizabeth\", \"David\", \"Barbara\", \"Richard\", \"Susan\", \"Joseph\", \"Jessica\",",
+                      "    \"Thomas\", \"Sarah\", \"Charles\", \"Karen\", \"Christopher\", \"Nancy\", \"Daniel\", \"Lisa\",",
+                      "    \"Matthew\", \"Betty\", \"Anthony\", \"Margaret\", \"Mark\", \"Sandra\", \"Donald\", \"Ashley\",",
+                      "    \"Steven\", \"Kimberly\", \"Paul\", \"Emily\", \"Andrew\", \"Donna\", \"Joshua\", \"Michelle\"",
+                      "];",
+                      "",
+                      "// List of common last names",
+                      "const lastNames = [",
+                      "    \"Smith\", \"Johnson\", \"Williams\", \"Brown\", \"Jones\", \"Garcia\", \"Miller\", \"Davis\",",
+                      "    \"Rodriguez\", \"Martinez\", \"Hernandez\", \"Lopez\", \"Gonzalez\", \"Wilson\", \"Anderson\", \"Thomas\",",
+                      "    \"Taylor\", \"Moore\", \"Jackson\", \"Martin\", \"Lee\", \"Perez\", \"Thompson\", \"White\",",
+                      "    \"Harris\", \"Sanchez\", \"Clark\", \"Ramirez\", \"Lewis\", \"Robinson\", \"Walker\", \"Young\",",
+                      "    \"Allen\", \"King\", \"Wright\", \"Scott\", \"Torres\", \"Nguyen\", \"Hill\", \"Flores\"",
+                      "];",
+                      "",
+                      "// List of job titles",
+                      "const jobTitles = [",
+                      "    \"Software Engineer\",",
+                      "    \"Senior Software Engineer\",",
+                      "    \"Product Manager\",",
+                      "    \"Senior Product Manager\",",
+                      "    \"UX Designer\",",
+                      "    \"UI Designer\",",
+                      "    \"Data Analyst\",",
+                      "    \"Data Scientist\",",
+                      "    \"DevOps Engineer\",",
+                      "    \"QA Engineer\",",
+                      "    \"Marketing Manager\",",
+                      "    \"Sales Representative\",",
+                      "    \"Account Manager\",",
+                      "    \"HR Specialist\",",
+                      "    \"Financial Analyst\",",
+                      "    \"Business Analyst\",",
+                      "    \"Project Manager\",",
+                      "    \"Technical Writer\",",
+                      "    \"Customer Success Manager\",",
+                      "    \"Operations Manager\"",
+                      "];",
+                      "",
+                      "// Helper function to get random item from array",
+                      "function getRandomItem(array) {",
+                      "    return array[Math.floor(Math.random() * array.length)];",
+                      "}",
+                      "",
+                      "// Helper function to generate random integer between min and max (inclusive)",
+                      "function getRandomInt(min, max) {",
+                      "    return Math.floor(Math.random() * (max - min + 1)) + min;",
+                      "}",
+                      "",
+                      "// Helper function to generate random date within the last year",
+                      "function getRandomDateLastYear() {",
+                      "    const today = new Date();",
+                      "    const oneYearAgo = new Date();",
+                      "    oneYearAgo.setFullYear(today.getFullYear() - 1);",
+                      "    ",
+                      "    const randomTimestamp = oneYearAgo.getTime() + Math.random() * (today.getTime() - oneYearAgo.getTime());",
+                      "    const randomDate = new Date(randomTimestamp);",
+                      "    ",
+                      "    // Format as YYYY-MM-DD",
+                      "    return randomDate.toISOString().split('T')[0];",
+                      "}",
+                      "",
+                      "// Helper function to generate random phone number",
+                      "function generatePhoneNumber() {",
+                      "    const areaCode = getRandomInt(200, 999);",
+                      "    const firstPart = getRandomInt(200, 999);",
+                      "    const secondPart = getRandomInt(1000, 9999);",
+                      "    return `(${areaCode}) ${firstPart}-${secondPart}`;",
+                      "}",
+                      "",
+                      "// Generate random employee data (except departmentId which will be fetched from API)",
+                      "const firstName = getRandomItem(firstNames);",
+                      "const lastName = getRandomItem(lastNames);",
+                      "const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;",
+                      "const jobTitle = getRandomItem(jobTitles);",
+                      "const salary = getRandomInt(50000, 150000);",
+                      "const hireDate = getRandomDateLastYear();",
+                      "const phoneNumber = generatePhoneNumber();",
+                      "",
+                      "// Set all values as collection variables (except departmentId)",
+                      "pm.collectionVariables.set(\"firstName\", firstName);",
+                      "pm.collectionVariables.set(\"lastName\", lastName);",
+                      "pm.collectionVariables.set(\"email\", email);",
+                      "pm.collectionVariables.set(\"jobTitle\", jobTitle);",
+                      "pm.collectionVariables.set(\"salary\", salary);",
+                      "pm.collectionVariables.set(\"hireDate\", hireDate);",
+                      "pm.collectionVariables.set(\"phoneNumber\", phoneNumber);",
+                      "",
+                      "// Fetch department ID from the Get All Departments endpoint",
+                      "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || pm.environment.get(\"baseUrl\");",
+                      "const authToken = pm.collectionVariables.get(\"authToken\") || pm.environment.get(\"authToken\");",
+                      "",
+                      "const departmentsRequest = {",
+                      "    url: `${baseUrl}/api/hr/departments`,",
+                      "    method: \"GET\",",
+                      "    header: {",
+                      "        \"Authorization\": `Bearer ${authToken}`",
+                      "    }",
+                      "};",
+                      "",
+                      "pm.sendRequest(departmentsRequest, function (err, response) {",
+                      "    if (err) {",
+                      "        console.error(\"Error fetching departments:\", err);",
+                      "        // Fallback to random department ID if API call fails",
+                      "        const fallbackDepartmentId = `dept-${String(getRandomInt(1, 10)).padStart(3, '0')}`;",
+                      "        pm.collectionVariables.set(\"departmentId\", fallbackDepartmentId);",
+                      "        console.log(\"Using fallback Department ID:\", fallbackDepartmentId);",
+                      "    } else {",
+                      "        try {",
+                      "            const departments = response.json();",
+                      "            ",
+                      "            if (departments && Array.isArray(departments) && departments.length > 0) {",
+                      "                // Select a random department from the response",
+                      "                const randomDepartment = getRandomItem(departments);",
+                      "                const departmentId = randomDepartment.id;",
+                      "                ",
+                      "                pm.collectionVariables.set(\"departmentId\", departmentId);",
+                      "                console.log(\"Fetched Department ID from API:\", departmentId);",
+                      "                console.log(\"Department Name:\", randomDepartment.name);",
+                      "            } else {",
+                      "                console.warn(\"No departments found in response\");",
+                      "                // Fallback to random department ID",
+                      "                const fallbackDepartmentId = `dept-${String(getRandomInt(1, 10)).padStart(3, '0')}`;",
+                      "                pm.collectionVariables.set(\"departmentId\", fallbackDepartmentId);",
+                      "                console.log(\"Using fallback Department ID:\", fallbackDepartmentId);",
+                      "            }",
+                      "        } catch (parseError) {",
+                      "            console.error(\"Error parsing departments response:\", parseError);",
+                      "            // Fallback to random department ID",
+                      "            const fallbackDepartmentId = `dept-${String(getRandomInt(1, 10)).padStart(3, '0')}`;",
+                      "            pm.collectionVariables.set(\"departmentId\", fallbackDepartmentId);",
+                      "            console.log(\"Using fallback Department ID:\", fallbackDepartmentId);",
+                      "        }",
+                      "    }",
+                      "    ",
+                      "    // Log all generated data for debugging",
+                      "    console.log(\"Generated random employee data:\");",
+                      "    console.log(\"Name: \" + firstName + \" \" + lastName);",
+                      "    console.log(\"Email: \" + email);",
+                      "    console.log(\"Department ID: \" + pm.collectionVariables.get(\"departmentId\"));",
+                      "    console.log(\"Job Title: \" + jobTitle);",
+                      "    console.log(\"Salary: $\" + salary);",
+                      "    console.log(\"Hire Date: \" + hireDate);",
+                      "    console.log(\"Phone Number: \" + phoneNumber);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Validate successful employee creation",
+                      "pm.test(\"Status code is 201 Created\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "// Test 2: Response has JSON content type",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.have.header(\"Content-Type\");",
+                      "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                      "});",
+                      "",
+                      "// Test 3: Verify response has JSON body",
+                      "pm.test(\"Response has JSON body\", function () {",
+                      "    pm.response.to.have.jsonBody();",
+                      "});",
+                      "",
+                      "// Parse response body for further tests",
+                      "let responseData;",
+                      "try {",
+                      "    responseData = pm.response.json();",
+                      "} catch (e) {",
+                      "    console.error(\"Failed to parse response JSON:\", e);",
+                      "}",
+                      "",
+                      "// Test 4: Response contains employee ID",
+                      "pm.test(\"Response contains employee ID\", function () {",
+                      "    pm.expect(responseData).to.have.property(\"id\");",
+                      "    pm.expect(responseData.id).to.be.a(\"string\").and.not.empty;",
+                      "});",
+                      "",
+                      "// Test 5: Verify all required fields are in response",
+                      "pm.test(\"Response contains all employee fields\", function () {",
+                      "    pm.expect(responseData).to.be.an('object');",
+                      "    pm.expect(responseData).to.have.property(\"firstName\");",
+                      "    pm.expect(responseData).to.have.property(\"lastName\");",
+                      "    pm.expect(responseData).to.have.property(\"email\");",
+                      "    pm.expect(responseData).to.have.property(\"departmentId\");",
+                      "    pm.expect(responseData).to.have.property(\"position\");",
+                      "    pm.expect(responseData).to.have.property(\"salary\");",
+                      "    pm.expect(responseData).to.have.property(\"hireDate\");",
+                      "    pm.expect(responseData).to.have.property(\"status\");",
+                      "});",
+                      "",
+                      "// Test 6: Verify data types",
+                      "pm.test(\"Response fields have correct types\", function () {",
+                      "    pm.expect(responseData.firstName).to.be.a(\"string\");",
+                      "    pm.expect(responseData.lastName).to.be.a(\"string\");",
+                      "    pm.expect(responseData.email).to.be.a(\"string\");",
+                      "    pm.expect(responseData.position).to.be.a(\"string\");",
+                      "    pm.expect(responseData.salary).to.be.a(\"number\");",
+                      "    pm.expect(responseData.hireDate).to.be.a(\"string\");",
+                      "    pm.expect(responseData.status).to.be.a(\"string\");",
+                      "});",
+                      "",
+                      "// Test 7: Validate email format",
+                      "pm.test(\"Email has valid format\", function () {",
+                      "    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;",
+                      "    pm.expect(responseData.email).to.match(emailRegex);",
+                      "});",
+                      "",
+                      "// Test 8: Validate salary is positive",
+                      "pm.test(\"Salary is a positive number\", function () {",
+                      "    pm.expect(responseData.salary).to.be.above(0);",
+                      "});",
+                      "",
+                      "// Test 9: Check for authentication errors",
+                      "pm.test(\"No authentication errors\", function () {",
+                      "    pm.expect(pm.response.code).to.not.be.oneOf([401, 403]);",
+                      "});",
+                      "",
+                      "// Test 10: Verify status field has valid value",
+                      "pm.test(\"Status field has valid value\", function () {",
+                      "    const validStatuses = [\"active\", \"inactive\", \"on_leave\", \"terminated\"];",
+                      "    pm.expect(validStatuses).to.include(responseData.status.toLowerCase());",
+                      "});",
+                      "",
+                      "// Save employee ID for potential use in other requests",
+                      "if (pm.response.code === 201 && responseData && responseData.id) {",
+                      "    pm.collectionVariables.set(\"lastCreatedEmployeeId\", responseData.id);",
+                      "    console.log(\"Created employee ID saved to collection variable: \" + responseData.id);",
+                      "}",
+                      "",
+                      "// Extract employeeId from response and save to collection variable",
+                      "if (responseData && responseData.id) {",
+                      "    pm.collectionVariables.set(\"employeeId\", responseData.id);",
+                      "    console.log(\"Employee ID saved to collection variable 'employeeId': \" + responseData.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"{{firstName}}\",\n  \"lastName\": \"{{lastName}}\",\n  \"email\": \"{{email}}\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"jobTitle\": \"{{jobTitle}}\",\n  \"salary\": {{salary}},\n  \"hireDate\": \"{{hireDate}}\",\n  \"phoneNumber\": \"{{phoneNumber}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/employees",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "employees"
+                  ]
+                },
+                "description": "Create a new employee. Requires 'hr_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get All Employees",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/employees?status=active",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "employees"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "description": "Filter by employee status (active, terminated)"
+                    }
+                  ]
+                },
+                "description": "Get all employees with optional status filter."
+              }
+            },
+            {
+              "name": "Get Employee by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/employees/{{lastCreatedEmployeeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "employees",
+                    "{{lastCreatedEmployeeId}}"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{lastCreatedEmployeeId}}"
+                    }
+                  ]
+                },
+                "description": "Get a specific employee by ID."
+              }
+            },
+            {
+              "name": "Update Employee",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"position\": \"Senior Software Engineer\",\n  \"salary\": 85000,\n  \"departmentId\": \"dept-456\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/employees/{{lastCreatedEmployeeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "employees",
+                    "{{lastCreatedEmployeeId}}"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{lastCreatedEmployeeId}}"
+                    }
+                  ]
+                },
+                "description": "Update an existing employee. Requires 'hr_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Terminate Employee",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"terminationDate\": \"2024-12-31\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/employees/{{lastCreatedEmployeeId}}/terminate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "employees",
+                    "{{lastCreatedEmployeeId}}",
+                    "terminate"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "emp-123"
+                    }
+                  ]
+                },
+                "description": "Terminate an employee. Requires 'hr_manager' or 'admin' role."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Departments",
+          "item": [
+            {
+              "name": "Create Department",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Engineering\",\n  \"code\": \"ENG\",\n  \"managerId\": \"emp-456\",\n  \"budget\": 500000\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/departments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "departments"
+                  ]
+                },
+                "description": "Create a new department. Requires 'hr_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get All Departments",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/departments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "departments"
+                  ]
+                },
+                "description": "Get all departments."
+              }
+            },
+            {
+              "name": "Get Department by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/departments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "departments",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "dept-123"
+                    }
+                  ]
+                },
+                "description": "Get a specific department by ID."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get HR Statistics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/hr/statistics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hr",
+                "statistics"
+              ]
+            },
+            "description": "Get HR statistics including active employee count and total departments."
+          }
+        }
+      ],
+      "description": "Human Resources module - Employee and department management"
+    },
+    {
+      "name": "Payroll",
+      "item": [
+        {
+          "name": "Process Payroll",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\",\n  \"payPeriodStart\": \"2024-01-01\",\n  \"payPeriodEnd\": \"2024-01-31\",\n  \"deductions\": 1000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payroll/process",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "payroll",
+                "process"
+              ]
+            },
+            "description": "Process payroll for a single employee. Requires 'payroll_manager' or 'admin' role."
+          }
+        },
+        {
+          "name": "Process Batch Payroll",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payPeriodStart\": \"2024-01-01\",\n  \"payPeriodEnd\": \"2024-01-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payroll/batch-process",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "payroll",
+                "batch-process"
+              ]
+            },
+            "description": "Process payroll for ALL active employees. Requires 'payroll_manager' or 'admin' role."
+          }
+        },
+        {
+          "name": "Approve Payroll",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/payroll/:id/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "payroll",
+                ":id",
+                "approve"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "f9a4e110-4daa-4011-a1d3-0955d78fe6c4"
+                }
+              ]
+            },
+            "description": "Approve a payroll record. Requires 'payroll_manager' or 'admin' role."
+          }
+        },
+        {
+          "name": "Get All Payroll",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/payroll/?status=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "payroll",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status (pending|processed|paid)"
+                }
+              ]
+            },
+            "description": "Get all payroll records."
+          }
+        },
+        {
+          "name": "Get Payroll by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/payroll/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "payroll",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "123e4567-e89b-12d3-a456-426614174000"
+                }
+              ]
+            },
+            "description": "Get a specific payroll record by ID."
+          }
+        },
+        {
+          "name": "Get Employee Payroll History",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/payroll/employee/:employeeId/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "payroll",
+                "employee",
+                ":employeeId",
+                "history"
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "123e4567-e89b-12d3-a456-426614174000"
+                }
+              ]
+            },
+            "description": "Get payroll history for a specific employee."
+          }
+        }
+      ],
+      "description": "Payroll module - Salary processing and tax calculations"
+    },
+    {
+      "name": "Accounting",
+      "item": [
+        {
+          "name": "Create Journal Entry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2024-01-15\",\n  \"description\": \"Office supplies purchase\",\n  \"entries\": [\n    {\n      \"accountCode\": \"5000\",\n      \"debit\": 500,\n      \"credit\": 0\n    },\n    {\n      \"accountCode\": \"1000\",\n      \"debit\": 0,\n      \"credit\": 500\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounting/journal-entries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounting",
+                "journal-entries"
+              ]
+            },
+            "description": "Create a new journal entry. Requires 'accountant' or 'admin' role."
+          }
+        },
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/accounting/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounting",
+                "transactions"
+              ]
+            },
+            "description": "Get all accounting transactions."
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/accounting/transactions/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounting",
+                "transactions",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "txn-123"
+                }
+              ]
+            },
+            "description": "Get a specific transaction by ID."
+          }
+        },
+        {
+          "name": "Get General Ledger",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/accounting/ledger/:accountCode",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounting",
+                "ledger",
+                ":accountCode"
+              ],
+              "variable": [
+                {
+                  "key": "accountCode",
+                  "value": "1000"
+                }
+              ]
+            },
+            "description": "Get general ledger entries for a specific account code."
+          }
+        },
+        {
+          "name": "Get Trial Balance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/accounting/trial-balance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounting",
+                "trial-balance"
+              ]
+            },
+            "description": "Get the trial balance report showing all account balances."
+          }
+        }
+      ],
+      "description": "Accounting module - General ledger and financial transactions"
+    },
+    {
+      "name": "Finance",
+      "item": [
+        {
+          "name": "Budgets",
+          "item": [
+            {
+              "name": "Create Budget",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"department\": \"Engineering\",\n  \"fiscalYear\": 2024,\n  \"amount\": 500000,\n  \"category\": \"Operations\",\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2024-12-31\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/finance/budgets",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "finance",
+                    "budgets"
+                  ]
+                },
+                "description": "Create a new budget. Requires 'finance_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get All Budgets",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/finance/budgets",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "finance",
+                    "budgets"
+                  ]
+                },
+                "description": "Get all budgets."
+              }
+            },
+            {
+              "name": "Get Budget by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/finance/budgets/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "finance",
+                    "budgets",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "budget-123"
+                    }
+                  ]
+                },
+                "description": "Get a specific budget by ID."
+              }
+            },
+            {
+              "name": "Close Budget",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/finance/budgets/:id/close",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "finance",
+                    "budgets",
+                    ":id",
+                    "close"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "budget-123"
+                    }
+                  ]
+                },
+                "description": "Close a budget. Requires 'finance_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get Budget Utilization",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/finance/budgets/:id/utilization",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "finance",
+                    "budgets",
+                    ":id",
+                    "utilization"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "budget-123"
+                    }
+                  ]
+                },
+                "description": "Get budget utilization details showing spent vs allocated amounts."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Department Budget Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/finance/department/:department/fiscal-year/:fiscalYear",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "finance",
+                "department",
+                ":department",
+                "fiscal-year",
+                ":fiscalYear"
+              ],
+              "variable": [
+                {
+                  "key": "department",
+                  "value": "Engineering"
+                },
+                {
+                  "key": "fiscalYear",
+                  "value": "2024"
+                }
+              ]
+            },
+            "description": "Get budget summary for a specific department and fiscal year."
+          }
+        },
+        {
+          "name": "Generate Financial Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/finance/reports/financial",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "finance",
+                "reports",
+                "financial"
+              ]
+            },
+            "description": "Generate a comprehensive financial report."
+          }
+        }
+      ],
+      "description": "Finance module - Budgeting and financial reporting"
+    },
+    {
+      "name": "Billing",
+      "item": [
+        {
+          "name": "Customers",
+          "item": [
+            {
+              "name": "Create Customer",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Acme Corporation\",\n  \"email\": \"billing@acme.com\",\n  \"phone\": \"+1-555-0123\",\n  \"address\": \"123 Main St, City, State 12345\",\n  \"creditLimit\": 50000,\n  \"paymentTerms\": \"Net 30\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/customers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "customers"
+                  ]
+                },
+                "description": "Create a new customer. Requires 'billing_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get All Customers",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/customers?status=active",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "customers"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "description": "Filter by customer status"
+                    }
+                  ]
+                },
+                "description": "Get all customers with optional status filter."
+              }
+            },
+            {
+              "name": "Get Customer by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/customers/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "customers",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "cust-123"
+                    }
+                  ]
+                },
+                "description": "Get a specific customer by ID."
+              }
+            },
+            {
+              "name": "Get Customer Balance",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/customers/:id/balance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "customers",
+                    ":id",
+                    "balance"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "cust-123"
+                    }
+                  ]
+                },
+                "description": "Get the current balance for a customer."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invoices",
+          "item": [
+            {
+              "name": "Create Invoice",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"cust-123\",\n  \"invoiceDate\": \"2024-01-15\",\n  \"dueDate\": \"2024-02-14\",\n  \"items\": [\n    {\n      \"description\": \"Professional Services\",\n      \"quantity\": 40,\n      \"unitPrice\": 150,\n      \"amount\": 6000\n    }\n  ],\n  \"subtotal\": 6000,\n  \"tax\": 480,\n  \"total\": 6480\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/invoices",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "invoices"
+                  ]
+                },
+                "description": "Create a new invoice. Requires 'billing_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get All Invoices",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/invoices?status=pending&customerId=cust-123",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "invoices"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "pending",
+                      "description": "Filter by invoice status"
+                    },
+                    {
+                      "key": "customerId",
+                      "value": "cust-123",
+                      "description": "Filter by customer ID"
+                    }
+                  ]
+                },
+                "description": "Get all invoices with optional filters."
+              }
+            },
+            {
+              "name": "Get Invoice by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/invoices/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "invoices",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "inv-123"
+                    }
+                  ]
+                },
+                "description": "Get a specific invoice by ID."
+              }
+            },
+            {
+              "name": "Send Invoice",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/invoices/:id/send",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "invoices",
+                    ":id",
+                    "send"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "inv-123"
+                    }
+                  ]
+                },
+                "description": "Send an invoice to the customer. Requires 'billing_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Record Payment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 6480\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/invoices/:id/payment",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "invoices",
+                    ":id",
+                    "payment"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "inv-123"
+                    }
+                  ]
+                },
+                "description": "Record a payment for an invoice. Requires 'billing_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Cancel Invoice",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/invoices/:id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "invoices",
+                    ":id",
+                    "cancel"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "inv-123"
+                    }
+                  ]
+                },
+                "description": "Cancel an invoice. Requires 'billing_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Check Overdue Invoices",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/billing/invoices/overdue/check",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "invoices",
+                    "overdue",
+                    "check"
+                  ]
+                },
+                "description": "Check for overdue invoices. Requires 'billing_manager' or 'admin' role."
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Billing module - Invoicing and customer billing"
+    },
+    {
+      "name": "Procurement",
+      "item": [
+        {
+          "name": "Vendors",
+          "item": [
+            {
+              "name": "Create Vendor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Office Supplies Inc\",\n  \"email\": \"sales@officesupplies.com\",\n  \"phone\": \"+1-555-0456\",\n  \"address\": \"456 Vendor St, City, State 12345\",\n  \"paymentTerms\": \"Net 30\",\n  \"category\": \"Office Supplies\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/vendors",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "vendors"
+                  ]
+                },
+                "description": "Create a new vendor. Requires 'procurement_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get All Vendors",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/vendors",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "vendors"
+                  ]
+                },
+                "description": "Get all vendors."
+              }
+            },
+            {
+              "name": "Get Vendor by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/vendors/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "vendors",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "vendor-123"
+                    }
+                  ]
+                },
+                "description": "Get a specific vendor by ID."
+              }
+            },
+            {
+              "name": "Get Vendor Performance",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/vendors/:id/performance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "vendors",
+                    ":id",
+                    "performance"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "vendor-123"
+                    }
+                  ]
+                },
+                "description": "Get performance metrics for a vendor."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Purchase Orders",
+          "item": [
+            {
+              "name": "Create Purchase Order",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vendorId\": \"vendor-123\",\n  \"orderDate\": \"2024-01-15\",\n  \"expectedDeliveryDate\": \"2024-02-01\",\n  \"items\": [\n    {\n      \"itemId\": \"item-456\",\n      \"description\": \"Office Chairs\",\n      \"quantity\": 20,\n      \"unitPrice\": 150,\n      \"amount\": 3000\n    }\n  ],\n  \"subtotal\": 3000,\n  \"tax\": 240,\n  \"total\": 3240\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/purchase-orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "purchase-orders"
+                  ]
+                },
+                "description": "Create a new purchase order. Requires 'procurement_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get All Purchase Orders",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/purchase-orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "purchase-orders"
+                  ]
+                },
+                "description": "Get all purchase orders."
+              }
+            },
+            {
+              "name": "Get Purchase Order by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/purchase-orders/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "purchase-orders",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "po-123"
+                    }
+                  ]
+                },
+                "description": "Get a specific purchase order by ID."
+              }
+            },
+            {
+              "name": "Approve Purchase Order",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/purchase-orders/:id/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "purchase-orders",
+                    ":id",
+                    "approve"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "po-123"
+                    }
+                  ]
+                },
+                "description": "Approve a purchase order. Requires 'procurement_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Place Purchase Order",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/purchase-orders/:id/place",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "purchase-orders",
+                    ":id",
+                    "place"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "po-123"
+                    }
+                  ]
+                },
+                "description": "Place a purchase order with the vendor. Requires 'procurement_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Receive Purchase Order",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/purchase-orders/:id/receive",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "purchase-orders",
+                    ":id",
+                    "receive"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "po-123"
+                    }
+                  ]
+                },
+                "description": "Mark a purchase order as received. Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Cancel Purchase Order",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/procurement/purchase-orders/:id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "procurement",
+                    "purchase-orders",
+                    ":id",
+                    "cancel"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "po-123"
+                    }
+                  ]
+                },
+                "description": "Cancel a purchase order. Requires 'procurement_manager' or 'admin' role."
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Procurement module - Purchase orders and vendor management"
+    },
+    {
+      "name": "Supply Chain",
+      "item": [
+        {
+          "name": "Shipments",
+          "item": [
+            {
+              "name": "Create Shipment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"orderId\": \"order-123\",\n  \"carrier\": \"FedEx\",\n  \"trackingNumber\": \"1234567890\",\n  \"origin\": \"Warehouse A, City, State\",\n  \"destination\": \"Customer Address, City, State\",\n  \"estimatedDeliveryDate\": \"2024-01-20\",\n  \"items\": [\n    {\n      \"itemId\": \"item-456\",\n      \"quantity\": 5\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/supply-chain/shipments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "supply-chain",
+                    "shipments"
+                  ]
+                },
+                "description": "Create a new shipment. Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get All Shipments",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/supply-chain/shipments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "supply-chain",
+                    "shipments"
+                  ]
+                },
+                "description": "Get all shipments."
+              }
+            },
+            {
+              "name": "Get Shipment by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/supply-chain/shipments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "supply-chain",
+                    "shipments",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "ship-123"
+                    }
+                  ]
+                },
+                "description": "Get a specific shipment by ID."
+              }
+            },
+            {
+              "name": "Get Shipment by Tracking Number",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/supply-chain/shipments/tracking/:trackingNumber",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "supply-chain",
+                    "shipments",
+                    "tracking",
+                    ":trackingNumber"
+                  ],
+                  "variable": [
+                    {
+                      "key": "trackingNumber",
+                      "value": "1234567890"
+                    }
+                  ]
+                },
+                "description": "Get a shipment by tracking number."
+              }
+            },
+            {
+              "name": "Get Shipments by Order",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/supply-chain/shipments/order/:orderId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "supply-chain",
+                    "shipments",
+                    "order",
+                    ":orderId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "orderId",
+                      "value": "order-123"
+                    }
+                  ]
+                },
+                "description": "Get all shipments for a specific order."
+              }
+            },
+            {
+              "name": "Dispatch Shipment",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/supply-chain/shipments/:id/dispatch",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "supply-chain",
+                    "shipments",
+                    ":id",
+                    "dispatch"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "ship-123"
+                    }
+                  ]
+                },
+                "description": "Dispatch a shipment. Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Update Shipment Status",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"in_transit\",\n  \"location\": \"Distribution Center, City, State\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/supply-chain/shipments/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "supply-chain",
+                    "shipments",
+                    ":id",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "ship-123"
+                    }
+                  ]
+                },
+                "description": "Update shipment status. Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Mark Delivered",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/supply-chain/shipments/:id/deliver",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "supply-chain",
+                    "shipments",
+                    ":id",
+                    "deliver"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "ship-123"
+                    }
+                  ]
+                },
+                "description": "Mark a shipment as delivered. Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Cancel Shipment",
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/supply-chain/shipments/:id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "supply-chain",
+                    "shipments",
+                    ":id",
+                    "cancel"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "ship-123"
+                    }
+                  ]
+                },
+                "description": "Cancel a shipment. Requires 'warehouse_manager' or 'admin' role."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Carrier Performance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/supply-chain/carriers/:carrier/performance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "supply-chain",
+                "carriers",
+                ":carrier",
+                "performance"
+              ],
+              "variable": [
+                {
+                  "key": "carrier",
+                  "value": "FedEx"
+                }
+              ]
+            },
+            "description": "Get performance metrics for a specific carrier."
+          }
+        },
+        {
+          "name": "Get Inbound Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/supply-chain/summary/inbound",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "supply-chain",
+                "summary",
+                "inbound"
+              ]
+            },
+            "description": "Get summary of inbound shipments."
+          }
+        },
+        {
+          "name": "Get Outbound Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/supply-chain/summary/outbound",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "supply-chain",
+                "summary",
+                "outbound"
+              ]
+            },
+            "description": "Get summary of outbound shipments."
+          }
+        }
+      ],
+      "description": "Supply Chain module - Shipments and logistics"
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Items",
+          "item": [
+            {
+              "name": "Create Inventory Item",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sku\": \"ITEM-001\",\n  \"name\": \"Office Chair\",\n  \"description\": \"Ergonomic office chair with lumbar support\",\n  \"category\": \"Furniture\",\n  \"quantity\": 100,\n  \"reservedQuantity\": 0,\n  \"unitPrice\": 150,\n  \"reorderPoint\": 20,\n  \"reorderQuantity\": 50,\n  \"location\": \"Warehouse A, Aisle 3\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items"
+                  ]
+                },
+                "description": "Create a new inventory item. Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Get All Inventory Items",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items?category=Furniture&status=active&lowStock=false",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items"
+                  ],
+                  "query": [
+                    {
+                      "key": "category",
+                      "value": "Furniture",
+                      "description": "Filter by category"
+                    },
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "description": "Filter by status"
+                    },
+                    {
+                      "key": "lowStock",
+                      "value": "false",
+                      "description": "Filter for low stock items"
+                    }
+                  ]
+                },
+                "description": "Get all inventory items with optional filters."
+              }
+            },
+            {
+              "name": "Get Inventory Item by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "item-123"
+                    }
+                  ]
+                },
+                "description": "Get a specific inventory item by ID."
+              }
+            },
+            {
+              "name": "Get Inventory Item by SKU",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items/sku/:sku",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items",
+                    "sku",
+                    ":sku"
+                  ],
+                  "variable": [
+                    {
+                      "key": "sku",
+                      "value": "ITEM-001"
+                    }
+                  ]
+                },
+                "description": "Get an inventory item by SKU."
+              }
+            },
+            {
+              "name": "Update Inventory Item",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"unitPrice\": 175,\n  \"reorderPoint\": 25,\n  \"location\": \"Warehouse B, Aisle 5\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "item-123"
+                    }
+                  ]
+                },
+                "description": "Update an inventory item. Requires 'warehouse_manager' or 'admin' role."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stock Operations",
+          "item": [
+            {
+              "name": "Adjust Stock",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"adjustment\": -5,\n  \"reason\": \"Damaged items removed from inventory\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items/:id/adjust",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items",
+                    ":id",
+                    "adjust"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "item-123"
+                    }
+                  ]
+                },
+                "description": "Adjust stock quantity (positive or negative). Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Reserve Stock",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"quantity\": 10\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items/:id/reserve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items",
+                    ":id",
+                    "reserve"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "item-123"
+                    }
+                  ]
+                },
+                "description": "Reserve stock for an order. Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Release Reserved Stock",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"quantity\": 10\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items/:id/release",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items",
+                    ":id",
+                    "release"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "item-123"
+                    }
+                  ]
+                },
+                "description": "Release previously reserved stock. Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Fulfill Reservation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"quantity\": 10\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items/:id/fulfill",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items",
+                    ":id",
+                    "fulfill"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "item-123"
+                    }
+                  ]
+                },
+                "description": "Fulfill a reservation by removing stock. Requires 'warehouse_manager' or 'admin' role."
+              }
+            },
+            {
+              "name": "Receive Stock",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"quantity\": 50\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/inventory/items/:id/receive",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "inventory",
+                    "items",
+                    ":id",
+                    "receive"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "item-123"
+                    }
+                  ]
+                },
+                "description": "Receive new stock into inventory. Requires 'warehouse_manager' or 'admin' role."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Low Stock Items",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/inventory/low-stock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventory",
+                "low-stock"
+              ]
+            },
+            "description": "Get all items that are below their reorder point."
+          }
+        },
+        {
+          "name": "Get Inventory Valuation",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/inventory/valuation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventory",
+                "valuation"
+              ]
+            },
+            "description": "Get the total valuation of all inventory."
+          }
+        },
+        {
+          "name": "Get Category Breakdown",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/inventory/category-breakdown",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventory",
+                "category-breakdown"
+              ]
+            },
+            "description": "Get inventory breakdown by category."
+          }
+        }
+      ],
+      "description": "Inventory module - Stock management and automatic reordering"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "firstName",
+      "value": "John"
+    },
+    {
+      "key": "lastName",
+      "value": "Doe"
+    },
+    {
+      "key": "email",
+      "value": "john.doe@example.com"
+    },
+    {
+      "key": "departmentId",
+      "value": "dept-001"
+    },
+    {
+      "key": "position",
+      "value": "Software Engineer"
+    },
+    {
+      "key": "salary",
+      "value": "75000"
+    },
+    {
+      "key": "hireDate",
+      "value": "2024-01-15"
+    },
+    {
+      "key": "status",
+      "value": "active"
+    },
+    {
+      "key": "phoneNumber",
+      "value": ""
+    },
+    {
+      "key": "lastCreatedEmployeeId",
+      "value": ""
+    },
+    {
+      "key": "jobTitle",
+      "value": ""
+    },
+    {
+      "key": "employeeId",
+      "value": ""
+    }
+  ]
+}
