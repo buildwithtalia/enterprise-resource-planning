@@ -108,6 +108,7 @@ export class PayrollService {
       grossPay: Number(payroll.grossPay),
       taxes: Number(totalTaxes),
       netPay: Number(payroll.netPay),
+      deductions: Number(payroll.deductions),
       date: new Date(),
       employeeName: `${payroll.employee.firstName} ${payroll.employee.lastName}`,
     });

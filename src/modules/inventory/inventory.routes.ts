@@ -9,8 +9,8 @@ router.use(authenticate);
 
 router.post('/items', authorize('warehouse_manager', 'admin'), inventoryController.createInventoryItem);
 router.get('/items', inventoryController.getAllInventoryItems);
-router.get('/items/:id', inventoryController.getInventoryItem);
 router.get('/items/sku/:sku', inventoryController.getInventoryItemBySku);
+router.get('/items/:id', inventoryController.getInventoryItem);
 router.put('/items/:id', authorize('warehouse_manager', 'admin'), inventoryController.updateInventoryItem);
 router.post('/items/:id/adjust', authorize('warehouse_manager', 'admin'), inventoryController.adjustStock);
 router.post('/items/:id/reserve', authorize('warehouse_manager', 'admin'), inventoryController.reserveStock);
