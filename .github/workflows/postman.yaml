@@ -1,0 +1,33 @@
+name: Postman beta push to cloud
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  postman-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+          clean: true
+          ref: ${{ github.ref }}
+
+      - name: Install Postman CLI
+        run: curl -o- "https://dl-cli.pstmn.io/install/canary/unix.sh" | sh
+
+      - name: Verify Postman CLI version
+        run: postman --version
+
+      - name: Login to Postman
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+        run: postman login --with-api-key "$POSTMAN_API_KEY"
+      
+      - name: Push workspace to Postman
+        run: postman workspace push -y
