@@ -930,7 +930,7 @@
             },
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/api/payroll/?status=",
+              "raw": "{{baseUrl}}/api/payroll/",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -938,13 +938,6 @@
                 "api",
                 "payroll",
                 ""
-              ],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "",
-                  "description": "Filter by status (pending|processed|paid)"
-                }
               ]
             },
             "description": "Get all payroll records."
