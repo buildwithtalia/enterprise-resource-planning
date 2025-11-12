@@ -13,6 +13,7 @@ router.get('/employees', hrController.getAllEmployees);
 router.get('/employees/:id', hrController.getEmployee);
 router.put('/employees/:id', authorize('hr_manager', 'admin'), hrController.updateEmployee);
 router.post('/employees/:id/terminate', authorize('hr_manager', 'admin'), hrController.terminateEmployee);
+router.post('/employees/:id/promote', authorize('hr_manager', 'admin'), hrController.promoteEmployee);
 
 // Department routes
 router.post('/departments', authorize('hr_manager', 'admin'), hrController.createDepartment);
