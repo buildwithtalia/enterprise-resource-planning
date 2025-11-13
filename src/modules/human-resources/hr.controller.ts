@@ -74,6 +74,36 @@ export const terminateEmployee = asyncHandler(async (req: Request, res: Response
   res.json(employee);
 });
 
+export const promoteEmployee = asyncHandler(async (req: Request, res: Response) => {
+  const { title, salaryIncrease } = req.body;
+
+  // Validate required fields
+  if (!title) {
+    throw new AppError(400, 'title is required');
+  }
+
+  if (!title.trim()) {
+    throw new AppError(400, 'title cannot be empty');
+  }
+
+  if (salaryIncrease === undefined || salaryIncrease === null) {
+    throw new AppError(400, 'salaryIncrease is required');
+  }
+
+  // Validate salaryIncrease is a number
+  if (typeof salaryIncrease !== 'number' || isNaN(salaryIncrease)) {
+    throw new AppError(400, 'salaryIncrease must be a valid number');
+  }
+
+  // Validate salaryIncrease is positive
+  if (salaryIncrease <= 0) {
+    throw new AppError(400, 'salaryIncrease must be a positive number');
+  }
+
+  const employee = await hrService.promoteEmployee(req.params.id, title, salaryIncrease);
+  res.json(employee);
+});
+
 export const createDepartment = asyncHandler(async (req: Request, res: Response) => {
   const department = await hrService.createDepartment(req.body);
   res.status(201).json(department);
