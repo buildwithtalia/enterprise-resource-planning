@@ -104,6 +104,25 @@ export class HRService {
     return employee;
   }
 
+  async promoteEmployee(id: string, title: string, salaryIncrease: number): Promise<Employee> {
+    const employee = await this.getEmployeeById(id);
+
+    if (employee.status !== 'active') {
+      throw new AppError(400, 'Cannot promote a non-active employee');
+    }
+
+    employee.jobTitle = title;
+    employee.salary = employee.salary + salaryIncrease;
+    await this.employeeRepo.save(employee);
+
+    logger.info('HR: Employee promoted', { 
+      employeeId: id, 
+      newTitle: title, 
+      newSalary: employee.salary 
+    });
+    return employee;
+  }
+
   async createDepartment(data: {
     name: string;
     description?: string;

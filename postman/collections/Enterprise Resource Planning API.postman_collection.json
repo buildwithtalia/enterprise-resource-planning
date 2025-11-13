@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "055db094-8f13-484c-81d7-cf36ad6db4ce",
+    "_postman_id": "6751eadb-0b2b-4465-836c-1ec8f1915539",
     "name": "Enterprise Resource Planning API",
     "description": "Complete API collection for the Enterprise Resource Planning (ERP) monolithic application. This API provides comprehensive endpoints for managing HR, Payroll, Accounting, Finance, Billing, Procurement, Supply Chain, and Inventory operations.\n\n## Authentication\nAll endpoints (except health check and API info) require authentication. Include an authentication token in your requests.\n\n## Base URL\nUse the `{{baseUrl}}` variable to set your API base URL.\n\n## Modules\n- **Human Resources**: Employee and department management\n- **Payroll**: Salary processing and tax calculations\n- **Accounting**: General ledger and financial transactions\n- **Finance**: Budgeting and financial reporting\n- **Billing**: Invoicing and customer billing\n- **Procurement**: Purchase orders and vendor management\n- **Supply Chain**: Shipments and logistics\n- **Inventory**: Stock management and automatic reordering",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -11,7 +11,7 @@
       "item": [
         {
           "name": "Health Check",
-          "id": "174472b1-f21f-423d-b4cf-e52b39c24aaf",
+          "id": "4edbbf98-643e-4824-be8a-9666f0979325",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -33,7 +33,7 @@
         },
         {
           "name": "API Info",
-          "id": "4fed4529-4b5f-47f0-b034-58a5f824280f",
+          "id": "6672fa6c-0c6f-41c9-ac80-67a324de6628",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -55,7 +55,7 @@
         },
         {
           "name": "Mock Stats",
-          "id": "216b7c4e-fea0-4178-9d1f-924d7757ed31",
+          "id": "719dddcc-96a7-4743-b53e-a3fd9c560bdb",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -77,7 +77,7 @@
           "response": []
         }
       ],
-      "id": "cd473301-708a-4dea-a6ac-de37e65ba0ce",
+      "id": "fc3cd972-0532-4d10-a640-4cd49d69d8e5",
       "description": "System-level endpoints for health checks and API information"
     },
     {
@@ -85,7 +85,7 @@
       "item": [
         {
           "name": "Get Demo Employees",
-          "id": "6c93ce42-0258-4e0c-b3d7-c34e510ecd27",
+          "id": "931371c0-cdd8-4b0f-a3f7-1a0364460315",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -109,7 +109,7 @@
         },
         {
           "name": "Get Demo Departments",
-          "id": "acf4891e-cbe7-411b-8f34-e2629993d43f",
+          "id": "ec79f8f6-a1f5-48fe-b4e8-0f1703b90a6e",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -133,7 +133,7 @@
         },
         {
           "name": "Get Demo Payroll",
-          "id": "5edc72e8-c666-4cdc-a24e-b377470acd90",
+          "id": "92f3f8d5-da76-4b7a-9dc8-b8d5fb2eef24",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -157,7 +157,7 @@
         },
         {
           "name": "Get Demo Transactions",
-          "id": "3a521ddc-1107-4896-8f9d-839421ce3b76",
+          "id": "028d501b-a009-4ca9-a3b9-a1ad78d46d72",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -181,7 +181,7 @@
         },
         {
           "name": "Get Demo Budgets",
-          "id": "2d2fe5b9-f8f8-49ce-b5dd-f542d95137de",
+          "id": "ef878f5d-7607-41f1-8471-278af16ff401",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -205,7 +205,7 @@
         },
         {
           "name": "Get Demo Customers",
-          "id": "f7435b94-b182-4369-bf1c-d887e94873cf",
+          "id": "91ae9813-1110-44b8-b0b8-682053285b55",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -229,7 +229,7 @@
         },
         {
           "name": "Get Demo Invoices",
-          "id": "a822b23a-65e9-4bb8-a338-1c09c2435d09",
+          "id": "471060c7-0218-471b-bda9-f662ec3fabbc",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -253,7 +253,7 @@
         },
         {
           "name": "Get Demo Vendors",
-          "id": "fc4e8e3b-9262-43c9-863a-d9c78cb4c516",
+          "id": "e9073021-8dca-4269-b607-7fcc1c3e17d9",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -277,7 +277,7 @@
         },
         {
           "name": "Get Demo Purchase Orders",
-          "id": "9b7db62a-f034-4ac6-af43-91f82e3c4cd6",
+          "id": "97ad8bc2-e39f-4d4b-bc5d-47dcc56ed940",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -301,7 +301,7 @@
         },
         {
           "name": "Get Demo Inventory",
-          "id": "6550d51e-aa3d-43eb-9d2c-279c245c0b87",
+          "id": "fad32e76-8706-4084-ae49-b6b76c358588",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -325,7 +325,7 @@
         },
         {
           "name": "Get Demo Shipments",
-          "id": "706be79b-bcfd-4e37-a3f1-28cc387a444c",
+          "id": "144009b2-5e56-4232-bd49-7d97cc3049c1",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -348,7 +348,7 @@
           "response": []
         }
       ],
-      "id": "267b6128-61da-4366-9970-6c65c73f7146",
+      "id": "6b82b5ed-b239-4ff5-a851-31da391363d3",
       "description": "Demo/mock data endpoints for testing when database is not configured"
     },
     {
@@ -615,7 +615,7 @@
                   }
                 }
               ],
-              "id": "c18a6d0d-ae85-4c8b-b943-b22014c5fe76",
+              "id": "36dfca48-8601-49ff-975d-56a17017df8f",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -663,7 +663,7 @@
             },
             {
               "name": "Get All Employees",
-              "id": "9279ce87-f07a-4670-b4b3-99ad70424309",
+              "id": "b9cd78cf-6737-4f47-bd19-a40579f1228b",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -694,7 +694,7 @@
             },
             {
               "name": "Get Employee by ID",
-              "id": "799e07de-83ee-4b51-a81d-568c1dafd4a0",
+              "id": "db313d37-f1c6-41d8-b616-dcdf5ace46b6",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -714,7 +714,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "6ee3412d-6c81-4312-9a7d-5e501f7730a8",
+                      "id": "4c4d038c-4004-4e2e-beb9-91b8302514cf",
                       "key": "id",
                       "value": "{{lastCreatedEmployeeId}}"
                     }
@@ -726,7 +726,7 @@
             },
             {
               "name": "Update Employee",
-              "id": "c0883f5d-c9e2-422f-a3b1-aa3c7df89a36",
+              "id": "e96f1c61-ab54-4530-b33c-72f019f171f3",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -755,7 +755,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "16f59cb6-43e5-4151-8240-47c7483edc5f",
+                      "id": "356dc134-43f5-4bbb-a0c1-a68b2b727e2c",
                       "key": "id",
                       "value": "{{lastCreatedEmployeeId}}"
                     }
@@ -766,8 +766,49 @@
               "response": []
             },
             {
+              "name": "Promote Employee",
+              "id": "f8a9b2c3-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Senior Software Engineer\",\n  \"salaryIncrease\": 10000\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/employees/:id/promote",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "employees",
+                    ":id",
+                    "promote"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{lastCreatedEmployeeId}}"
+                    }
+                  ]
+                },
+                "description": "Promote an employee with a new title and salary increase. Requires 'hr_manager' or 'admin' role."
+              },
+              "response": []
+            },
+            {
               "name": "Terminate Employee",
-              "id": "0020808d-114c-4303-89f8-18723dcffd3d",
+              "id": "d6c76276-0a6c-4069-b76f-e3bdec687f3e",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -797,7 +838,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "edf60ee9-88bb-4bbb-b3a5-f698017c5061",
+                      "id": "31a0e93a-3766-4579-b8d9-9c752047d410",
                       "key": "id",
                       "value": "emp-123"
                     }
@@ -808,14 +849,14 @@
               "response": []
             }
           ],
-          "id": "4dad2045-7dc6-4705-bb0f-77f4d859eefb"
+          "id": "89c85970-847f-4a80-b5e3-817346ce44eb"
         },
         {
           "name": "Departments",
           "item": [
             {
               "name": "Create Department",
-              "id": "8aa157c7-0165-41ea-94d3-9289f2128d29",
+              "id": "87861a9f-9fe6-4ed6-b0c3-1206ad6d6ca0",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -848,7 +889,7 @@
             },
             {
               "name": "Get All Departments",
-              "id": "24835e1f-6c02-4b2e-aad6-eab4f0bf2f0f",
+              "id": "add8d656-212a-4226-a236-eac9d2af16da",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -872,7 +913,7 @@
             },
             {
               "name": "Get Department by ID",
-              "id": "603af6ea-40de-42df-b9e0-4990f5c8e248",
+              "id": "a16aeac4-4a05-44be-b23b-ee6bceb39b2b",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -892,7 +933,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "2916b2b3-e811-4601-b4b2-7a79f35a6c11",
+                      "id": "2fd21fa2-5059-444c-83ba-4c853b37a86d",
                       "key": "id",
                       "value": "dept-123"
                     }
@@ -903,11 +944,11 @@
               "response": []
             }
           ],
-          "id": "4ede377b-7cdc-4608-a9f9-6c32c53d6194"
+          "id": "5bce80f2-e8e4-422a-bf6a-80e66000d298"
         },
         {
           "name": "Get HR Statistics",
-          "id": "76eb1fed-7565-4b58-9906-3f0c93b716fa",
+          "id": "e8d7c322-598a-4827-8844-b464ce6dce3d",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -930,7 +971,7 @@
           "response": []
         }
       ],
-      "id": "85638c1e-e0cf-461a-8a75-e31266725e09",
+      "id": "ea71875f-74a2-4e5d-8fdf-ec0f753da5ee",
       "description": "Human Resources module - Employee and department management"
     },
     {
@@ -938,7 +979,7 @@
       "item": [
         {
           "name": "Process Payroll",
-          "id": "933f1eda-7c2c-4a68-a121-5568a6626941",
+          "id": "8dc5af5c-16cc-45dd-b25c-c3e26329707a",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -986,7 +1027,7 @@
         },
         {
           "name": "Process Batch Payroll",
-          "id": "fd1baef0-6499-4c51-9c30-7543bfba4eee",
+          "id": "debf088e-3c02-4a44-82ff-38da58d8b46b",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1029,7 +1070,7 @@
         },
         {
           "name": "Approve Payroll",
-          "id": "3422dc47-ace8-493c-8bdb-d09d3ddf07f2",
+          "id": "0ddd448a-cb38-49c2-b0f5-10f3fca947d0",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1064,7 +1105,7 @@
               ],
               "variable": [
                 {
-                  "id": "f7685d58-cfe9-488d-ada4-87e38f1e5cbc",
+                  "id": "2b3efd35-e03f-4cdd-8d52-ef2d1fcf5a9a",
                   "key": "id",
                   "value": "f9a4e110-4daa-4011-a1d3-0955d78fe6c4"
                 }
@@ -1076,7 +1117,7 @@
         },
         {
           "name": "Get All Payroll",
-          "id": "8adf169b-e266-4fac-a3a5-2d9770b3e5c4",
+          "id": "f32081d4-34a8-4725-b3a8-2075884807fa",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1110,7 +1151,7 @@
         },
         {
           "name": "Get Payroll by ID",
-          "id": "15d0d61e-9f17-43d5-8c80-b6d1b7683835",
+          "id": "abac07cf-e84e-4f36-aefe-b6fc62751efa",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1139,7 +1180,7 @@
               ],
               "variable": [
                 {
-                  "id": "6c5aea82-2a7d-4566-83b0-ed48a39e7ebd",
+                  "id": "01ec6c3f-fe74-415d-b22a-97f2165c2a38",
                   "key": "id",
                   "value": "123e4567-e89b-12d3-a456-426614174000"
                 }
@@ -1151,7 +1192,7 @@
         },
         {
           "name": "Get Employee Payroll History",
-          "id": "034fc07f-3c91-407a-a830-c6badf1ad882",
+          "id": "1b10d240-8822-494d-9b41-6b0ef5578d94",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1182,7 +1223,7 @@
               ],
               "variable": [
                 {
-                  "id": "86bcaa7f-adbb-4974-942e-9012fb9ff209",
+                  "id": "8d678954-1d45-4d7c-81ce-2a748fbc798d",
                   "key": "employeeId",
                   "value": "123e4567-e89b-12d3-a456-426614174000"
                 }
@@ -1193,7 +1234,7 @@
           "response": []
         }
       ],
-      "id": "cd078c82-7d9f-4bef-a8f6-2b50b1801fd8",
+      "id": "cd1ff159-d5b5-4646-9bcc-7507aec5ab73",
       "description": "Payroll module - Salary processing and tax calculations"
     },
     {
@@ -1201,7 +1242,7 @@
       "item": [
         {
           "name": "Create Journal Entry",
-          "id": "dacde65d-8b4d-406e-a59e-6f72e20e2fb2",
+          "id": "d950e928-0610-4162-9fa5-b213ce418cc3",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1234,7 +1275,7 @@
         },
         {
           "name": "Get All Transactions",
-          "id": "57db2e6e-aee4-4545-b437-d70518fe819f",
+          "id": "2181ecd0-50ac-4c30-81e3-1b92072e5621",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1258,7 +1299,7 @@
         },
         {
           "name": "Get Transaction by ID",
-          "id": "713aba54-bb7d-4c3c-bcf7-64a75020d9b0",
+          "id": "a8679e2c-d178-4764-ac0a-67b01304f36f",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1278,7 +1319,7 @@
               ],
               "variable": [
                 {
-                  "id": "2b03ee41-78fc-4a2b-9b0e-233be6842f2e",
+                  "id": "6190466e-aee9-4b78-b9d7-8d558dc4158d",
                   "key": "id",
                   "value": "txn-123"
                 }
@@ -1290,7 +1331,7 @@
         },
         {
           "name": "Get General Ledger",
-          "id": "3c2e641d-db5c-4f4a-afc2-7441db3411d0",
+          "id": "df884414-e66b-46e3-b99e-60e1abcb2631",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1310,7 +1351,7 @@
               ],
               "variable": [
                 {
-                  "id": "e53eec18-9d1b-4aea-8cdf-dedd0d29924c",
+                  "id": "6cafabc0-fd91-4085-af91-c04d75022e6d",
                   "key": "accountCode",
                   "value": "1000"
                 }
@@ -1322,7 +1363,7 @@
         },
         {
           "name": "Get Trial Balance",
-          "id": "9b1e4ad1-7c81-433f-8fd5-56a449701e3c",
+          "id": "c83dee63-8e2e-4a71-96f3-3869aefe7501",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1345,7 +1386,7 @@
           "response": []
         }
       ],
-      "id": "bfeb9daf-efd9-4dc5-b33e-24f1c2a7b314",
+      "id": "6a2421d3-cfa7-4ec1-b0ca-808ca3532df9",
       "description": "Accounting module - General ledger and financial transactions"
     },
     {
@@ -1356,7 +1397,7 @@
           "item": [
             {
               "name": "Create Budget",
-              "id": "ac7a2d5f-0031-4067-a2d8-abd86db08d1d",
+              "id": "c06bfebd-195a-49e7-9e24-ba498eef8bb0",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1389,7 +1430,7 @@
             },
             {
               "name": "Get All Budgets",
-              "id": "9d32ca59-2a2a-4420-84a6-e9616c81e2e6",
+              "id": "cc8b3b64-8c82-479a-a346-671e21fdc171",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1413,7 +1454,7 @@
             },
             {
               "name": "Get Budget by ID",
-              "id": "db45ff16-cb13-40a3-a0f7-09f012e4faa5",
+              "id": "018ba188-f421-462a-8d19-eeeba9a0b8b8",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1433,7 +1474,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "1440213e-4bc1-4218-8587-54a851926ba2",
+                      "id": "a58c4ba2-38be-417b-85a7-def106c90436",
                       "key": "id",
                       "value": "budget-123"
                     }
@@ -1445,7 +1486,7 @@
             },
             {
               "name": "Close Budget",
-              "id": "baed814b-1d80-4875-a972-d2cecbbed317",
+              "id": "9162f929-45f0-42bc-a418-749d88f438f4",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1466,7 +1507,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "f87d7121-1091-4a7a-bb21-f71646767861",
+                      "id": "7fa395a8-eba5-49c0-a012-22c3956f3a60",
                       "key": "id",
                       "value": "budget-123"
                     }
@@ -1478,7 +1519,7 @@
             },
             {
               "name": "Get Budget Utilization",
-              "id": "b92ed315-8533-44e2-b819-a2611428153b",
+              "id": "e648ec54-8d8c-4cac-9cc8-b146c738d112",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1499,7 +1540,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "ac97c0e6-6097-495a-948a-247c1d17041a",
+                      "id": "0c0f4d1b-2a28-4b38-845a-781b237f1e60",
                       "key": "id",
                       "value": "budget-123"
                     }
@@ -1510,11 +1551,11 @@
               "response": []
             }
           ],
-          "id": "9d003ae7-0e5f-4767-be33-c741eee555d5"
+          "id": "5a52a4ea-700b-4b96-a723-ba060e821880"
         },
         {
           "name": "Get Department Budget Summary",
-          "id": "cc14891d-f8bd-4756-bf13-5e2b5092b557",
+          "id": "bb29e1f1-4229-4e31-a381-96f14ed34385",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1536,12 +1577,12 @@
               ],
               "variable": [
                 {
-                  "id": "6456a6af-4817-419a-b419-21f42e93b0cd",
+                  "id": "e8d52cf5-ec15-40bb-94b2-73e79660dfb2",
                   "key": "department",
                   "value": "Engineering"
                 },
                 {
-                  "id": "e113cf86-382b-430a-8924-bb022ec556e3",
+                  "id": "35f61213-7aaa-4b8a-a1c9-435fe916ce66",
                   "key": "fiscalYear",
                   "value": "2024"
                 }
@@ -1553,7 +1594,7 @@
         },
         {
           "name": "Generate Financial Report",
-          "id": "010e60eb-3e07-47d9-a940-9e64434c1492",
+          "id": "a7fd62c5-7a80-4beb-a167-1c63caa5e58c",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -1577,7 +1618,7 @@
           "response": []
         }
       ],
-      "id": "6bbcac1f-dc7d-4822-9318-85f7a411536f",
+      "id": "0908413c-52be-4c4e-aa8a-ebb3cb97595f",
       "description": "Finance module - Budgeting and financial reporting"
     },
     {
@@ -1588,7 +1629,7 @@
           "item": [
             {
               "name": "Create Customer",
-              "id": "8174fcef-1296-4fdf-a8a3-068d2584dac7",
+              "id": "0d1bcaf0-9f31-4198-9851-5e119c07073a",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1621,7 +1662,7 @@
             },
             {
               "name": "Get All Customers",
-              "id": "5c72750a-b852-4dc6-9840-18bdb7d30640",
+              "id": "d1ec8c9d-9ec9-41e6-9dd5-779b85ce3774",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1652,7 +1693,7 @@
             },
             {
               "name": "Get Customer by ID",
-              "id": "91e301d3-a569-4dd5-a9bc-6dcf34f141ba",
+              "id": "fdbdac75-bd06-464b-bb83-b76f89304bff",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1672,7 +1713,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "6d4f5571-5347-4fc2-b5f0-a0d37d53a387",
+                      "id": "12a62857-143c-4eb1-97c1-8f69eb2b142c",
                       "key": "id",
                       "value": "cust-123"
                     }
@@ -1684,7 +1725,7 @@
             },
             {
               "name": "Get Customer Balance",
-              "id": "83003520-8d66-4220-bf2a-176b9ad749b5",
+              "id": "b0a1470b-2012-4ca7-936b-e4238b4e6211",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1705,7 +1746,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "0dd07173-6ed5-4ece-afcb-8e24a964e64a",
+                      "id": "c12981d1-ad77-43be-87d7-48685203a8db",
                       "key": "id",
                       "value": "cust-123"
                     }
@@ -1716,14 +1757,14 @@
               "response": []
             }
           ],
-          "id": "fd575c11-0d4d-422c-935d-1c49027ec1ef"
+          "id": "237a859f-5125-4279-9596-117e5a45690a"
         },
         {
           "name": "Invoices",
           "item": [
             {
               "name": "Create Invoice",
-              "id": "6b3a85c0-8435-4d3a-bd8d-17d5cea735be",
+              "id": "168554fa-073d-4d82-b339-f332961c2426",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1756,7 +1797,7 @@
             },
             {
               "name": "Get All Invoices",
-              "id": "06eb2af2-2dcf-459c-9b7f-170e5867b4a9",
+              "id": "4e97988a-026b-4850-94db-dc55aa9153f6",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1792,7 +1833,7 @@
             },
             {
               "name": "Get Invoice by ID",
-              "id": "fb3e0877-5897-4e6d-b26e-242635819e6d",
+              "id": "567f2ef4-c5aa-4f6f-97bd-1163fd0e08cf",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1812,7 +1853,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "fab7deae-393d-4810-825d-c5ee46ed8e1b",
+                      "id": "6a711081-442b-4b3e-8040-7f51f101355a",
                       "key": "id",
                       "value": "inv-123"
                     }
@@ -1824,7 +1865,7 @@
             },
             {
               "name": "Send Invoice",
-              "id": "789e3153-a1e9-4af9-be39-89f139ccf255",
+              "id": "a0df6044-425b-4ebb-9d17-dd4e87a306b3",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1845,7 +1886,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "3b0e7c9c-a4d0-475e-887f-827aff5ebf62",
+                      "id": "2d50233a-7b81-4df1-a0d9-69b4d4eb512a",
                       "key": "id",
                       "value": "inv-123"
                     }
@@ -1857,7 +1898,7 @@
             },
             {
               "name": "Record Payment",
-              "id": "e49d86dc-7176-4bdc-ab16-6b50a8feb8c4",
+              "id": "cb128ae8-dc09-4e3d-8776-2cda7676de9f",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1887,7 +1928,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "f6aeb881-4283-4af0-93a0-e3e7f54ca23d",
+                      "id": "7e16a64b-41bf-4ba1-b98a-9a7cced23486",
                       "key": "id",
                       "value": "inv-123"
                     }
@@ -1899,7 +1940,7 @@
             },
             {
               "name": "Cancel Invoice",
-              "id": "432e47fa-da4c-45bf-a9d7-9b1609351ea4",
+              "id": "f4c3b5d1-253b-44ad-aabf-134f99ad5f96",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1920,7 +1961,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "48bd92b8-bfe5-4121-a587-30c9a8a9f2d2",
+                      "id": "300ec93b-89d5-4a6f-8bb4-404ef7f1db1d",
                       "key": "id",
                       "value": "inv-123"
                     }
@@ -1932,7 +1973,7 @@
             },
             {
               "name": "Check Overdue Invoices",
-              "id": "c9a1bc56-8d19-492b-9ae7-0cbf972b0b17",
+              "id": "22308eb8-84fd-4e14-96f7-eddda7960b00",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1957,10 +1998,10 @@
               "response": []
             }
           ],
-          "id": "fa94ddf6-610c-49e4-9618-91824884316e"
+          "id": "bd83dbab-027d-4272-841e-c6b648f2e3f5"
         }
       ],
-      "id": "c457f685-7bb5-4ad3-a84f-ca47152de832",
+      "id": "76cbd429-ff1d-482d-b870-dff748708d69",
       "description": "Billing module - Invoicing and customer billing"
     },
     {
@@ -1971,7 +2012,7 @@
           "item": [
             {
               "name": "Create Vendor",
-              "id": "facbf3d5-77d6-49d3-9fe7-634081b2f861",
+              "id": "74c1401a-ba97-4404-b057-062e6c1b67d7",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2004,7 +2045,7 @@
             },
             {
               "name": "Get All Vendors",
-              "id": "08ff0f44-94ba-4355-b49d-d19da3b86bb3",
+              "id": "fdcaabf8-1167-4ba2-8eb3-629f591d6362",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2028,7 +2069,7 @@
             },
             {
               "name": "Get Vendor by ID",
-              "id": "7ab0c337-6375-4960-8abc-e73c52350eea",
+              "id": "a94b249f-9982-42a3-a2f8-b04c0f6a2f24",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2048,7 +2089,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "c4e398d7-3951-4679-9e7a-65f8d350c1b0",
+                      "id": "8e73e81a-244b-43f6-9f00-93d298267c48",
                       "key": "id",
                       "value": "vendor-123"
                     }
@@ -2060,7 +2101,7 @@
             },
             {
               "name": "Get Vendor Performance",
-              "id": "2e6bcd17-ff3f-4848-ab4f-167cac648c44",
+              "id": "bd728f22-653d-4db3-bfcd-78b1217d92d7",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2081,7 +2122,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "593b14bf-4f18-4c4d-b450-880b5c461a21",
+                      "id": "86720cad-e8bb-490c-9969-584e6f5a2c20",
                       "key": "id",
                       "value": "vendor-123"
                     }
@@ -2092,14 +2133,14 @@
               "response": []
             }
           ],
-          "id": "ca555fad-478d-4dde-a125-fabbb3c6faaa"
+          "id": "5243b05f-3da1-4e21-96e3-42566678ae9f"
         },
         {
           "name": "Purchase Orders",
           "item": [
             {
               "name": "Create Purchase Order",
-              "id": "03496f7c-159b-469d-ba18-45689f78c8ed",
+              "id": "a48ca090-058a-4858-8d7e-cbe22aca3397",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2132,7 +2173,7 @@
             },
             {
               "name": "Get All Purchase Orders",
-              "id": "12282437-9b8a-4f78-903d-d7bfcf872d6a",
+              "id": "63c6088a-c3c5-47e0-9cc6-7e98bb4ca4d2",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2156,7 +2197,7 @@
             },
             {
               "name": "Get Purchase Order by ID",
-              "id": "21a7b82d-d7fc-49e3-a598-b26f323cc6e3",
+              "id": "1d61fa01-9c81-4fad-bd22-21aaaa8eafcb",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2176,7 +2217,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "ccc6e385-ca10-477a-bc3b-f4725935b865",
+                      "id": "0acc2d91-1903-4580-aa04-d4ce3a548b7f",
                       "key": "id",
                       "value": "po-123"
                     }
@@ -2188,7 +2229,7 @@
             },
             {
               "name": "Approve Purchase Order",
-              "id": "9c1ed61e-b6ac-41b6-9295-6c848e0b4156",
+              "id": "ca66e4d7-4d05-42b6-9de1-cc5acc26dde0",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2209,7 +2250,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "8e174c2e-ddc6-4f22-8a87-09fb06586bbf",
+                      "id": "2886d2e9-3861-45b3-a8cf-5a9d4069c1f5",
                       "key": "id",
                       "value": "po-123"
                     }
@@ -2221,7 +2262,7 @@
             },
             {
               "name": "Place Purchase Order",
-              "id": "4ba7d108-5cbb-40ac-b374-9170af702b98",
+              "id": "8f161bcb-3d39-4c23-968f-957f63495bea",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2242,7 +2283,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "792ec5a7-079d-4e51-bb8b-10200ce225d6",
+                      "id": "80141c0b-c58d-4ce6-90f8-6c9c112a75ce",
                       "key": "id",
                       "value": "po-123"
                     }
@@ -2254,7 +2295,7 @@
             },
             {
               "name": "Receive Purchase Order",
-              "id": "9f958b09-23f9-4e53-a088-6cbe869ced80",
+              "id": "47d846c0-5bec-4c16-b09e-a77b2a367318",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2275,7 +2316,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "2c58d385-41a4-46bf-9506-b4dce54faadb",
+                      "id": "c4f0cc75-25a9-40e9-b87e-54bee44b79a3",
                       "key": "id",
                       "value": "po-123"
                     }
@@ -2287,7 +2328,7 @@
             },
             {
               "name": "Cancel Purchase Order",
-              "id": "f79bf34d-fe85-4ccd-8133-b7531914256e",
+              "id": "c8d5d016-f559-4e49-a4e5-734bf0c467c1",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2308,7 +2349,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "df3a1496-3f7b-4202-b6d6-f1c53867ef00",
+                      "id": "81459353-235a-4cea-a17f-286f081b972a",
                       "key": "id",
                       "value": "po-123"
                     }
@@ -2319,10 +2360,10 @@
               "response": []
             }
           ],
-          "id": "613241d4-8c51-4be1-a85e-394c7de46163"
+          "id": "1a39de78-9003-4f81-a257-c89bfc363bf7"
         }
       ],
-      "id": "12c000dc-4ae7-4b38-8bbf-28f9873b1a12",
+      "id": "56212530-50a3-4eac-a76a-cd95a38e9383",
       "description": "Procurement module - Purchase orders and vendor management"
     },
     {
@@ -2333,7 +2374,7 @@
           "item": [
             {
               "name": "Create Shipment",
-              "id": "55bea1d5-c27b-4f8b-8379-9808c64fdc94",
+              "id": "fee2f6de-eb38-4e48-bcf5-98d965c04db6",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2366,7 +2407,7 @@
             },
             {
               "name": "Get All Shipments",
-              "id": "070c193f-fb38-498e-9bf7-cb34d71ecdb2",
+              "id": "b10b8eba-1ef6-44a2-8fce-3c836774428b",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2390,7 +2431,7 @@
             },
             {
               "name": "Get Shipment by ID",
-              "id": "23e4dbfa-acb5-4313-a5ac-96899937bf83",
+              "id": "2f5a70c9-2b61-4217-82ba-48b8c2c6d885",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2410,7 +2451,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "195f4cbe-aaac-492c-8fec-7ba9562c7801",
+                      "id": "80c7ed72-2a70-4d2a-9398-3b04a8b3267f",
                       "key": "id",
                       "value": "ship-123"
                     }
@@ -2422,7 +2463,7 @@
             },
             {
               "name": "Get Shipment by Tracking Number",
-              "id": "1e9f8724-2622-4e9e-adfc-52f3d6f87ed4",
+              "id": "09883d9c-0589-41dd-93b6-b0311f42c8ad",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2443,7 +2484,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "0513ccde-fff7-41d0-83bd-c6597d0bc5bc",
+                      "id": "bdce5c8e-c404-46ee-8c5b-0d629ea0f7a0",
                       "key": "trackingNumber",
                       "value": "1234567890"
                     }
@@ -2455,7 +2496,7 @@
             },
             {
               "name": "Get Shipments by Order",
-              "id": "fdf66f18-7dde-46cc-8a8b-4bbd4bdba379",
+              "id": "7c1c45f4-6a48-4425-bd23-e15f6b9cd797",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2476,7 +2517,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "d17fe0f1-9e61-4d28-bbd8-6ebd051b67b0",
+                      "id": "23be4941-fdd5-4c93-8a16-d0d0e1af235e",
                       "key": "orderId",
                       "value": "order-123"
                     }
@@ -2488,7 +2529,7 @@
             },
             {
               "name": "Dispatch Shipment",
-              "id": "d84a6b04-69e2-464a-9982-ad275d7f0da6",
+              "id": "98cb4406-8527-45ed-92fe-e0f43cd43906",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2509,7 +2550,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "bc80fe7e-ae59-437a-b75d-4adc2dbd6bda",
+                      "id": "eda594e0-a49f-4c48-aadc-ea2eb816f00f",
                       "key": "id",
                       "value": "ship-123"
                     }
@@ -2521,7 +2562,7 @@
             },
             {
               "name": "Update Shipment Status",
-              "id": "1e73922f-b202-4d2a-916a-4c189efeed6b",
+              "id": "e09d91bb-f81c-4ec6-876e-6605952b90c3",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2551,7 +2592,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "e25345f9-ad8d-4c17-bda5-0760452d0b4f",
+                      "id": "b20e07a3-ce83-4eda-964a-21807ddfdb9f",
                       "key": "id",
                       "value": "ship-123"
                     }
@@ -2563,7 +2604,7 @@
             },
             {
               "name": "Mark Delivered",
-              "id": "5aeaca52-b4be-4a85-90ac-b3a75e03dcb1",
+              "id": "018398fa-4a58-43ba-8518-4e7131308ed4",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2584,7 +2625,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "7df93c4e-be47-4423-8899-469f191112a0",
+                      "id": "1a756121-5f03-4691-80fb-d1e598673327",
                       "key": "id",
                       "value": "ship-123"
                     }
@@ -2596,7 +2637,7 @@
             },
             {
               "name": "Cancel Shipment",
-              "id": "853406b5-3e53-4b44-a508-debfb922c75f",
+              "id": "4c3f0034-1007-4ec3-98ad-6854beaa1101",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2617,7 +2658,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "6aa83fcb-8b38-4a72-b82e-b0721a3e97c5",
+                      "id": "4ec1ceb3-bdd3-4c40-80a2-1f0fcec29b74",
                       "key": "id",
                       "value": "ship-123"
                     }
@@ -2628,11 +2669,11 @@
               "response": []
             }
           ],
-          "id": "2d6929aa-46e1-408c-9e7a-3ca5b53ec793"
+          "id": "649a1add-d2ae-4aa9-84b6-1b90049db152"
         },
         {
           "name": "Get Carrier Performance",
-          "id": "b085c822-948a-4ec7-a445-39ed05c67d46",
+          "id": "a21c9bb7-e14b-4811-9596-bb5a4ce4c327",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -2653,7 +2694,7 @@
               ],
               "variable": [
                 {
-                  "id": "363bb7fe-1e36-4df2-b77f-7de1910d686b",
+                  "id": "17d8cdee-4736-4802-82fe-5476eaed5fe0",
                   "key": "carrier",
                   "value": "FedEx"
                 }
@@ -2665,7 +2706,7 @@
         },
         {
           "name": "Get Inbound Summary",
-          "id": "1c7fd583-59ab-482b-a55a-7e81cd4598ad",
+          "id": "9e3ce449-adff-498d-b0da-87a77d13d434",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -2690,7 +2731,7 @@
         },
         {
           "name": "Get Outbound Summary",
-          "id": "5e03707f-8ea1-4d1f-97ac-830a8fb71d0e",
+          "id": "cb4839e6-8135-4be6-a9b8-669cbf0b6381",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -2714,7 +2755,7 @@
           "response": []
         }
       ],
-      "id": "526e302b-f0a4-4dcc-9c2e-6902e53deb42",
+      "id": "a1094fc6-8d8a-466a-bc5d-50277483dd18",
       "description": "Supply Chain module - Shipments and logistics"
     },
     {
@@ -2725,7 +2766,7 @@
           "item": [
             {
               "name": "Create Inventory Item",
-              "id": "abc58d8b-57b8-4c6f-a58a-b2238eb13ef1",
+              "id": "390e99fa-e4d9-4016-aaea-1b79ed5fcaab",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2758,7 +2799,7 @@
             },
             {
               "name": "Get All Inventory Items",
-              "id": "be2e0231-41c1-47d3-8c17-b196a6d1225b",
+              "id": "c1e3d07f-c292-489c-b8c5-688c9f9c8f94",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2799,7 +2840,7 @@
             },
             {
               "name": "Get Inventory Item by ID",
-              "id": "b7ac7c3b-0b3f-4a11-a06f-409ad1db3533",
+              "id": "f7103765-f0c4-49be-812b-4c5b020b83b0",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2819,7 +2860,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "a87a0ab9-18da-4240-b1f5-280fbb5bae98",
+                      "id": "82dbe7f9-f612-4737-9cbd-905e8e01445d",
                       "key": "id",
                       "value": "item-123"
                     }
@@ -2831,7 +2872,7 @@
             },
             {
               "name": "Get Inventory Item by SKU",
-              "id": "31ffb86b-e888-4651-9104-83ea20006a92",
+              "id": "7acdd934-8d64-4175-9086-c2e6c7a0d238",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2852,7 +2893,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "e5d9f57a-3be0-4bdb-bba4-5568d01a6fe7",
+                      "id": "5df69e6e-4b15-48c4-9854-1e110e81127a",
                       "key": "sku",
                       "value": "ITEM-001"
                     }
@@ -2864,7 +2905,7 @@
             },
             {
               "name": "Update Inventory Item",
-              "id": "20e31a33-fe0d-4694-8191-c6ed45c50c8c",
+              "id": "f3071ad7-6ecc-4ea9-b53f-263e9b94701d",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2893,7 +2934,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "ead5a20b-e206-4322-926d-3303de291936",
+                      "id": "ce9c6217-e311-4e20-bd7b-9613b074f926",
                       "key": "id",
                       "value": "item-123"
                     }
@@ -2904,14 +2945,14 @@
               "response": []
             }
           ],
-          "id": "cffcb54f-660d-47c0-b601-868272bbd4c1"
+          "id": "a1fb50a4-26c6-4012-a45a-c9c36d165c79"
         },
         {
           "name": "Stock Operations",
           "item": [
             {
               "name": "Adjust Stock",
-              "id": "a67b002b-22bf-4a9a-a566-ccef13b67f41",
+              "id": "7d3d816e-b5e5-4fe4-8056-db8c0c687ce6",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2941,7 +2982,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "205c9a7e-3b6b-4814-b443-24cc78ea6693",
+                      "id": "be08ac3e-3208-4ab3-a040-3b54ec228f7a",
                       "key": "id",
                       "value": "item-123"
                     }
@@ -2953,7 +2994,7 @@
             },
             {
               "name": "Reserve Stock",
-              "id": "b8dd5f43-908e-493c-8346-e9aa0b7b99fc",
+              "id": "eeb7f5e7-ebd3-4c52-a8ec-18bbf85da2ac",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -2983,7 +3024,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "69567fe7-7923-4504-9789-4e9b521affef",
+                      "id": "c9875089-f571-4712-b732-f3e0776bcbb8",
                       "key": "id",
                       "value": "item-123"
                     }
@@ -2995,7 +3036,7 @@
             },
             {
               "name": "Release Reserved Stock",
-              "id": "d78e7962-c56e-49ed-b798-da5caccc8670",
+              "id": "c020e5d2-126f-4fc6-bf52-22eb5b73d956",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -3025,7 +3066,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "fae78712-6748-463f-9482-6f8ff5ed4ff1",
+                      "id": "fad50461-0e27-4a9f-855e-791b7dcb8a02",
                       "key": "id",
                       "value": "item-123"
                     }
@@ -3037,7 +3078,7 @@
             },
             {
               "name": "Fulfill Reservation",
-              "id": "ee7315f7-76fe-41a8-9bff-c2b06b4e2aac",
+              "id": "63f46857-153f-477f-b518-a652e878c663",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -3067,7 +3108,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "7e4973db-619a-4303-b484-7acd880ffbe5",
+                      "id": "4e531c46-d4b7-4d4c-ba98-a78c087be34b",
                       "key": "id",
                       "value": "item-123"
                     }
@@ -3079,7 +3120,7 @@
             },
             {
               "name": "Receive Stock",
-              "id": "ff79a549-2ae8-4ee7-a617-d171e03e6f49",
+              "id": "854fa9c7-e172-4df6-9000-6b80be5b2829",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -3109,7 +3150,7 @@
                   ],
                   "variable": [
                     {
-                      "id": "11205e1e-c539-49b4-a1b4-7d89d5e5fdb2",
+                      "id": "1a09b080-7d4c-4f2e-b552-58797398c3bf",
                       "key": "id",
                       "value": "item-123"
                     }
@@ -3120,11 +3161,11 @@
               "response": []
             }
           ],
-          "id": "714e24a6-f8c4-4ecf-99e0-19b1697e86b2"
+          "id": "85658f3b-30be-46ee-92c6-df2a49449e02"
         },
         {
           "name": "Get Low Stock Items",
-          "id": "91c660fd-7843-4b13-907a-5ce713f19828",
+          "id": "94119269-fab2-4a39-94ba-5d82d83cb733",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -3148,7 +3189,7 @@
         },
         {
           "name": "Get Inventory Valuation",
-          "id": "aae46f31-53e1-41c4-9acd-83171856e2ce",
+          "id": "d49591f8-c860-439a-848e-d9b1dd0fd66b",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -3172,7 +3213,7 @@
         },
         {
           "name": "Get Category Breakdown",
-          "id": "56a4f515-2674-4f9f-be45-5ba567b28a5a",
+          "id": "52b9d0c3-023b-4f41-a6cc-ffb09adc587e",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -3195,73 +3236,73 @@
           "response": []
         }
       ],
-      "id": "107d0413-529b-4631-94ca-712cd773fb2a",
+      "id": "dfd8fbfc-3ec1-4e94-b15b-5424b2ebe9cc",
       "description": "Inventory module - Stock management and automatic reordering"
     }
   ],
   "variable": [
     {
-      "id": "3ed1bbad-9d39-484e-8bfa-114e4c58fef8",
+      "id": "eb87576e-7380-4992-8b86-7e6a39d2f41a",
       "key": "baseUrl",
       "value": "http://localhost:3001"
     },
     {
-      "id": "299a46a9-a00c-47e7-8588-8876868137b5",
+      "id": "626acdf3-d6a2-4450-96fc-965c32694be5",
       "key": "firstName",
       "value": "John"
     },
     {
-      "id": "4c9c6b08-86f3-415a-8aef-8fa53a534cca",
+      "id": "9a78f3e8-bb2f-4c82-995a-ad7915054ab0",
       "key": "lastName",
       "value": "Doe"
     },
     {
-      "id": "f0884e19-6ac4-416b-b679-0101aae50576",
+      "id": "8fcc195e-ea86-4b1e-a0a5-c227473ddbc7",
       "key": "email",
       "value": "john.doe@example.com"
     },
     {
-      "id": "00bece3a-0cfb-429a-93f7-a2ca4c3874cc",
+      "id": "4651b659-ede6-4a89-8b99-360652c9b466",
       "key": "departmentId",
       "value": "dept-001"
     },
     {
-      "id": "2c641b48-2bf4-4348-a5a2-5721df2a0cc1",
+      "id": "af5ca37d-7f90-4842-b275-dcec8d6891a3",
       "key": "position",
       "value": "Software Engineer"
     },
     {
-      "id": "9090cc4c-a05b-459e-b850-46c8f3389c93",
+      "id": "a9e75169-1a6c-4b60-b0b9-40ca5e887597",
       "key": "salary",
       "value": "75000"
     },
     {
-      "id": "f2257034-b060-451a-8e5d-64b128440007",
+      "id": "390f3f45-68b0-4899-bd97-12c3f3a6b25e",
       "key": "hireDate",
       "value": "2024-01-15"
     },
     {
-      "id": "12b05db1-bc81-46ad-9223-c52bb3130f35",
+      "id": "5e4158f5-d267-46c2-b808-824ffca8d634",
       "key": "status",
       "value": "active"
     },
     {
-      "id": "62bfc1bc-b629-4450-8d7e-ccd085a96b42",
+      "id": "34f287dd-4c6c-485e-81b4-7eec1c3fb1bf",
       "key": "phoneNumber",
       "value": ""
     },
     {
-      "id": "19642227-c596-4fc4-b19a-784cc12ae44b",
+      "id": "bc7ab69e-9056-4a8f-ad7c-1f5bb9bf0c3a",
       "key": "lastCreatedEmployeeId",
       "value": ""
     },
     {
-      "id": "f765a807-d01c-4dfe-8b54-99033a726ece",
+      "id": "0867fabf-1907-498d-872c-3d62b5cc2b7f",
       "key": "jobTitle",
       "value": ""
     },
     {
-      "id": "945f76f3-bbb1-4886-bf21-c60ecc9ddc3f",
+      "id": "fee25f76-781a-4fc1-935f-ae68b702e298",
       "key": "employeeId",
       "value": ""
     }
