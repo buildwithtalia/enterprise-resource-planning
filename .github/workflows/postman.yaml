@@ -28,6 +28,16 @@ jobs:
         env:
           POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
         run: postman login --with-api-key "$POSTMAN_API_KEY"
-      
+
+      - name: Validate workspace configuration
+        run: |
+          echo "Checking workspace configuration..."
+          ls -la .postman/
+          cat .postman/config.json
+          echo "Checking collection exists..."
+          ls -la postman/collections/
+          echo "Checking spec exists..."
+          ls -la postman/specifications/
+
       - name: Push workspace to Postman
         run: postman workspace push -y
