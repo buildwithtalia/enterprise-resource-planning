@@ -81,13 +81,49 @@ export const getDemoShipments = async () => {
 }
 
 // Human Resources
-export const getEmployees = async () => {
-  const response = await api.get('/api/hr/employees')
+export const getEmployees = async (status?: string) => {
+  const url = status ? `/api/hr/employees?status=${status}` : '/api/hr/employees'
+  const response = await api.get(url)
+  return response.data
+}
+
+export const getEmployee = async (id: string) => {
+  const response = await api.get(`/api/hr/employees/${id}`)
+  return response.data
+}
+
+export const createEmployee = async (data: any) => {
+  const response = await api.post('/api/hr/employees', data)
+  return response.data
+}
+
+export const updateEmployee = async (id: string, data: any) => {
+  const response = await api.put(`/api/hr/employees/${id}`, data)
+  return response.data
+}
+
+export const terminateEmployee = async (id: string, terminationDate: string) => {
+  const response = await api.post(`/api/hr/employees/${id}/terminate`, { terminationDate })
+  return response.data
+}
+
+export const promoteEmployee = async (id: string, data: { title: string; salaryIncrease: number }) => {
+  const response = await api.patch(`/api/hr/employees/${id}/promote`, data)
   return response.data
 }
 
 export const getDepartments = async () => {
   const response = await api.get('/api/hr/departments')
+  return response.data
+}
+
+export const getDepartment = async (id: string) => {
+  const response = await api.get(`/api/hr/departments/${id}`)
+  return response.data
+}
+
+export const createDepartment = async (data: any) => {
+  const response = await api.post('/api/hr/departments', data)
   return response.data
 }
 

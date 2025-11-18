@@ -310,7 +310,7 @@ Legend:
    npm run dev
    ```
 
-   The backend API will run on **http://localhost:3000**
+   The backend API will run on **http://localhost:3001**
 
 ### Frontend Setup
 

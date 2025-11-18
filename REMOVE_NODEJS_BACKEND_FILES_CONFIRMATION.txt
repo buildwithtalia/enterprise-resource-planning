@@ -1,0 +1,33 @@
+The following files and directories will be deleted as part of removing the old Node.js/Express/TypeScript backend:
+
+Core application files:
+- src/app.ts
+- src/server.ts
+- package.json
+- tsconfig.json
+
+Module directories (all contents):
+- src/modules/human-resources/
+- src/modules/payroll/
+- src/modules/accounting/
+- src/modules/finance/
+- src/modules/billing/
+- src/modules/procurement/
+- src/modules/supply-chain/
+- src/modules/inventory/
+
+Middleware files:
+- src/middleware/auth.ts
+- src/middleware/logger.ts
+- src/middleware/errorHandler.ts
+- src/middleware/validation.ts
+
+Database files:
+- src/database/connection.ts
+- src/database/seed.ts
+- src/database/entities/ (entire directory)
+
+Service files:
+- src/services/mockData.ts
+
+These files and directories will be deleted. Proceeding with deletion next.

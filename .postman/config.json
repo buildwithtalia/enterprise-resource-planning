@@ -5,7 +5,9 @@
   "entities": {
     "collections": [],
     "environments": [],
-    "specs": [],
+    "specs": [
+      "../postman/specifications/Enterprise Resource Planning API.openapi.yaml"
+    ],
     "flows": [],
     "globals": []
   }

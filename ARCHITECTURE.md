@@ -226,16 +226,16 @@ npm start
 
 All modules exposed through single API:
 
-- `http://localhost:3000/api/hr` - Human Resources
-- `http://localhost:3000/api/payroll` - Payroll
-- `http://localhost:3000/api/accounting` - Accounting
-- `http://localhost:3000/api/finance` - Finance
-- `http://localhost:3000/api/billing` - Billing
-- `http://localhost:3000/api/procurement` - Procurement
-- `http://localhost:3000/api/supply-chain` - Supply Chain
-- `http://localhost:3000/api/inventory` - Inventory
+- `http://localhost:3001/api/hr` - Human Resources
+- `http://localhost:3001/api/payroll` - Payroll
+- `http://localhost:3001/api/accounting` - Accounting
+- `http://localhost:3001/api/finance` - Finance
+- `http://localhost:3001/api/billing` - Billing
+- `http://localhost:3001/api/procurement` - Procurement
+- `http://localhost:3001/api/supply-chain` - Supply Chain
+- `http://localhost:3001/api/inventory` - Inventory
 
-**API Documentation:** `http://localhost:3000/api`
+**API Documentation:** `http://localhost:3001/api`
 
 ## Database Schema
 
