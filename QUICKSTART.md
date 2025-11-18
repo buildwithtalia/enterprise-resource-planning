@@ -2,30 +2,30 @@
 
 ## ✅ Server is Running!
 
-Your monolithic ERP application is now running at: **http://localhost:3000**
+Your monolithic ERP application is now running at: **http://localhost:3001**
 
 ## 🎯 Try These Endpoints
 
 ### API Documentation
 Visit this to see all modules and their relationships:
 ```
-http://localhost:3000/api
+http://localhost:3001/api
 ```
 
 ### Health Check
 ```
-http://localhost:3000/health
+http://localhost:3001/health
 ```
 
 ### Available Modules
-- `http://localhost:3000/api/hr` - Human Resources
-- `http://localhost:3000/api/payroll` - Payroll
-- `http://localhost:3000/api/accounting` - Accounting
-- `http://localhost:3000/api/finance` - Finance
-- `http://localhost:3000/api/billing` - Billing
-- `http://localhost:3000/api/procurement` - Procurement
-- `http://localhost:3000/api/supply-chain` - Supply Chain
-- `http://localhost:3000/api/inventory` - Inventory
+- `http://localhost:3001/api/hr` - Human Resources
+- `http://localhost:3001/api/payroll` - Payroll
+- `http://localhost:3001/api/accounting` - Accounting
+- `http://localhost:3001/api/finance` - Finance
+- `http://localhost:3001/api/billing` - Billing
+- `http://localhost:3001/api/procurement` - Procurement
+- `http://localhost:3001/api/supply-chain` - Supply Chain
+- `http://localhost:3001/api/inventory` - Inventory
 
 ## ⚠️ Current Mode: API-ONLY
 
@@ -107,14 +107,14 @@ Read `ARCHITECTURE.md` for detailed explanation of the monolithic design.
 Using curl:
 ```bash
 # Health check
-curl http://localhost:3000/health
+curl http://localhost:3001/health
 
 # API documentation
-curl http://localhost:3000/api
+curl http://localhost:3001/api
 ```
 
 Using your browser:
-- Open http://localhost:3000/api to see the full API structure
+- Open http://localhost:3001/api to see the full API structure
 
 ## 🛑 Stopping the Server
 

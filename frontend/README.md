@@ -38,7 +38,7 @@ The frontend will start on **http://localhost:5173**
 
 ### 3. Make sure the backend is running
 
-The backend API should be running on **http://localhost:3000**
+The backend API should be running on **http://localhost:3001**
 
 ```bash
 # In the parent directory
@@ -116,7 +116,7 @@ The frontend communicates with the backend API through a proxy configured in `vi
 ```typescript
 proxy: {
   '/api': {
-    target: 'http://localhost:3000',
+    target: 'http://localhost:3001',
     changeOrigin: true,
   }
 }
