@@ -39,7 +39,7 @@ servers:
     description: Configurable base URL
     variables:
       baseUrl:
-        default: http://localhost:3000
+        default: http://localhost:3001
         description: Base URL for the API (configure for different environments)
 
 security:
@@ -233,9 +233,19 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Employee'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Employee'
+                  total:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
         '400':
           description: Invalid query parameter
           content:
@@ -1003,34 +1013,28 @@ components:
       type: object
       properties:
         id:
+          type: number
+        employee_id:
           type: string
-        firstName:
+        first_name:
           type: string
-        lastName:
+        last_name:
           type: string
         email:
           type: string
           format: email
-        departmentId:
+        department:
           type: string
         position:
           type: string
         salary:
           type: number
-        hireDate:
+        hire_date:
           type: string
           format: date
-        phoneNumber:
-          type: string
         status:
           type: string
           enum: [active, inactive, on_leave, terminated]
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
 
     EmployeeInput:
       type: object
