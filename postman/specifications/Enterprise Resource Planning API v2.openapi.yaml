@@ -1,0 +1,2405 @@
+openapi: 3.0.0
+info:
+  title: Enterprise Resource Planning API
+  version: 2.0.0
+  description: |
+    # Enterprise Resource Planning API v2.0.0
+    
+    ## Overview
+    
+    The Enterprise Resource Planning (ERP) API is a comprehensive, monolithic application designed to streamline and integrate core business processes across your organization. This RESTful API provides a unified interface for managing critical business operations including human resources, financial management, supply chain operations, and inventory control.
+    
+    ## What's New in v2.0.0
+    
+    - **Consistent camelCase naming** across all schemas and properties
+    - **Standardized response envelopes** for all endpoints
+    - **Universal pagination** on all list endpoints
+    - **Versioned URL paths** (`/api/v2/`)
+    - **Improved error responses** with detailed error codes
+    - **Consistent authentication** across all protected endpoints
+    - **Enhanced status code usage** including rate limiting and server errors
+    
+    ## Main Features & Modules
+    
+    - **Human Resources**: Employee and department management
+    - **Payroll**: Salary processing and tax calculations
+    - **Accounting**: General ledger and financial transactions
+    - **Finance**: Budgeting and financial reporting
+    - **Billing**: Invoicing and customer billing
+    - **Procurement**: Purchase orders and vendor management
+    - **Supply Chain**: Shipments and logistics
+    - **Inventory**: Stock tracking and management
+    
+    ## Authentication
+    
+    All endpoints except health check and API info require Bearer token authentication. Include the token in the Authorization header:
+    
+    ```
+    Authorization: Bearer <your-token>
+    ```
+    
+    **Endpoints NOT requiring authentication:**
+    - `GET /health` - Health check endpoint
+    - `GET /api/v2` - API information endpoint
+    
+  contact:
+    email: api-support@yourcompany.com
+  license:
+    name: Proprietary
+    url: https://yourcompany.com/license
+
+servers:
+  - url: '{baseUrl}/api/v2'
+    description: API v2 base URL
+    variables:
+      baseUrl:
+        default: http://localhost:3001
+        description: Base URL for the API (configure for different environments)
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: System
+    description: System-level endpoints for health checks and API information
+  - name: Human Resources
+    description: Employee and department management
+  - name: Payroll
+    description: Salary processing and tax calculations
+  - name: Accounting
+    description: General ledger and financial transactions
+  - name: Finance
+    description: Budgeting and financial reporting
+  - name: Billing
+    description: Invoicing and customer billing
+  - name: Procurement
+    description: Purchase orders and vendor management
+  - name: Supply Chain
+    description: Shipments and logistics
+  - name: Inventory
+    description: Stock tracking and management
+
+paths:
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health Check
+      description: Performs a health check on the ERP API service to verify that the system is operational and responding to requests.
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /:
+    get:
+      tags:
+        - System
+      summary: API Info
+      description: Retrieves comprehensive information about the ERP API, including version details, system architecture, available modules, and their interdependencies.
+      operationId: getApiInfo
+      security: []
+      responses:
+        '200':
+          description: API information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiInfoResponse'
+
+  /hr/employees:
+    get:
+      tags:
+        - Human Resources
+      summary: Get All Employees
+      description: Retrieves a paginated list of all employees in the HR system with optional filtering by status.
+      operationId: getAllEmployees
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          description: Filter by employee status
+          schema:
+            type: string
+            enum: [active, inactive, onLeave, terminated]
+        - name: departmentId
+          in: query
+          description: Filter by department ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Employees retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Employee'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Human Resources
+      summary: Create Employee
+      description: Creates a new employee record in the HR system.
+      operationId: createEmployee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeInput'
+      responses:
+        '201':
+          description: Employee created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /hr/employees/{id}:
+    get:
+      tags:
+        - Human Resources
+      summary: Get Employee by ID
+      description: Retrieves detailed information about a specific employee by their unique employee ID.
+      operationId: getEmployeeById
+      parameters:
+        - $ref: '#/components/parameters/EmployeeId'
+      responses:
+        '200':
+          description: Employee retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Human Resources
+      summary: Update Employee
+      description: Updates an existing employee's information in the HR system.
+      operationId: updateEmployee
+      parameters:
+        - $ref: '#/components/parameters/EmployeeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeUpdate'
+      responses:
+        '200':
+          description: Employee updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Human Resources
+      summary: Delete Employee
+      description: Deletes an employee record from the HR system.
+      operationId: deleteEmployee
+      parameters:
+        - $ref: '#/components/parameters/EmployeeId'
+      responses:
+        '204':
+          description: Employee deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /hr/employees/{id}/promote:
+    post:
+      tags:
+        - Human Resources
+      summary: Promote Employee
+      description: Promotes an employee to a new position with an updated job title and salary increase.
+      operationId: promoteEmployee
+      parameters:
+        - $ref: '#/components/parameters/EmployeeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeePromotionInput'
+      responses:
+        '200':
+          description: Employee promoted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /hr/employees/{id}/terminate:
+    post:
+      tags:
+        - Human Resources
+      summary: Terminate Employee
+      description: Terminates an employee's employment in the HR system.
+      operationId: terminateEmployee
+      parameters:
+        - $ref: '#/components/parameters/EmployeeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeTerminationInput'
+      responses:
+        '200':
+          description: Employee terminated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /hr/departments:
+    get:
+      tags:
+        - Human Resources
+      summary: Get All Departments
+      description: Retrieves a paginated list of all departments in the organization.
+      operationId: getAllDepartments
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Departments retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Department'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Human Resources
+      summary: Create Department
+      description: Creates a new department in the HR system.
+      operationId: createDepartment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentInput'
+      responses:
+        '201':
+          description: Department created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Department'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /hr/departments/{id}:
+    get:
+      tags:
+        - Human Resources
+      summary: Get Department by ID
+      description: Retrieves detailed information about a specific department by its unique identifier.
+      operationId: getDepartmentById
+      parameters:
+        - $ref: '#/components/parameters/DepartmentId'
+      responses:
+        '200':
+          description: Department retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Department'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payroll/records:
+    get:
+      tags:
+        - Payroll
+      summary: Get All Payroll Records
+      description: Retrieves a paginated list of all payroll records with optional filtering.
+      operationId: getAllPayrollRecords
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          description: Filter by payroll status
+          schema:
+            type: string
+            enum: [pending, approved, paid]
+        - name: employeeId
+          in: query
+          description: Filter by employee ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payroll records retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PayrollRecord'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payroll/records/{id}:
+    get:
+      tags:
+        - Payroll
+      summary: Get Payroll Record by ID
+      description: Retrieves a specific payroll record by its unique identifier.
+      operationId: getPayrollRecordById
+      parameters:
+        - $ref: '#/components/parameters/PayrollId'
+      responses:
+        '200':
+          description: Payroll record retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PayrollRecord'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payroll/process:
+    post:
+      tags:
+        - Payroll
+      summary: Process Payroll
+      description: Processes payroll for a single employee for a specified pay period.
+      operationId: processPayroll
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayrollInput'
+      responses:
+        '201':
+          description: Payroll processed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PayrollRecord'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payroll/batch-process:
+    post:
+      tags:
+        - Payroll
+      summary: Process Batch Payroll
+      description: Processes payroll for multiple employees in the organization for a specified pay period.
+      operationId: processBatchPayroll
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchPayrollInput'
+      responses:
+        '202':
+          description: Batch payroll processing initiated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/BatchPayrollResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payroll/records/{id}/approve:
+    post:
+      tags:
+        - Payroll
+      summary: Approve Payroll
+      description: Approves a pending payroll record, marking it ready for payment disbursement.
+      operationId: approvePayroll
+      parameters:
+        - $ref: '#/components/parameters/PayrollId'
+      responses:
+        '200':
+          description: Payroll approved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PayrollRecord'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /billing/customers:
+    get:
+      tags:
+        - Billing
+      summary: Get All Customers
+      description: Retrieves a paginated list of all customers in the billing system with optional filtering.
+      operationId: getAllCustomers
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          description: Filter by customer status
+          schema:
+            type: string
+            enum: [active, inactive, suspended]
+      responses:
+        '200':
+          description: Customers retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Customer'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Billing
+      summary: Create Customer
+      description: Creates a new customer record in the billing system.
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerInput'
+      responses:
+        '201':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /billing/invoices:
+    get:
+      tags:
+        - Billing
+      summary: Get All Invoices
+      description: Retrieves a paginated list of all invoices with optional filters.
+      operationId: getAllInvoices
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          description: Filter by invoice status
+          schema:
+            type: string
+            enum: [draft, pending, paid, overdue, cancelled]
+        - name: customerId
+          in: query
+          description: Filter by customer ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoices retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Invoice'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Billing
+      summary: Create Invoice
+      description: Creates a new invoice for a customer.
+      operationId: createInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceInput'
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Invoice'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /procurement/vendors:
+    get:
+      tags:
+        - Procurement
+      summary: Get All Vendors
+      description: Retrieves a paginated list of all vendor records in the procurement system.
+      operationId: getAllVendors
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          description: Filter by vendor status
+          schema:
+            type: string
+            enum: [active, inactive, suspended]
+      responses:
+        '200':
+          description: Vendors retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Vendor'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Procurement
+      summary: Create Vendor
+      description: Creates a new vendor record in the procurement system.
+      operationId: createVendor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorInput'
+      responses:
+        '201':
+          description: Vendor created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Vendor'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /procurement/purchase-orders:
+    get:
+      tags:
+        - Procurement
+      summary: Get All Purchase Orders
+      description: Retrieves a paginated list of all purchase orders in the procurement system.
+      operationId: getAllPurchaseOrders
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          description: Filter by purchase order status
+          schema:
+            type: string
+            enum: [draft, pendingApproval, approved, placed, received, cancelled]
+      responses:
+        '200':
+          description: Purchase orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PurchaseOrder'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Procurement
+      summary: Create Purchase Order
+      description: Creates a new purchase order for ordering goods or services from a vendor.
+      operationId: createPurchaseOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrderInput'
+      responses:
+        '201':
+          description: Purchase order created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PurchaseOrder'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /supply-chain/shipments:
+    get:
+      tags:
+        - Supply Chain
+      summary: Get All Shipments
+      description: Retrieves a paginated list of all shipments in the system with optional filtering.
+      operationId: getAllShipments
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          description: Filter by shipment status
+          schema:
+            type: string
+            enum: [pending, dispatched, inTransit, delivered, cancelled]
+        - name: carrier
+          in: query
+          description: Filter by carrier name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipments retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Shipment'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Supply Chain
+      summary: Create Shipment
+      description: Creates a new shipment record for tracking goods in transit.
+      operationId: createShipment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShipmentInput'
+      responses:
+        '201':
+          description: Shipment created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Shipment'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inventory/items:
+    get:
+      tags:
+        - Inventory
+      summary: Get All Inventory Items
+      description: Retrieves a paginated list of all inventory items with optional filters.
+      operationId: getAllInventoryItems
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: category
+          in: query
+          description: Filter by category
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [active, discontinued, outOfStock]
+        - name: lowStock
+          in: query
+          description: Filter for low stock items
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Inventory items retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/InventoryItem'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Inventory
+      summary: Create Inventory Item
+      description: Creates a new inventory item.
+      operationId: createInventoryItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItemInput'
+      responses:
+        '201':
+          description: Inventory item created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InventoryItem'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token-based authentication. Include the token in the Authorization header as "Bearer <token>".
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number for pagination (1-indexed)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    
+    LimitParam:
+      name: limit
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    
+    EmployeeId:
+      name: id
+      in: path
+      required: true
+      description: Unique employee identifier
+      schema:
+        type: string
+    
+    DepartmentId:
+      name: id
+      in: path
+      required: true
+      description: Unique department identifier
+      schema:
+        type: string
+    
+    PayrollId:
+      name: id
+      in: path
+      required: true
+      description: Unique payroll record identifier
+      schema:
+        type: string
+
+  responses:
+    BadRequestError:
+      description: Invalid request parameters or body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "INVALID_REQUEST"
+              message: "Invalid request parameters"
+              details: "The 'email' field must be a valid email address"
+            timestamp: "2024-01-15T10:30:00Z"
+    
+    UnauthorizedError:
+      description: Authentication required or authentication failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "UNAUTHORIZED"
+              message: "Authentication required"
+              details: "Valid Bearer token must be provided in Authorization header"
+            timestamp: "2024-01-15T10:30:00Z"
+    
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "NOT_FOUND"
+              message: "Resource not found"
+              details: "Employee with ID '12345' does not exist"
+            timestamp: "2024-01-15T10:30:00Z"
+    
+    ConflictError:
+      description: Resource conflict (e.g., duplicate entry)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "CONFLICT"
+              message: "Resource already exists"
+              details: "Employee with email 'john.doe@example.com' already exists"
+            timestamp: "2024-01-15T10:30:00Z"
+    
+    RateLimitError:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "RATE_LIMIT_EXCEEDED"
+              message: "Too many requests"
+              details: "Rate limit of 100 requests per minute exceeded. Please try again later."
+            timestamp: "2024-01-15T10:30:00Z"
+    
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "INTERNAL_ERROR"
+              message: "An internal server error occurred"
+              details: "Please contact support if the problem persists"
+            timestamp: "2024-01-15T10:30:00Z"
+
+  schemas:
+    SuccessResponse:
+      type: object
+      required:
+        - success
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              example: "INVALID_REQUEST"
+            message:
+              type: string
+              example: "Invalid request parameters"
+            details:
+              type: string
+              example: "The 'email' field must be a valid email address"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    PaginationMeta:
+      type: object
+      required:
+        - page
+        - limit
+        - totalPages
+        - totalItems
+      properties:
+        page:
+          type: integer
+          description: Current page number (1-indexed)
+          example: 1
+        limit:
+          type: integer
+          description: Number of items per page
+          example: 20
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 5
+        totalItems:
+          type: integer
+          description: Total number of items across all pages
+          example: 95
+        hasNextPage:
+          type: boolean
+          description: Whether there is a next page
+          example: true
+        hasPreviousPage:
+          type: boolean
+          description: Whether there is a previous page
+          example: false
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - version
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        uptime:
+          type: number
+          description: Service uptime in seconds
+          example: 86400
+        version:
+          type: string
+          example: "2.0.0"
+
+    ApiInfoResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Enterprise Resource Planning API"
+        version:
+          type: string
+          example: "2.0.0"
+        description:
+          type: string
+        architecture:
+          type: string
+          example: "monolithic"
+        modules:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              path:
+                type: string
+              description:
+                type: string
+              endpoints:
+                type: number
+        documentation:
+          type: string
+          format: uri
+
+    Employee:
+      type: object
+      required:
+        - id
+        - employeeId
+        - firstName
+        - lastName
+        - email
+        - department
+        - position
+        - salary
+        - hireDate
+        - status
+      properties:
+        id:
+          type: string
+          description: Internal database ID
+          example: "emp_1234567890"
+        employeeId:
+          type: string
+          description: Human-readable employee ID
+          example: "EMP-2024-001"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        department:
+          type: string
+          example: "Engineering"
+        departmentId:
+          type: string
+          example: "dept_engineering"
+        position:
+          type: string
+          example: "Senior Software Engineer"
+        salary:
+          type: number
+          format: double
+          example: 95000.00
+        hireDate:
+          type: string
+          format: date
+          example: "2024-01-15"
+        status:
+          type: string
+          enum: [active, inactive, onLeave, terminated]
+          example: "active"
+        phoneNumber:
+          type: string
+          example: "+1-555-0123"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    EmployeeInput:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - departmentId
+        - position
+        - salary
+        - hireDate
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          example: "John"
+        lastName:
+          type: string
+          minLength: 1
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        departmentId:
+          type: string
+          example: "dept_engineering"
+        position:
+          type: string
+          example: "Senior Software Engineer"
+        salary:
+          type: number
+          format: double
+          minimum: 0
+          example: 95000.00
+        hireDate:
+          type: string
+          format: date
+          example: "2024-01-15"
+        phoneNumber:
+          type: string
+          example: "+1-555-0123"
+
+    EmployeeUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        position:
+          type: string
+        salary:
+          type: number
+          format: double
+          minimum: 0
+        departmentId:
+          type: string
+        phoneNumber:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, onLeave, terminated]
+
+    EmployeePromotionInput:
+      type: object
+      required:
+        - title
+        - salaryIncrease
+      properties:
+        title:
+          type: string
+          description: The new job title/position
+          example: "Lead Software Engineer"
+        salaryIncrease:
+          type: number
+          format: double
+          description: The amount to increase the salary by
+          minimum: 0
+          example: 10000.00
+        effectiveDate:
+          type: string
+          format: date
+          example: "2024-02-01"
+        notes:
+          type: string
+          example: "Promotion due to exceptional performance"
+
+    EmployeeTerminationInput:
+      type: object
+      required:
+        - terminationDate
+      properties:
+        terminationDate:
+          type: string
+          format: date
+          example: "2024-12-31"
+        reason:
+          type: string
+          example: "Voluntary resignation"
+        notes:
+          type: string
+          example: "Employee accepted position at another company"
+
+    Department:
+      type: object
+      required:
+        - id
+        - name
+        - code
+      properties:
+        id:
+          type: string
+          example: "dept_engineering"
+        name:
+          type: string
+          example: "Engineering"
+        code:
+          type: string
+          example: "ENG"
+        managerId:
+          type: string
+          example: "emp_1234567890"
+        managerName:
+          type: string
+          example: "Jane Smith"
+        budget:
+          type: number
+          format: double
+          example: 1500000.00
+        description:
+          type: string
+          example: "Software development and engineering team"
+        location:
+          type: string
+          example: "Building A, Floor 3"
+        employeeCount:
+          type: integer
+          example: 25
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    DepartmentInput:
+      type: object
+      required:
+        - name
+        - code
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: "Engineering"
+        code:
+          type: string
+          minLength: 1
+          example: "ENG"
+        managerId:
+          type: string
+          example: "emp_1234567890"
+        budget:
+          type: number
+          format: double
+          minimum: 0
+          example: 1500000.00
+        description:
+          type: string
+          example: "Software development and engineering team"
+        location:
+          type: string
+          example: "Building A, Floor 3"
+
+    PayrollRecord:
+      type: object
+      required:
+        - id
+        - employeeId
+        - payPeriodStart
+        - payPeriodEnd
+        - grossPay
+        - netPay
+        - status
+      properties:
+        id:
+          type: string
+          example: "pay_1234567890"
+        employeeId:
+          type: string
+          example: "emp_1234567890"
+        employeeName:
+          type: string
+          example: "John Doe"
+        payPeriodStart:
+          type: string
+          format: date
+          example: "2024-01-01"
+        payPeriodEnd:
+          type: string
+          format: date
+          example: "2024-01-15"
+        grossPay:
+          type: number
+          format: double
+          example: 4000.00
+        deductions:
+          type: number
+          format: double
+          example: 500.00
+        taxWithheld:
+          type: number
+          format: double
+          example: 800.00
+        netPay:
+          type: number
+          format: double
+          example: 2700.00
+        bonus:
+          type: number
+          format: double
+          example: 0.00
+        overtime:
+          type: number
+          format: double
+          example: 0.00
+        status:
+          type: string
+          enum: [pending, approved, paid]
+          example: "pending"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    PayrollInput:
+      type: object
+      required:
+        - employeeId
+        - payPeriodStart
+        - payPeriodEnd
+      properties:
+        employeeId:
+          type: string
+          example: "emp_1234567890"
+        payPeriodStart:
+          type: string
+          format: date
+          example: "2024-01-01"
+        payPeriodEnd:
+          type: string
+          format: date
+          example: "2024-01-15"
+        deductions:
+          type: number
+          format: double
+          minimum: 0
+          example: 500.00
+        bonus:
+          type: number
+          format: double
+          minimum: 0
+          example: 0.00
+        overtime:
+          type: number
+          format: double
+          minimum: 0
+          example: 0.00
+
+    BatchPayrollInput:
+      type: object
+      required:
+        - payPeriodStart
+        - payPeriodEnd
+      properties:
+        payPeriodStart:
+          type: string
+          format: date
+          example: "2024-01-01"
+        payPeriodEnd:
+          type: string
+          format: date
+          example: "2024-01-15"
+        departmentId:
+          type: string
+          example: "dept_engineering"
+        excludeEmployees:
+          type: array
+          items:
+            type: string
+          example: ["emp_1234567890"]
+
+    BatchPayrollResponse:
+      type: object
+      properties:
+        batchId:
+          type: string
+          example: "batch_1234567890"
+        status:
+          type: string
+          enum: [processing, completed, failed]
+          example: "processing"
+        totalEmployees:
+          type: integer
+          example: 50
+        processedCount:
+          type: integer
+          example: 0
+        estimatedCompletionTime:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:35:00Z"
+
+    Customer:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - status
+      properties:
+        id:
+          type: string
+          example: "cust_1234567890"
+        name:
+          type: string
+          example: "Acme Corporation"
+        email:
+          type: string
+          format: email
+          example: "billing@acme.com"
+        phone:
+          type: string
+          example: "+1-555-0199"
+        address:
+          type: string
+          example: "123 Business St, Suite 100, New York, NY 10001"
+        creditLimit:
+          type: number
+          format: double
+          example: 50000.00
+        currentBalance:
+          type: number
+          format: double
+          example: 12500.00
+        paymentTerms:
+          type: string
+          example: "Net 30"
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+          example: "active"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    CustomerInput:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+        - address
+        - creditLimit
+        - paymentTerms
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: "Acme Corporation"
+        email:
+          type: string
+          format: email
+          example: "billing@acme.com"
+        phone:
+          type: string
+          example: "+1-555-0199"
+        address:
+          type: string
+          example: "123 Business St, Suite 100, New York, NY 10001"
+        creditLimit:
+          type: number
+          format: double
+          minimum: 0
+          example: 50000.00
+        paymentTerms:
+          type: string
+          example: "Net 30"
+
+    Invoice:
+      type: object
+      required:
+        - id
+        - invoiceNumber
+        - customerId
+        - issueDate
+        - dueDate
+        - totalAmount
+        - status
+      properties:
+        id:
+          type: string
+          example: "inv_1234567890"
+        invoiceNumber:
+          type: string
+          example: "INV-2024-001"
+        customerId:
+          type: string
+          example: "cust_1234567890"
+        customerName:
+          type: string
+          example: "Acme Corporation"
+        issueDate:
+          type: string
+          format: date
+          example: "2024-01-15"
+        dueDate:
+          type: string
+          format: date
+          example: "2024-02-14"
+        subtotal:
+          type: number
+          format: double
+          example: 10000.00
+        taxAmount:
+          type: number
+          format: double
+          example: 800.00
+        totalAmount:
+          type: number
+          format: double
+          example: 10800.00
+        paidAmount:
+          type: number
+          format: double
+          example: 0.00
+        balanceDue:
+          type: number
+          format: double
+          example: 10800.00
+        status:
+          type: string
+          enum: [draft, pending, paid, overdue, cancelled]
+          example: "pending"
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    InvoiceItem:
+      type: object
+      required:
+        - description
+        - quantity
+        - unitPrice
+        - amount
+      properties:
+        description:
+          type: string
+          example: "Professional Services - January 2024"
+        quantity:
+          type: number
+          format: double
+          example: 40
+        unitPrice:
+          type: number
+          format: double
+          example: 250.00
+        amount:
+          type: number
+          format: double
+          example: 10000.00
+
+    InvoiceInput:
+      type: object
+      required:
+        - customerId
+        - invoiceDate
+        - dueDate
+        - items
+        - subtotal
+        - tax
+        - total
+      properties:
+        customerId:
+          type: string
+          example: "cust_1234567890"
+        invoiceDate:
+          type: string
+          format: date
+          example: "2024-01-15"
+        dueDate:
+          type: string
+          format: date
+          example: "2024-02-14"
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+        subtotal:
+          type: number
+          format: double
+          minimum: 0
+          example: 10000.00
+        tax:
+          type: number
+          format: double
+          minimum: 0
+          example: 800.00
+        total:
+          type: number
+          format: double
+          minimum: 0
+          example: 10800.00
+
+    Vendor:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - status
+      properties:
+        id:
+          type: string
+          example: "vend_1234567890"
+        name:
+          type: string
+          example: "Office Supplies Inc"
+        email:
+          type: string
+          format: email
+          example: "sales@officesupplies.com"
+        phone:
+          type: string
+          example: "+1-555-0188"
+        address:
+          type: string
+          example: "456 Vendor Ave, Chicago, IL 60601"
+        paymentTerms:
+          type: string
+          example: "Net 45"
+        category:
+          type: string
+          example: "Office Supplies"
+        rating:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 5
+          example: 4.5
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+          example: "active"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    VendorInput:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+        - address
+        - paymentTerms
+        - category
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: "Office Supplies Inc"
+        email:
+          type: string
+          format: email
+          example: "sales@officesupplies.com"
+        phone:
+          type: string
+          example: "+1-555-0188"
+        address:
+          type: string
+          example: "456 Vendor Ave, Chicago, IL 60601"
+        paymentTerms:
+          type: string
+          example: "Net 45"
+        category:
+          type: string
+          example: "Office Supplies"
+
+    PurchaseOrder:
+      type: object
+      required:
+        - id
+        - poNumber
+        - vendorId
+        - orderDate
+        - status
+      properties:
+        id:
+          type: string
+          example: "po_1234567890"
+        poNumber:
+          type: string
+          example: "PO-2024-001"
+        vendorId:
+          type: string
+          example: "vend_1234567890"
+        vendorName:
+          type: string
+          example: "Office Supplies Inc"
+        orderDate:
+          type: string
+          format: date
+          example: "2024-01-15"
+        expectedDeliveryDate:
+          type: string
+          format: date
+          example: "2024-01-30"
+        actualDeliveryDate:
+          type: string
+          format: date
+          example: "2024-01-28"
+        status:
+          type: string
+          enum: [draft, pendingApproval, approved, placed, received, cancelled]
+          example: "approved"
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseOrderItem'
+        subtotal:
+          type: number
+          format: double
+          example: 5000.00
+        tax:
+          type: number
+          format: double
+          example: 400.00
+        total:
+          type: number
+          format: double
+          example: 5400.00
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    PurchaseOrderItem:
+      type: object
+      required:
+        - itemId
+        - description
+        - quantity
+        - unitPrice
+        - amount
+      properties:
+        itemId:
+          type: string
+          example: "item_1234567890"
+        description:
+          type: string
+          example: "Ergonomic Office Chair"
+        quantity:
+          type: number
+          format: double
+          example: 10
+        unitPrice:
+          type: number
+          format: double
+          example: 500.00
+        amount:
+          type: number
+          format: double
+          example: 5000.00
+
+    PurchaseOrderInput:
+      type: object
+      required:
+        - vendorId
+        - orderDate
+        - expectedDeliveryDate
+        - items
+        - subtotal
+        - tax
+        - total
+      properties:
+        vendorId:
+          type: string
+          example: "vend_1234567890"
+        orderDate:
+          type: string
+          format: date
+          example: "2024-01-15"
+        expectedDeliveryDate:
+          type: string
+          format: date
+          example: "2024-01-30"
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PurchaseOrderItem'
+        subtotal:
+          type: number
+          format: double
+          minimum: 0
+          example: 5000.00
+        tax:
+          type: number
+          format: double
+          minimum: 0
+          example: 400.00
+        total:
+          type: number
+          format: double
+          minimum: 0
+          example: 5400.00
+
+    Shipment:
+      type: object
+      required:
+        - shipmentId
+        - orderId
+        - trackingNumber
+        - carrier
+        - status
+      properties:
+        shipmentId:
+          type: string
+          example: "ship_1234567890"
+        orderId:
+          type: string
+          example: "po_1234567890"
+        trackingNumber:
+          type: string
+          example: "1Z999AA10123456784"
+        carrier:
+          type: string
+          example: "UPS"
+        status:
+          type: string
+          enum: [pending, dispatched, inTransit, delivered, cancelled]
+          example: "inTransit"
+        origin:
+          type: string
+          example: "Chicago, IL"
+        destination:
+          type: string
+          example: "New York, NY"
+        estimatedDeliveryDate:
+          type: string
+          format: date
+          example: "2024-01-30"
+        actualDeliveryDate:
+          type: string
+          format: date
+          example: "2024-01-28"
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentItem'
+        totalWeight:
+          type: number
+          format: double
+          description: Weight in pounds
+          example: 150.5
+        shippingCost:
+          type: number
+          format: double
+          example: 125.00
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    ShipmentItem:
+      type: object
+      required:
+        - itemId
+        - quantity
+      properties:
+        itemId:
+          type: string
+          example: "item_1234567890"
+        description:
+          type: string
+          example: "Ergonomic Office Chair"
+        quantity:
+          type: number
+          format: double
+          example: 10
+
+    ShipmentInput:
+      type: object
+      required:
+        - orderId
+        - carrier
+        - trackingNumber
+        - origin
+        - destination
+        - estimatedDeliveryDate
+        - items
+      properties:
+        orderId:
+          type: string
+          example: "po_1234567890"
+        carrier:
+          type: string
+          example: "UPS"
+        trackingNumber:
+          type: string
+          example: "1Z999AA10123456784"
+        origin:
+          type: string
+          example: "Chicago, IL"
+        destination:
+          type: string
+          example: "New York, NY"
+        estimatedDeliveryDate:
+          type: string
+          format: date
+          example: "2024-01-30"
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ShipmentItem'
+        totalWeight:
+          type: number
+          format: double
+          minimum: 0
+          example: 150.5
+        shippingCost:
+          type: number
+          format: double
+          minimum: 0
+          example: 125.00
+
+    InventoryItem:
+      type: object
+      required:
+        - id
+        - sku
+        - name
+        - category
+        - quantity
+        - status
+      properties:
+        id:
+          type: string
+          example: "item_1234567890"
+        sku:
+          type: string
+          example: "SKU-CHAIR-001"
+        name:
+          type: string
+          example: "Ergonomic Office Chair"
+        description:
+          type: string
+          example: "High-back ergonomic office chair with lumbar support"
+        category:
+          type: string
+          example: "Office Furniture"
+        quantity:
+          type: number
+          format: double
+          example: 50
+        reservedQuantity:
+          type: number
+          format: double
+          example: 10
+        availableQuantity:
+          type: number
+          format: double
+          example: 40
+        unitPrice:
+          type: number
+          format: double
+          example: 500.00
+        reorderPoint:
+          type: number
+          format: double
+          example: 10
+        reorderQuantity:
+          type: number
+          format: double
+          example: 25
+        location:
+          type: string
+          example: "Warehouse A, Aisle 3, Shelf B"
+        status:
+          type: string
+          enum: [active, discontinued, outOfStock]
+          example: "active"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    InventoryItemInput:
+      type: object
+      required:
+        - sku
+        - name
+        - category
+        - quantity
+        - unitPrice
+        - reorderPoint
+        - reorderQuantity
+      properties:
+        sku:
+          type: string
+          minLength: 1
+          example: "SKU-CHAIR-001"
+        name:
+          type: string
+          minLength: 1
+          example: "Ergonomic Office Chair"
+        description:
+          type: string
+          example: "High-back ergonomic office chair with lumbar support"
+        category:
+          type: string
+          example: "Office Furniture"
+        quantity:
+          type: number
+          format: double
+          minimum: 0
+          example: 50
+        reservedQuantity:
+          type: number
+          format: double
+          minimum: 0
+          example: 0
+        unitPrice:
+          type: number
+          format: double
+          minimum: 0
+          example: 500.00
+        reorderPoint:
+          type: number
+          format: double
+          minimum: 0
+          example: 10
+        reorderQuantity:
+          type: number
+          format: double
+          minimum: 0
+          example: 25
+        location:
+          type: string
+          example: "Warehouse A, Aisle 3, Shelf B"

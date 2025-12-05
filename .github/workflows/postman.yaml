@@ -19,7 +19,7 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Install Postman CLI
-        run: curl -o- "https://dl-cli.pstmn.io/install/canary/unix.sh" | sh
+        run: curl -o- "https://dl-cli.pstmn.io/install/unix.sh" | sh
 
       - name: Verify Postman CLI version
         run: postman --version
