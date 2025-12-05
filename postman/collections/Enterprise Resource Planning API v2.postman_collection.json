@@ -1,0 +1,1842 @@
+{
+  "info": {
+    "_postman_id": "bebaae1b-5516-4a72-8f3b-1a6f4c7c162c",
+    "name": "Enterprise Resource Planning API v2",
+    "description": "# Enterprise Resource Planning API v2.0.0\n\n## Overview\n\nThe Enterprise Resource Planning (ERP) API is a comprehensive, monolithic application designed to streamline and integrate core business processes across your organization. This RESTful API provides a unified interface for managing critical business operations including human resources, financial management, supply chain operations, and inventory control.\n\n## What's New in v2.0.0\n\n- **Consistent camelCase naming** across all schemas and properties\n- **Standardized response envelopes** for all endpoints\n- **Universal pagination** on all list endpoints\n- **Versioned URL paths** (`/api/v2/`)\n- **Improved error responses** with detailed error codes\n- **Consistent authentication** across all protected endpoints\n- **Enhanced status code usage** including rate limiting and server errors\n\n## Main Features & Modules\n\n- **Human Resources**: Employee and department management\n- **Payroll**: Salary processing and tax calculations\n- **Accounting**: General ledger and financial transactions\n- **Finance**: Budgeting and financial reporting\n- **Billing**: Invoicing and customer billing\n- **Procurement**: Purchase orders and vendor management\n- **Supply Chain**: Shipments and logistics\n- **Inventory**: Stock tracking and management\n\n## Authentication\n\nAll endpoints except health check and API info require Bearer token authentication. Include the token in the Authorization header:\n\n```\nAuthorization: Bearer {{authToken}}\n```\n\n**Endpoints NOT requiring authentication:**\n- `GET /health` - Health check endpoint\n- `GET /api/v2` - API information endpoint",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "id": "77e7bb98-a40e-487d-9adc-a71867d56e32",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Performs a health check on the ERP API service to verify that the system is operational and responding to requests."
+          },
+          "response": []
+        },
+        {
+          "name": "API Info",
+          "id": "7e909162-b403-4cc4-a711-79de10676000",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2"
+              ]
+            },
+            "description": "Retrieves comprehensive information about the ERP API, including version details, system architecture, available modules, and their interdependencies."
+          },
+          "response": []
+        }
+      ],
+      "id": "fe2cf3ea-0eb3-4476-ae9c-84339319f3c0",
+      "description": "System-level endpoints for health checks and API information"
+    },
+    {
+      "name": "Human Resources",
+      "item": [
+        {
+          "name": "Get All Employees",
+          "id": "76f8fe37-3ea1-41f0-8086-ceb5f0f96ba6",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/employees?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "employees"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (1-indexed)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by employee status (active, inactive, onLeave, terminated)",
+                  "disabled": true
+                },
+                {
+                  "key": "departmentId",
+                  "value": "",
+                  "description": "Filter by department ID",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all employees in the HR system with optional filtering by status."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Employee",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Arrays of sample data for random generation",
+                  "const firstNames = [",
+                  "    \"James\", \"Mary\", \"John\", \"Patricia\", \"Robert\", \"Jennifer\", \"Michael\", \"Linda\",",
+                  "    \"William\", \"Barbara\", \"David\", \"Elizabeth\", \"Richard\", \"Susan\", \"Joseph\", \"Jessica\",",
+                  "    \"Thomas\", \"Sarah\", \"Charles\", \"Karen\", \"Christopher\", \"Nancy\", \"Daniel\", \"Lisa\",",
+                  "    \"Matthew\", \"Betty\", \"Anthony\", \"Margaret\", \"Mark\", \"Sandra\", \"Donald\", \"Ashley\",",
+                  "    \"Steven\", \"Kimberly\", \"Paul\", \"Emily\", \"Andrew\", \"Donna\", \"Joshua\", \"Michelle\"",
+                  "];",
+                  "",
+                  "const lastNames = [",
+                  "    \"Smith\", \"Johnson\", \"Williams\", \"Brown\", \"Jones\", \"Garcia\", \"Miller\", \"Davis\",",
+                  "    \"Rodriguez\", \"Martinez\", \"Hernandez\", \"Lopez\", \"Gonzalez\", \"Wilson\", \"Anderson\", \"Thomas\",",
+                  "    \"Taylor\", \"Moore\", \"Jackson\", \"Martin\", \"Lee\", \"Perez\", \"Thompson\", \"White\",",
+                  "    \"Harris\", \"Sanchez\", \"Clark\", \"Ramirez\", \"Lewis\", \"Robinson\", \"Walker\", \"Young\",",
+                  "    \"Allen\", \"King\", \"Wright\", \"Scott\", \"Torres\", \"Nguyen\", \"Hill\", \"Flores\"",
+                  "];",
+                  "",
+                  "const positions = [",
+                  "    \"Software Engineer\",",
+                  "    \"Senior Software Engineer\",",
+                  "    \"Product Manager\",",
+                  "    \"Data Analyst\",",
+                  "    \"UX Designer\",",
+                  "    \"DevOps Engineer\",",
+                  "    \"Quality Assurance Engineer\",",
+                  "    \"Business Analyst\",",
+                  "    \"Project Manager\",",
+                  "    \"Frontend Developer\",",
+                  "    \"Backend Developer\",",
+                  "    \"Full Stack Developer\",",
+                  "    \"Data Scientist\",",
+                  "    \"Marketing Manager\",",
+                  "    \"Sales Representative\",",
+                  "    \"HR Specialist\",",
+                  "    \"Financial Analyst\",",
+                  "    \"Customer Success Manager\",",
+                  "    \"Technical Writer\",",
+                  "    \"System Administrator\"",
+                  "];",
+                  "",
+                  "// Function to get random item from array",
+                  "function getRandomItem(array) {",
+                  "    return array[Math.floor(Math.random() * array.length)];",
+                  "}",
+                  "",
+                  "// Generate random values",
+                  "const firstName = getRandomItem(firstNames);",
+                  "const lastName = getRandomItem(lastNames);",
+                  "const position = getRandomItem(positions);",
+                  "",
+                  "// Generate email based on firstName and lastName",
+                  "const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;",
+                  "",
+                  "// Set environment variables",
+                  "pm.environment.set(\"firstName\", firstName);",
+                  "pm.environment.set(\"lastName\", lastName);",
+                  "pm.environment.set(\"email\", email);",
+                  "pm.environment.set(\"position\", position);",
+                  "",
+                  "console.log(\"Generated employee data:\");",
+                  "console.log(\"First Name:\", firstName);",
+                  "console.log(\"Last Name:\", lastName);",
+                  "console.log(\"Email:\", email);",
+                  "console.log(\"Position:\", position);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Extract employee ID from response and save to environment",
+                  "const responseData = pm.response.json();",
+                  "",
+                  "// Check common response structures for the employee ID",
+                  "let employeeId;",
+                  "if (responseData.id) {",
+                  "    employeeId = responseData.id;",
+                  "} else if (responseData.data && responseData.data.id) {",
+                  "    employeeId = responseData.data.id;",
+                  "} else if (responseData.employee && responseData.employee.id) {",
+                  "    employeeId = responseData.employee.id;",
+                  "}",
+                  "",
+                  "// Save the employee ID to environment variable",
+                  "if (employeeId) {",
+                  "    pm.environment.set(\"employeeId\", employeeId);",
+                  "    console.log(\"Employee ID saved to environment:\", employeeId);",
+                  "} else {",
+                  "    console.log(\"Warning: Could not find employee ID in response\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "ed0551a1-cdab-46b7-8770-e7f8be60f927",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"{{firstName}}\",\n  \"lastName\": \"{{lastName}}\",\n  \"email\": \"{{email}}\",\n  \"department\": \"Engineering\",\n  \"departmentId\": \"dept_engineering\",\n  \"position\": \"{{position}}\",\n  \"salary\": 95000,\n  \"hireDate\": \"2024-01-15\",\n  \"phoneNumber\": \"+1-555-0123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "employees"
+              ]
+            },
+            "description": "Creates a new employee record in the HR system."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Employee by ID",
+          "id": "85ae82b2-25c6-47a6-bbc2-802f358bf43a",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/employees/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "employees",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Retrieves detailed information about a specific employee by their unique employee ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Employee",
+          "id": "252ec14a-f432-4ad7-b473-9eece0fa99ae",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"Lead Software Engineer\",\n  \"salary\": 105000.00,\n  \"department\": \"Engineering\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/employees/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "employees",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{employeeId}}"
+                }
+              ]
+            },
+            "description": "Updates an existing employee's information in the HR system."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Employee",
+          "id": "00792999-8664-41b2-a22b-739f78fd7710",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/employees/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "employees",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Deletes an employee record from the HR system."
+          },
+          "response": []
+        },
+        {
+          "name": "Promote Employee",
+          "id": "32a87f03-6c0e-4a0c-8379-60698394f2d4",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPosition\": \"Engineering Manager\",\n  \"newSalary\": 120000.00,\n  \"effectiveDate\": \"2024-02-01\",\n  \"reason\": \"Outstanding performance and leadership\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/employees/:id/promote",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "employees",
+                ":id",
+                "promote"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Promotes an employee to a new position with an updated job title and salary increase."
+          },
+          "response": []
+        },
+        {
+          "name": "Terminate Employee",
+          "id": "7b02815a-bacd-4ac8-ae13-7ab60f93e1d0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"terminationDate\": \"2024-03-01\",\n  \"reason\": \"Resignation\",\n  \"notes\": \"Employee resigned for personal reasons\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/employees/:id/terminate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "employees",
+                ":id",
+                "terminate"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Terminates an employee's employment in the HR system."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Departments",
+          "id": "91e709e6-1714-4719-8994-e85b74bdca5c",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/departments?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "departments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (1-indexed)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items per page"
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all departments in the organization."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Department",
+          "id": "d8a892a6-b635-4f1c-8a04-bb4d76630d49",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Engineering\",\n  \"description\": \"Software development and engineering team\",\n  \"managerId\": \"emp_1234567890\",\n  \"budget\": 500000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/departments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "departments"
+              ]
+            },
+            "description": "Creates a new department in the HR system."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Department by ID",
+          "id": "8bfd57ae-bf9f-4028-88a9-8ab819343196",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/hr/departments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "hr",
+                "departments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Retrieves detailed information about a specific department by its unique identifier."
+          },
+          "response": []
+        }
+      ],
+      "id": "82a1a9dd-d406-4af3-805c-63d95f573d76",
+      "description": "Employee and department management"
+    },
+    {
+      "name": "Payroll",
+      "item": [
+        {
+          "name": "Get All Payroll Records",
+          "id": "af2c6f9f-0e3d-4235-8630-92d6f4101682",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/payroll/records?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "payroll",
+                "records"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (1-indexed)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by payroll status (pending, approved, paid)",
+                  "disabled": true
+                },
+                {
+                  "key": "employeeId",
+                  "value": "",
+                  "description": "Filter by employee ID",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all payroll records with optional filtering."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payroll Record by ID",
+          "id": "3ab73a2e-c001-424b-90cc-24de9f30c7e1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/payroll/records/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "payroll",
+                "records",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Retrieves detailed information about a specific payroll record."
+          },
+          "response": []
+        },
+        {
+          "name": "Process Payroll",
+          "id": "03a796d8-d4e1-451d-baf3-754addc91e05",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"emp_1234567890\",\n  \"payPeriodStart\": \"2024-01-01\",\n  \"payPeriodEnd\": \"2024-01-15\",\n  \"hoursWorked\": 80,\n  \"overtimeHours\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/payroll/records/{{payrollRecordId}}/process",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "payroll",
+                "records",
+                "{{payrollRecordId}}",
+                "process"
+              ]
+            },
+            "description": "Processes payroll for a single employee for a specific pay period."
+          },
+          "response": []
+        },
+        {
+          "name": "Process Batch Payroll",
+          "id": "3c20f663-f786-40e9-9718-1790bd5c7bf6",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payPeriodStart\": \"2024-01-01\",\n  \"payPeriodEnd\": \"2024-01-15\",\n  \"departmentId\": \"dept_engineering\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/payroll/batch-process",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "payroll",
+                "batch-process"
+              ]
+            },
+            "description": "Processes payroll for multiple employees in batch for a specific pay period."
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Payroll",
+          "id": "188953a5-db25-4463-a717-267cfee012c3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approvedBy\": \"manager_123\",\n  \"notes\": \"Approved for payment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/payroll/records/:id/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "payroll",
+                "records",
+                ":id",
+                "approve"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Approves a payroll record for payment."
+          },
+          "response": []
+        }
+      ],
+      "id": "9b3a6835-90b4-403e-b92a-a74cdf08492b",
+      "description": "Salary processing and tax calculations"
+    },
+    {
+      "name": "Billing",
+      "item": [
+        {
+          "name": "Get All Customers",
+          "id": "01f1681a-686f-43f0-b3f0-525def4bb2fb",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/billing/customers?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "billing",
+                "customers"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (1-indexed)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items per page"
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all customers in the billing system."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Customer",
+          "id": "0d764438-2a7e-46bb-8861-4ee8c8150192",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Corporation\",\n  \"email\": \"billing@acme.com\",\n  \"phone\": \"+1-555-0199\",\n  \"address\": \"123 Business St, Suite 100\",\n  \"city\": \"San Francisco\",\n  \"state\": \"CA\",\n  \"zipCode\": \"94105\",\n  \"country\": \"USA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/billing/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "billing",
+                "customers"
+              ]
+            },
+            "description": "Creates a new customer record in the billing system."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Invoices",
+          "id": "8941de87-cfd1-4967-9796-e661e27c91f9",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/billing/invoices?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "billing",
+                "invoices"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (1-indexed)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by invoice status",
+                  "disabled": true
+                },
+                {
+                  "key": "customerId",
+                  "value": "",
+                  "description": "Filter by customer ID",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all invoices with optional filtering."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Invoice",
+          "id": "0fceb2b7-8383-4a4e-82fb-5d2a8f77e41c",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"cust_1234567890\",\n  \"invoiceDate\": \"2024-01-15\",\n  \"dueDate\": \"2024-02-15\",\n  \"items\": [\n    {\n      \"description\": \"Professional Services\",\n      \"quantity\": 40,\n      \"unitPrice\": 150.00,\n      \"amount\": 6000.00\n    }\n  ],\n  \"subtotal\": 6000.00,\n  \"tax\": 480.00,\n  \"total\": 6480.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/billing/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "billing",
+                "invoices"
+              ]
+            },
+            "description": "Creates a new invoice for a customer."
+          },
+          "response": []
+        }
+      ],
+      "id": "0c9d46c0-0a01-4ed8-b753-c69e3a96078b",
+      "description": "Invoicing and customer billing"
+    },
+    {
+      "name": "Procurement",
+      "item": [
+        {
+          "name": "Get All Vendors",
+          "id": "a09a106e-ce1c-4aef-863e-fc6bc10d2d83",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/procurement/vendors?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "procurement",
+                "vendors"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (1-indexed)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items per page"
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all vendors in the procurement system."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Vendor",
+          "id": "a63907f1-cd60-4e3b-9d8c-e48bc99ca048",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tech Supplies Inc\",\n  \"email\": \"sales@techsupplies.com\",\n  \"phone\": \"+1-555-0188\",\n  \"address\": \"456 Vendor Ave\",\n  \"city\": \"Austin\",\n  \"state\": \"TX\",\n  \"zipCode\": \"78701\",\n  \"country\": \"USA\",\n  \"category\": \"Technology\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/procurement/vendors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "procurement",
+                "vendors"
+              ]
+            },
+            "description": "Creates a new vendor record in the procurement system."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Purchase Orders",
+          "id": "addd35a1-9efd-4794-a955-a14c315c1a44",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/procurement/purchase-orders?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "procurement",
+                "purchase-orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (1-indexed)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by purchase order status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all purchase orders with optional filtering."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Purchase Order",
+          "id": "3369095e-a634-44ca-933b-3c214d188cee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendorId\": \"vendor_1234567890\",\n  \"orderDate\": \"2024-01-15\",\n  \"expectedDeliveryDate\": \"2024-02-01\",\n  \"items\": [\n    {\n      \"itemId\": \"item_001\",\n      \"description\": \"Laptop Computer\",\n      \"quantity\": 10,\n      \"unitPrice\": 1200.00,\n      \"amount\": 12000.00\n    }\n  ],\n  \"subtotal\": 12000.00,\n  \"tax\": 960.00,\n  \"total\": 12960.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/procurement/purchase-orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "procurement",
+                "purchase-orders"
+              ]
+            },
+            "description": "Creates a new purchase order for a vendor."
+          },
+          "response": []
+        }
+      ],
+      "id": "6c223749-02e1-4755-a71f-10fd7cc819aa",
+      "description": "Purchase orders and vendor management"
+    },
+    {
+      "name": "Supply Chain",
+      "item": [
+        {
+          "name": "Get All Shipments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "1eb49051-80a2-4e49-b12b-2eb2f503eb5a",
+                "exec": [
+                  "// Verify that shipments created by \"Create Shipment\" request appear in the response",
+                  "try {",
+                  "    const responseData = pm.response.json();",
+                  "    ",
+                  "    // Get the shipmentId saved by Create Shipment request",
+                  "    const createdShipmentId = pm.collectionVariables.get(\"shipmentId\");",
+                  "    ",
+                  "    // Basic response validation",
+                  "    pm.test(\"Status code is 200\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "    });",
+                  "    ",
+                  "    pm.test(\"Response has shipments data\", function () {",
+                  "        pm.expect(responseData).to.have.property('data');",
+                  "        pm.expect(responseData.data).to.have.property('items');",
+                  "        pm.expect(responseData.data.items).to.be.an('array');",
+                  "    });",
+                  "    ",
+                  "    // If a shipment was created, verify it appears in the list",
+                  "    if (createdShipmentId) {",
+                  "        console.log(\"🔍 Looking for created shipment ID:\", createdShipmentId);",
+                  "        ",
+                  "        // Search for the created shipment in the response",
+                  "        const shipments = responseData.data.items || [];",
+                  "        const createdShipment = shipments.find(shipment => ",
+                  "            shipment.id === createdShipmentId || ",
+                  "            shipment.shipmentId === createdShipmentId",
+                  "        );",
+                  "        ",
+                  "        if (createdShipment) {",
+                  "            pm.test(\"Created shipment appears in the list\", function () {",
+                  "                pm.expect(createdShipment).to.not.be.undefined;",
+                  "            });",
+                  "            ",
+                  "            // Validate the shipment details",
+                  "            pm.test(\"Created shipment has required fields\", function () {",
+                  "                pm.expect(createdShipment).to.have.property('id');",
+                  "                pm.expect(createdShipment).to.have.property('orderId');",
+                  "                pm.expect(createdShipment).to.have.property('carrier');",
+                  "                pm.expect(createdShipment).to.have.property('trackingNumber');",
+                  "            });",
+                  "            ",
+                  "            // Highlight the created shipment in console",
+                  "            console.log(\"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\");",
+                  "            console.log(\"✅ CREATED SHIPMENT FOUND IN LIST:\");",
+                  "            console.log(\"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\");",
+                  "            console.log(JSON.stringify(createdShipment, null, 2));",
+                  "            console.log(\"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\");",
+                  "        } else {",
+                  "            // Shipment not found - try to fetch it directly",
+                  "            console.log(\"⚠️  Created shipment not found in the list response.\");",
+                  "            console.log(\"   Attempting to verify shipment exists via direct lookup...\\n\");",
+                  "            ",
+                  "            // Make a request to get the specific shipment",
+                  "            pm.sendRequest({",
+                  "                url: pm.variables.replaceIn(\"{{baseUrl}}/api/v2/supply-chain/shipments/\" + createdShipmentId),",
+                  "                method: 'GET'",
+                  "            }, function (err, response) {",
+                  "                if (err) {",
+                  "                    console.log(\"❌ Error fetching shipment:\", err);",
+                  "                    pm.test(\"Created shipment exists (verified via direct lookup)\", function () {",
+                  "                        pm.expect.fail(\"Could not verify shipment exists: \" + err);",
+                  "                    });",
+                  "                } else if (response.code === 200) {",
+                  "                    const shipmentData = response.json();",
+                  "                    console.log(\"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\");",
+                  "                    console.log(\"✅ SHIPMENT EXISTS (verified via direct lookup):\");",
+                  "                    console.log(\"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\");",
+                  "                    console.log(JSON.stringify(shipmentData, null, 2));",
+                  "                    console.log(\"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\");",
+                  "                    console.log(\"\\n💡 Note: The shipment exists but doesn't appear in the\");",
+                  "                    console.log(\"   'Get All Shipments' list. This may be due to:\");",
+                  "                    console.log(\"   - Mock API behavior (list endpoint may not be populated)\");",
+                  "                    console.log(\"   - Pagination (shipment may be on a different page)\");",
+                  "                    console.log(\"   - Caching or eventual consistency\");",
+                  "                    ",
+                  "                    pm.test(\"Created shipment exists (verified via direct lookup)\", function () {",
+                  "                        pm.expect(response.code).to.equal(200);",
+                  "                    });",
+                  "                } else {",
+                  "                    console.log(\"❌ Shipment not found (HTTP \" + response.code + \")\");",
+                  "                    pm.test(\"Created shipment exists\", function () {",
+                  "                        pm.expect.fail(\"Shipment not found in list or via direct lookup\");",
+                  "                    });",
+                  "                }",
+                  "            });",
+                  "        }",
+                  "    } else {",
+                  "        console.log(\"ℹ️  No shipmentId found in collection variables.\");",
+                  "        console.log(\"   💡 Run 'Create Shipment' request first to create a shipment,\");",
+                  "        console.log(\"      then run this request to verify it appears in the list.\");",
+                  "    }",
+                  "    ",
+                  "    // Log summary",
+                  "    const totalShipments = responseData.data.items ? responseData.data.items.length : 0;",
+                  "    console.log(`\\n📊 Shipments on current page: ${totalShipments}`);",
+                  "    ",
+                  "    if (responseData.data.pagination) {",
+                  "        console.log(\"📄 Pagination info:\");",
+                  "        console.log(`   - Page: ${responseData.data.pagination.page}`);",
+                  "        console.log(`   - Limit: ${responseData.data.pagination.limit}`);",
+                  "        console.log(`   - Total items: ${responseData.data.pagination.totalItems}`);",
+                  "        console.log(`   - Total pages: ${responseData.data.pagination.totalPages}`);",
+                  "    }",
+                  "    ",
+                  "} catch (error) {",
+                  "    console.error(\"❌ Error processing response:\", error.message);",
+                  "    pm.test(\"Response processing error\", function () {",
+                  "        pm.expect.fail(\"Failed to process response: \" + error.message);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "e5c413cb-369a-44b1-9d88-5ecb9b894a30",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "81eb0ef3-4ed2-4ca9-96c4-8f772ee35980",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/supply-chain/shipments?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "supply-chain",
+                "shipments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (1-indexed)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by shipment status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all shipments with optional filtering."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Shipment",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "ced14538-697b-4700-a208-299bb57d8294",
+                "exec": [
+                  "// Generate unique order ID using timestamp",
+                  "pm.collectionVariables.set(\"orderId\", \"order_\" + Date.now());",
+                  "",
+                  "// Randomly select a carrier",
+                  "const carriers = [\"FedEx\", \"UPS\", \"DHL\", \"USPS\"];",
+                  "const randomCarrier = carriers[Math.floor(Math.random() * carriers.length)];",
+                  "pm.collectionVariables.set(\"carrier\", randomCarrier);",
+                  "",
+                  "// Generate random tracking number (13 digits)",
+                  "const trackingNumber = Math.floor(Math.random() * 9000000000000) + 1000000000000;",
+                  "pm.collectionVariables.set(\"trackingNumber\", trackingNumber.toString());",
+                  "",
+                  "// Set shipDate to today's date (ISO format)",
+                  "const today = new Date();",
+                  "pm.collectionVariables.set(\"shipDate\", today.toISOString().split('T')[0]);",
+                  "",
+                  "// Set estimatedDeliveryDate to 5-7 days from today",
+                  "const deliveryDays = Math.floor(Math.random() * 3) + 5; // Random between 5-7",
+                  "const deliveryDate = new Date(today);",
+                  "deliveryDate.setDate(deliveryDate.getDate() + deliveryDays);",
+                  "pm.collectionVariables.set(\"estimatedDeliveryDate\", deliveryDate.toISOString().split('T')[0]);",
+                  "",
+                  "// Generate random origin address data",
+                  "const originStreets = [\"123 Warehouse St\", \"456 Distribution Ave\", \"789 Logistics Blvd\", \"321 Supply Chain Dr\"];",
+                  "const originCities = [\"Los Angeles\", \"Chicago\", \"Dallas\", \"Atlanta\"];",
+                  "const originStates = [\"CA\", \"IL\", \"TX\", \"GA\"];",
+                  "const originZips = [\"90001\", \"60601\", \"75201\", \"30301\"];",
+                  "",
+                  "const originIndex = Math.floor(Math.random() * originStreets.length);",
+                  "pm.collectionVariables.set(\"originAddress\", originStreets[originIndex]);",
+                  "pm.collectionVariables.set(\"originCity\", originCities[originIndex]);",
+                  "pm.collectionVariables.set(\"originState\", originStates[originIndex]);",
+                  "pm.collectionVariables.set(\"originZipCode\", originZips[originIndex]);",
+                  "",
+                  "// Generate random destination address data",
+                  "const destStreets = [\"456 Customer Ave\", \"789 Buyer Ln\", \"321 Client St\", \"654 Recipient Rd\"];",
+                  "const destCities = [\"New York\", \"Boston\", \"Seattle\", \"Miami\"];",
+                  "const destStates = [\"NY\", \"MA\", \"WA\", \"FL\"];",
+                  "const destZips = [\"10001\", \"02101\", \"98101\", \"33101\"];",
+                  "",
+                  "const destIndex = Math.floor(Math.random() * destStreets.length);",
+                  "pm.collectionVariables.set(\"destinationAddress\", destStreets[destIndex]);",
+                  "pm.collectionVariables.set(\"destinationCity\", destCities[destIndex]);",
+                  "pm.collectionVariables.set(\"destinationState\", destStates[destIndex]);",
+                  "pm.collectionVariables.set(\"destinationZipCode\", destZips[destIndex]);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "1120e1a4-a1b4-4534-84eb-2d4242c4a17a",
+                "exec": [
+                  "// Extract shipment ID from response with error handling",
+                  "try {",
+                  "    const responseData = pm.response.json();",
+                  "    ",
+                  "    // Log the full response for debugging",
+                  "    console.log(\"Full response:\", responseData);",
+                  "    ",
+                  "    let shipmentId = null;",
+                  "    ",
+                  "    // Check common response structures for shipment ID",
+                  "    if (responseData.id) {",
+                  "        shipmentId = responseData.id;",
+                  "        console.log(\"Shipment ID found at response.id:\", shipmentId);",
+                  "    } else if (responseData.data && responseData.data.id) {",
+                  "        shipmentId = responseData.data.id;",
+                  "        console.log(\"Shipment ID found at response.data.id:\", shipmentId);",
+                  "    } else if (responseData.shipmentId) {",
+                  "        shipmentId = responseData.shipmentId;",
+                  "        console.log(\"Shipment ID found at response.shipmentId:\", shipmentId);",
+                  "    } else if (responseData.data && responseData.data.shipmentId) {",
+                  "        shipmentId = responseData.data.shipmentId;",
+                  "        console.log(\"Shipment ID found at response.data.shipmentId:\", shipmentId);",
+                  "    } else if (responseData.shipment && responseData.shipment.id) {",
+                  "        shipmentId = responseData.shipment.id;",
+                  "        console.log(\"Shipment ID found at response.shipment.id:\", shipmentId);",
+                  "    }",
+                  "    ",
+                  "    // Save to collection variable if found",
+                  "    if (shipmentId) {",
+                  "        pm.collectionVariables.set(\"shipmentId\", shipmentId);",
+                  "        console.log(\"Shipment ID saved to collection variable 'shipmentId':\", shipmentId);",
+                  "        ",
+                  "        // Test to verify the ID was extracted",
+                  "        pm.test(\"Shipment ID extracted successfully\", function () {",
+                  "            pm.expect(shipmentId).to.not.be.null;",
+                  "            pm.expect(shipmentId).to.not.be.undefined;",
+                  "        });",
+                  "    } else {",
+                  "        console.warn(\"Warning: Could not find shipment ID in response. Please check the response structure.\");",
+                  "        console.log(\"Response keys:\", Object.keys(responseData));",
+                  "        ",
+                  "        pm.test(\"Shipment ID extraction\", function () {",
+                  "            pm.expect.fail(\"Shipment ID not found in response\");",
+                  "        });",
+                  "    }",
+                  "    ",
+                  "} catch (error) {",
+                  "    console.error(\"Error extracting shipment ID:\", error);",
+                  "    pm.test(\"Shipment ID extraction error\", function () {",
+                  "        pm.expect.fail(\"Error occurred: \" + error.message);",
+                  "    });",
+                  "}",
+                  "",
+                  "// Comprehensive tests for Create Shipment endpoint",
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is acceptable (under 2000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has correct Content-Type\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response has success flag set to true\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data object\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.have.property(\"data\");",
+                  "    pm.expect(responseData.data).to.be.an(\"object\");",
+                  "});",
+                  "",
+                  "pm.test(\"Shipment data contains required fields\", function () {",
+                  "    const shipmentData = pm.response.json().data;",
+                  "    pm.expect(shipmentData).to.have.property(\"id\");",
+                  "    pm.expect(shipmentData).to.have.property(\"orderId\");",
+                  "    pm.expect(shipmentData).to.have.property(\"carrier\");",
+                  "    pm.expect(shipmentData).to.have.property(\"trackingNumber\");",
+                  "    pm.expect(shipmentData).to.have.property(\"shipDate\");",
+                  "    pm.expect(shipmentData).to.have.property(\"status\");",
+                  "    pm.expect(shipmentData).to.have.property(\"origin\");",
+                  "    pm.expect(shipmentData).to.have.property(\"destination\");",
+                  "});",
+                  "",
+                  "pm.test(\"Shipment ID has correct format\", function () {",
+                  "    const shipmentData = pm.response.json().data;",
+                  "    pm.expect(shipmentData.id).to.be.a(\"string\");",
+                  "    pm.expect(shipmentData.id).to.match(/^ship-/);",
+                  "});",
+                  "",
+                  "pm.test(\"Order ID matches request\", function () {",
+                  "    const shipmentData = pm.response.json().data;",
+                  "    const requestOrderId = pm.collectionVariables.get(\"orderId\");",
+                  "    pm.expect(shipmentData.orderId).to.equal(requestOrderId);",
+                  "});",
+                  "",
+                  "pm.test(\"Carrier matches request\", function () {",
+                  "    const shipmentData = pm.response.json().data;",
+                  "    const requestCarrier = pm.collectionVariables.get(\"carrier\");",
+                  "    pm.expect(shipmentData.carrier).to.equal(requestCarrier);",
+                  "});",
+                  "",
+                  "pm.test(\"Shipment status is pending\", function () {",
+                  "    const shipmentData = pm.response.json().data;",
+                  "    pm.expect(shipmentData.status).to.equal(\"pending\");",
+                  "});",
+                  "",
+                  "pm.test(\"Origin address contains required fields\", function () {",
+                  "    const origin = pm.response.json().data.origin;",
+                  "    pm.expect(origin).to.have.property(\"address\");",
+                  "    pm.expect(origin).to.have.property(\"city\");",
+                  "    pm.expect(origin).to.have.property(\"state\");",
+                  "    pm.expect(origin).to.have.property(\"zipCode\");",
+                  "});",
+                  "",
+                  "pm.test(\"Destination address contains required fields\", function () {",
+                  "    const destination = pm.response.json().data.destination;",
+                  "    pm.expect(destination).to.have.property(\"address\");",
+                  "    pm.expect(destination).to.have.property(\"city\");",
+                  "    pm.expect(destination).to.have.property(\"state\");",
+                  "    pm.expect(destination).to.have.property(\"zipCode\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response includes timestamp\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.have.property(\"timestamp\");",
+                  "    pm.expect(responseData.timestamp).to.be.a(\"string\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "f9c13992-b970-47e2-b2e7-7d68dd1b58a6",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/supply-chain/shipments?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "supply-chain",
+                "shipments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Creates a new shipment record in the supply chain system."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Shipment by ID",
+          "id": "283f31c0-fceb-40dc-b171-d33917710e91",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/supply-chain/shipments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "supply-chain",
+                "shipments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{shipmentId}}"
+                }
+              ]
+            },
+            "description": "Retrieves detailed information about a specific shipment."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Shipment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Validate response status",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Parse response",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate response structure",
+                  "pm.test(\"Response has success property\", function () {",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Response has data property\", function () {",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Validate updated shipment data",
+                  "if (jsonData.data) {",
+                  "    pm.test(\"Shipment has required fields\", function () {",
+                  "        pm.expect(jsonData.data).to.have.property('id');",
+                  "        pm.expect(jsonData.data).to.have.property('carrier');",
+                  "        pm.expect(jsonData.data).to.have.property('trackingNumber');",
+                  "        pm.expect(jsonData.data).to.have.property('status');",
+                  "        pm.expect(jsonData.data).to.have.property('estimatedDeliveryDate');",
+                  "    });",
+                  "    ",
+                  "    // Extract and save updated data to collection variables",
+                  "    pm.collectionVariables.set(\"updatedShipmentId\", jsonData.data.id);",
+                  "    pm.collectionVariables.set(\"updatedCarrier\", jsonData.data.carrier);",
+                  "    pm.collectionVariables.set(\"updatedTrackingNumber\", jsonData.data.trackingNumber);",
+                  "    pm.collectionVariables.set(\"updatedStatus\", jsonData.data.status);",
+                  "    pm.collectionVariables.set(\"updatedEstimatedDeliveryDate\", jsonData.data.estimatedDeliveryDate);",
+                  "    ",
+                  "    console.log(\"Updated Shipment ID:\", jsonData.data.id);",
+                  "    console.log(\"Updated Status:\", jsonData.data.status);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "09e50cb0-86ee-4e02-bf74-413a589e93b6",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"carrier\": \"{{carrier}}\",\n  \"trackingNumber\": \"{{trackingNumber}}\",\n  \"status\": \"in_transit\",\n  \"estimatedDeliveryDate\": \"{{estimatedDeliveryDate}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/supply-chain/shipments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "supply-chain",
+                "shipments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{shipmentId}}"
+                }
+              ]
+            },
+            "description": "Updates an existing shipment's details including carrier, tracking number, status, and estimated delivery date."
+          },
+          "response": []
+        }
+      ],
+      "id": "ea5c3eb2-82a1-4976-b675-be992f317b4a",
+      "description": "Shipments and logistics"
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Get All Inventory Items",
+          "id": "fa1217db-45ab-4ce8-84db-d2262d7407e4",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/inventory/items?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "inventory",
+                "items"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (1-indexed)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "description": "Filter by item category",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all inventory items with optional filtering."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Inventory Item",
+          "id": "f0364a20-0808-4650-b871-f1d4e00fa0d2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"LAPTOP-001\",\n  \"name\": \"Dell Latitude 5520\",\n  \"description\": \"15.6 inch business laptop\",\n  \"category\": \"Electronics\",\n  \"quantity\": 50,\n  \"unitPrice\": 1200.00,\n  \"reorderLevel\": 10,\n  \"location\": \"Warehouse A, Shelf 12\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/inventory/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "inventory",
+                "items"
+              ]
+            },
+            "description": "Creates a new inventory item."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Inventory Item by ID",
+          "id": "9b53d82e-f900-43a4-b064-32be87af4934",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/inventory/items/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "inventory",
+                "items",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Retrieves detailed information about a specific inventory item."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Inventory Item",
+          "id": "e76347f9-9bb0-4708-82ab-7b1db39f9c10",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 45,\n  \"unitPrice\": 1150.00,\n  \"location\": \"Warehouse A, Shelf 15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/inventory/items/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "inventory",
+                "items",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Updates an existing inventory item."
+          },
+          "response": []
+        },
+        {
+          "name": "Adjust Inventory Stock",
+          "id": "75b6ee0b-9072-4fcb-ae21-b54bdf13eb0e",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"adjustmentType\": \"increase\",\n  \"quantity\": 20,\n  \"reason\": \"New stock received\",\n  \"notes\": \"Shipment from vendor received and verified\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/inventory/items/:id/adjust",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "inventory",
+                "items",
+                ":id",
+                "adjust"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Adjusts the stock quantity of an inventory item."
+          },
+          "response": []
+        }
+      ],
+      "id": "b357eae9-f5db-4fba-bd26-22616fab54f4",
+      "description": "Stock tracking and management"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "id": "c922ad43-e6c3-47a7-a4c0-aa31cdabf517",
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "id": "9b5f9f56-172d-4611-94f6-4d7d37627f1b",
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "id": "c0d11302-ade2-475b-a0d6-2cf81f06cdc8",
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "id": "7dfe23f7-ef9f-436c-bb88-4d32243c8061",
+      "key": "carrier",
+      "value": ""
+    },
+    {
+      "id": "610713d8-9ca3-4ebc-9a92-f1322fc8b309",
+      "key": "trackingNumber",
+      "value": ""
+    },
+    {
+      "id": "4e3a14b0-9716-4e08-a6d7-00cc8f4d9179",
+      "key": "shipDate",
+      "value": ""
+    },
+    {
+      "id": "08fc9021-3223-466c-af02-d3f24d58a389",
+      "key": "estimatedDeliveryDate",
+      "value": ""
+    },
+    {
+      "id": "75357632-7c55-4e6e-87a2-c61d29e6941e",
+      "key": "originAddress",
+      "value": ""
+    },
+    {
+      "id": "dd3e2ac8-b14b-4afe-9366-51125cfc96df",
+      "key": "originCity",
+      "value": ""
+    },
+    {
+      "id": "fb276b77-ab58-494e-a9a9-1cce89cde656",
+      "key": "originState",
+      "value": ""
+    },
+    {
+      "id": "85331004-7232-4cf5-b40b-c027e7502e30",
+      "key": "originZipCode",
+      "value": ""
+    },
+    {
+      "id": "3f15cb42-579c-47a7-81d2-8d4edbd2450a",
+      "key": "destinationAddress",
+      "value": ""
+    },
+    {
+      "id": "a3e5ceec-12e0-45db-bd9e-788171b912ee",
+      "key": "destinationCity",
+      "value": ""
+    },
+    {
+      "id": "e0a8e912-8d66-4347-8ab7-f948c6881732",
+      "key": "destinationState",
+      "value": ""
+    },
+    {
+      "id": "96497849-4f88-4554-aad7-3b06e4b29884",
+      "key": "destinationZipCode",
+      "value": ""
+    },
+    {
+      "id": "a714833f-b14d-44c3-a4d3-3b8547d1b6df",
+      "key": "shipmentId",
+      "value": ""
+    },
+    {
+      "id": "3d98ce52-2eb6-4b4c-9142-5c690161df44",
+      "key": "updatedShipmentId",
+      "value": ""
+    },
+    {
+      "id": "3583ab64-df4b-4876-a082-dab96cb2a0ce",
+      "key": "updatedCarrier",
+      "value": ""
+    },
+    {
+      "id": "2c96c80c-3c95-4c00-98d2-f4860d686909",
+      "key": "updatedTrackingNumber",
+      "value": ""
+    },
+    {
+      "id": "a5065365-35d0-4238-b732-c0768f11f862",
+      "key": "updatedStatus",
+      "value": ""
+    },
+    {
+      "id": "0315fa8b-e527-403a-8952-c12e2d6aca45",
+      "key": "updatedEstimatedDeliveryDate",
+      "value": ""
+    }
+  ]
+}

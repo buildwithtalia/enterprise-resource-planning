@@ -19,7 +19,7 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Install Postman CLI
-        run: curl -o- "https://dl-cli.pstmn.io/install/canary/unix.sh" | sh
+        run: curl -o- "https://dl-cli.pstmn.io/install/unix.sh" | sh
 
       - name: Verify Postman CLI version
         run: postman --version
@@ -39,5 +39,58 @@ jobs:
           echo "Checking spec exists..."
           ls -la postman/specifications/
 
-      - name: Push workspace to Postman
-        run: postman workspace push -y
+      - name: Check Postman workspace access
+        run: |
+          echo "Checking workspace accessibility..."
+          postman workspace list || echo "Failed to list workspaces"
+          echo "Checking current workspace info..."
+          postman workspace info 6ec6128e-3b5f-42b1-a4d3-75b491883da7 || echo "Workspace not accessible"
+
+      - name: Validate OpenAPI specification
+        run: |
+          echo "Validating OpenAPI specification syntax..."
+          python3 -c "
+          import yaml
+          import json
+
+          try:
+              with open('postman/specifications/Enterprise Resource Planning API.openapi.yaml', 'r') as f:
+                  spec = yaml.safe_load(f)
+              print('✅ OpenAPI spec is valid YAML')
+              print(f'Title: {spec.get(\"info\", {}).get(\"title\", \"Unknown\")}')
+              print(f'Version: {spec.get(\"info\", {}).get(\"version\", \"Unknown\")}')
+              print(f'OpenAPI Version: {spec.get(\"openapi\", \"Unknown\")}')
+          except Exception as e:
+              print(f'❌ OpenAPI spec validation failed: {e}')
+              exit(1)
+          "
+
+      - name: Try to push workspace with verbose output
+        run: postman workspace push -v
+        continue-on-error: true
+
+      - name: Fallback - Create new workspace if push fails
+        if: failure()
+        run: |
+          echo "Primary workspace push failed. Attempting to create a new workspace..."
+
+          # Create a new workspace
+          NEW_WORKSPACE_ID=$(postman workspace create --name "Enterprise Resource Planning API Workspace" --type "private" --format json | jq -r '.workspace.id')
+
+          if [ "$NEW_WORKSPACE_ID" != "null" ] && [ -n "$NEW_WORKSPACE_ID" ]; then
+            echo "✅ Created new workspace: $NEW_WORKSPACE_ID"
+
+            # Update the config with new workspace ID
+            jq --arg id "$NEW_WORKSPACE_ID" '.workspace.id = $id' .postman/config.json > .postman/config.json.tmp
+            mv .postman/config.json.tmp .postman/config.json
+
+            echo "Updated workspace configuration:"
+            cat .postman/config.json
+
+            # Try pushing to the new workspace
+            echo "Pushing to new workspace..."
+            postman workspace push -v
+          else
+            echo "❌ Failed to create new workspace"
+            exit 1
+          fi

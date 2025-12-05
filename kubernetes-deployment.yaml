@@ -1,0 +1,126 @@
+---
+# ConfigMap for application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: erp-flask-config
+  labels:
+    app: erp-flask
+data:
+  FLASK_ENV: "production"
+  LOG_LEVEL: "INFO"
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: erp-flask-deployment
+  labels:
+    app: erp-flask
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: erp-flask
+  template:
+    metadata:
+      labels:
+        app: erp-flask
+    spec:
+      containers:
+      - name: erp-flask
+        image: taliakohan/erp-flask:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+          name: http
+          protocol: TCP
+        env:
+        - name: FLASK_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: erp-flask-config
+              key: FLASK_ENV
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: erp-flask-config
+              key: LOG_LEVEL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 30
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: erp-flask-service
+  labels:
+    app: erp-flask
+spec:
+  type: LoadBalancer
+  selector:
+    app: erp-flask
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3001
+    protocol: TCP
+  sessionAffinity: None
+
+---
+# Horizontal Pod Autoscaler (optional)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: erp-flask-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: erp-flask-deployment
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
