@@ -1,0 +1,104 @@
+services:
+  erp-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: erp-api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      # Python/Flask Configuration
+      FLASK_APP: src/app.py
+      FLASK_ENV: production
+      PYTHONPATH: /app
+      PORT: 3001
+
+      # API Configuration
+      API_VERSION: v2
+      BASE_URL: http://localhost:3001
+
+      # Authentication (if needed in future)
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-24h}
+      AUTH_TOKEN: ${AUTH_TOKEN:-your-bearer-token-here}
+
+      # Database Configuration (for future use)
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-erp_database}
+      DB_USER: ${DB_USER:-erp_user}
+      DB_PASSWORD: ${DB_PASSWORD:-change-this-password}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+
+      # CORS Configuration
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+
+    volumes:
+      # Mount logs directory (optional)
+      - ./logs:/app/logs
+
+    networks:
+      - erp-network
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Remove database dependency since app uses in-memory storage
+    # depends_on:
+    #   - db
+
+  # PostgreSQL Database (uncomment if needed)
+  db:
+    image: postgres:16-alpine
+    container_name: erp-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-erp_database}
+      POSTGRES_USER: ${DB_USER:-erp_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-this-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Uncomment to add init scripts
+      # - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-erp_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache (optional - uncomment if needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: erp-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - erp-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+networks:
+  erp-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  # redis-data:
