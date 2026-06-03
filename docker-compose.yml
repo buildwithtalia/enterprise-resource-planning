@@ -24,12 +24,9 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION:-24h}
       AUTH_TOKEN: ${AUTH_TOKEN:-your-bearer-token-here}
 
-      # Database Configuration — DB_HOST is the compose service name, not host's localhost
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-erp_database}
-      DB_USER: ${DB_USER:-erp_user}
-      DB_PASSWORD: ${DB_PASSWORD:-change-this-password}
+      # Database — Neon connection string.
+      # Copy from Neon console: Project → Connection Details → Connection string.
+      DATABASE_URL: ${DATABASE_URL}
 
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-info}
@@ -50,33 +47,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-    depends_on:
-      db:
-        condition: service_healthy
-
-  # PostgreSQL Database (uncomment if needed)
-  db:
-    image: postgres:16-alpine
-    container_name: erp-database
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME:-erp_database}
-      POSTGRES_USER: ${DB_USER:-erp_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-this-password}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      # Uncomment to add init scripts
-      # - ./init-scripts:/docker-entrypoint-initdb.d
-    networks:
-      - erp-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-erp_user}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # Redis Cache (optional - uncomment if needed)
   # redis:
@@ -99,6 +69,5 @@ networks:
   erp-network:
     driver: bridge
 
-volumes:
-  postgres-data:
+# volumes:
   # redis-data:

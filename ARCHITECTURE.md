@@ -13,10 +13,11 @@ This is a **monolithic enterprise resource planning (ERP) system** demonstrating
 - All code runs in a single Node.js process
 
 ### Shared Database
-- All modules use the same PostgreSQL database
-- Single connection pool shared across modules
-- All entities defined in `/src/database/entities/`
+- All modules use the same **Neon** serverless PostgreSQL database
+- Single connection pool shared across modules (with `pool_pre_ping` and `pool_recycle` for Neon's idle-connection behaviour)
+- All entities defined in `src/models.py`
 - No data isolation between modules
+- Connection configured via the `DATABASE_URL` environment variable (Neon connection string)
 
 ### Shared Middleware
 - Common authentication (`/src/middleware/auth.ts`)
@@ -136,15 +137,17 @@ export class PayrollService {
 
 ### Database Layer
 All modules share:
-- `AppDataSource` - Single database connection
-- All entity definitions
-- TypeORM configuration
+- A single **Neon** serverless PostgreSQL connection (`DATABASE_URL`)
+- All entity definitions in `src/models.py`
+- SQLAlchemy + Flask-Migrate for ORM and schema migrations
 
-```typescript
-// Every service uses the same connection
-import { AppDataSource } from '../../database/connection';
+```python
+# Every model uses the same db instance
+from db import db
 
-private employeeRepo = AppDataSource.getRepository(Employee);
+class Employee(db.Model):
+    __tablename__ = "employees"
+    ...
 ```
 
 ### Middleware Layer
