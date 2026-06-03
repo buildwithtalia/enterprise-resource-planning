@@ -1,7 +1,0 @@
-$kind: http-request
-description: Retrieves detailed information about a specific inventory item.
-url: "{{baseUrl}}/api/v2/inventory/items/:id"
-method: GET
-pathVariables:
-  id: ""
-order: 3000

@@ -1,7 +1,0 @@
-$kind: http-request
-description: Retrieves comprehensive information about the ERP API, including version details, system architecture, available modules, and their interdependencies.
-url: "{{baseUrl}}/api/v2"
-method: GET
-auth:
-  type: noauth
-order: 2000

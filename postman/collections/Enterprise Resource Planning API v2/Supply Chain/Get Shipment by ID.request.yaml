@@ -1,7 +1,0 @@
-$kind: http-request
-description: Retrieves detailed information about a specific shipment.
-url: "{{baseUrl}}/api/v2/supply-chain/shipments/:id"
-method: GET
-pathVariables:
-  id: "{{shipmentId}}"
-order: 3000
