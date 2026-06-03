@@ -24,9 +24,9 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION:-24h}
       AUTH_TOKEN: ${AUTH_TOKEN:-your-bearer-token-here}
 
-      # Database Configuration (for future use)
-      DB_HOST: ${DB_HOST:-db}
-      DB_PORT: ${DB_PORT:-5432}
+      # Database Configuration — DB_HOST is the compose service name, not host's localhost
+      DB_HOST: db
+      DB_PORT: 5432
       DB_NAME: ${DB_NAME:-erp_database}
       DB_USER: ${DB_USER:-erp_user}
       DB_PASSWORD: ${DB_PASSWORD:-change-this-password}
@@ -51,9 +51,9 @@ services:
       retries: 3
       start_period: 40s
 
-    # Remove database dependency since app uses in-memory storage
-    # depends_on:
-    #   - db
+    depends_on:
+      db:
+        condition: service_healthy
 
   # PostgreSQL Database (uncomment if needed)
   db:
