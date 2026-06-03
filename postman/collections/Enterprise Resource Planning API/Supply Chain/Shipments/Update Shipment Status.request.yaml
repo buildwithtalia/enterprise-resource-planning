@@ -1,0 +1,187 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Updates the status of a shipment, allowing logistics and warehouse teams to record progress as a shipment moves through the supply chain. This endpoint is used to transition a shipment between statuses such as 'dispatched', 'in_transit', 'delivered', or 'cancelled', and to record location updates and status history.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `logistics_coordinator`, `admin`
+
+  Users must have warehouse management, logistics coordination, or administrative privileges to update shipment status.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | Yes | Indicates JSON request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique shipment identifier (e.g., ship-123) |
+
+  ### Body Parameters
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | status | string | Yes | New shipment status (dispatched, in_transit, delivered, cancelled) |
+  | location | string | No | Current location or facility |
+  | timestamp | string | No | Status update timestamp (ISO 8601) |
+  | notes | string | No | Additional notes or comments |
+  | updatedBy | string | No | Name of person updating status |
+  | reason | string | No | Reason for status change (for cancellation or exception) |
+
+  ### Example Request
+
+  ```json
+  PUT {{baseUrl}}/api/supply-chain/shipments/ship-123/status
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  {
+    "status": "in_transit",
+    "location": "Distribution Center, Chicago, IL",
+    "timestamp": "2024-01-16T08:30:00Z",
+    "notes": "Departed from distribution center",
+    "updatedBy": "Logistics Coordinator"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the updated shipment with new status:
+
+  ```json
+  {
+    "shipmentId": "ship-123",
+    "status": "in_transit",
+    "previousStatus": "dispatched",
+    "location": "Distribution Center, Chicago, IL",
+    "timestamp": "2024-01-16T08:30:00Z",
+    "notes": "Departed from distribution center",
+    "updatedBy": "Logistics Coordinator",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "location": "Warehouse A, Springfield, IL"
+      },
+      {
+        "status": "dispatched",
+        "timestamp": "2024-01-15T14:00:00Z",
+        "location": "Warehouse A, Springfield, IL"
+      },
+      {
+        "status": "in_transit",
+        "timestamp": "2024-01-16T08:30:00Z",
+        "location": "Distribution Center, Chicago, IL",
+        "notes": "Departed from distribution center",
+        "updatedBy": "Logistics Coordinator"
+      }
+    ],
+    "message": "Shipment status updated successfully",
+    "updatedAt": "2024-01-16T08:30:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | shipmentId | string | Unique shipment identifier |
+  | status | string | Updated shipment status |
+  | previousStatus | string | Previous status before update |
+  | location | string | Current location or facility |
+  | timestamp | string | Status update timestamp |
+  | notes | string | Additional notes |
+  | updatedBy | string | Name of person updating status |
+  | statusHistory | array | Complete status change history |
+  | message | string | Success message |
+  | updatedAt | string | Last update timestamp |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to update shipment status",
+    "requiredRole": "warehouse_manager, logistics_coordinator, or admin"
+  }
+  ```
+
+  **404 Not Found** - Shipment does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Shipment with ID 'ship-123' not found"
+  }
+  ```
+
+  **409 Conflict** - Invalid status transition
+  ```json
+  {
+    "error": "Conflict",
+    "message": "Cannot transition from delivered to in_transit",
+    "currentStatus": "delivered",
+    "allowedTransitions": ["cancelled"]
+  }
+  ```
+
+  **400 Bad Request** - Invalid status value
+  ```json
+  {
+    "error": "Bad Request",
+    "message": "Invalid status value",
+    "allowedStatuses": ["pending", "dispatched", "in_transit", "delivered", "cancelled"]
+  }
+  ```
+
+  ## Use Cases
+
+  - **Shipment Progress Tracking**: Update status as shipment moves through supply chain
+  - **Location Updates**: Record current location at each status change
+  - **Exception Handling**: Mark shipments as delayed, cancelled, or delivered
+  - **Customer Notifications**: Trigger notifications on status changes
+  - **Audit Trail**: Maintain complete status history for compliance
+  - **Performance Metrics**: Analyze transit times and delivery performance
+
+  ## Notes
+
+  - Only valid status transitions are allowed (e.g., cannot move from delivered back to in_transit)
+  - Status history is automatically updated with each change
+  - Location and notes are optional but recommended for tracking
+  - Timestamps should be in ISO 8601 format
+  - Use this endpoint for both routine and exception status updates
+  - Customer notifications may be triggered automatically on status changes
+url: "{{baseUrl}}/api/supply-chain/shipments/:id/status"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: ship-123
+body:
+  type: text
+  content: |-
+    {
+      "status": "in_transit",
+      "location": "Distribution Center, City, State"
+    }
+order: 7000

@@ -1,0 +1,7 @@
+$kind: http-request
+description: Cancel an invoice. Requires 'billing_manager' or 'admin' role.
+url: "{{baseUrl}}/api/billing/invoices/:id/cancel"
+method: POST
+pathVariables:
+  id: inv-123
+order: 6000

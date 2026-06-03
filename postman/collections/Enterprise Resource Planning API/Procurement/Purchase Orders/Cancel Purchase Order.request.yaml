@@ -1,0 +1,190 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Cancels a purchase order, terminating the order and preventing further processing. This endpoint allows procurement managers to cancel orders that are no longer needed, have incorrect information, or need to be replaced. Cancellation handling varies based on order status - draft orders cancel immediately, while placed orders may require vendor coordination.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `admin`
+
+  Users must have procurement management or administrative privileges to cancel purchase orders.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | Yes | Indicates JSON request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique purchase order identifier (e.g., po-123) |
+
+  ### Body Parameters
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | reason | string | Yes | Reason for cancellation |
+  | notes | string | No | Additional notes or details |
+  | notifyVendor | boolean | No | Send cancellation notice to vendor (default: true for placed orders) |
+  | requestRefund | boolean | No | Request refund if payment made (default: false) |
+
+  ### Example Request
+
+  ```json
+  POST {{baseUrl}}/api/procurement/purchase-orders/po-123/cancel
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  {
+    "reason": "Budget constraints - project cancelled",
+    "notes": "Will reorder when budget is approved next quarter",
+    "notifyVendor": true,
+    "requestRefund": false
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the cancelled purchase order:
+
+  ```json
+  {
+    "id": "po-123",
+    "poNumber": "PO-2024-0123",
+    "vendorId": "vendor-123",
+    "vendorName": "Office Supplies Inc",
+    "status": "cancelled",
+    "previousStatus": "approved",
+    "total": 5400,
+    "cancelledBy": "user-456",
+    "cancelledByName": "John Smith",
+    "cancelledAt": "2024-01-16T09:00:00Z",
+    "cancellationReason": "Budget constraints - project cancelled",
+    "cancellationNotes": "Will reorder when budget is approved next quarter",
+    "vendorNotified": true,
+    "cancellationFee": 0,
+    "refundStatus": "not_applicable",
+    "inventoryReservationsReleased": true,
+    "budgetReleased": true,
+    "impact": {
+      "inventoryAffected": false,
+      "paymentsAffected": false,
+      "vendorRelationship": "no_impact"
+    },
+    "message": "Purchase order cancelled successfully",
+    "updatedAt": "2024-01-16T09:00:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique purchase order identifier |
+  | poNumber | string | Human-readable PO number |
+  | vendorId | string | Vendor identifier |
+  | vendorName | string | Vendor company name |
+  | status | string | Updated status (cancelled) |
+  | previousStatus | string | Status before cancellation |
+  | total | number | Total order amount |
+  | cancelledBy | string | User ID who cancelled the order |
+  | cancelledByName | string | Name of user who cancelled |
+  | cancelledAt | string | Cancellation timestamp (ISO 8601) |
+  | cancellationReason | string | Reason for cancellation |
+  | cancellationNotes | string | Additional cancellation notes |
+  | vendorNotified | boolean | Whether vendor was notified |
+  | cancellationFee | number | Any cancellation fees charged |
+  | refundStatus | string | Refund status (not_applicable, pending, processed) |
+  | inventoryReservationsReleased | boolean | Whether inventory reservations were released |
+  | budgetReleased | boolean | Whether budget was released |
+  | impact | object | Summary of cancellation impacts |
+  | message | string | Success message |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to cancel purchase orders",
+    "requiredRole": "procurement_manager or admin"
+  }
+  ```
+
+  **404 Not Found** - Purchase order does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Purchase order with ID 'po-123' not found"
+  }
+  ```
+
+  **409 Conflict** - Cannot cancel in current status
+  ```json
+  {
+    "error": "Conflict",
+    "message": "Purchase order cannot be cancelled - already received",
+    "currentStatus": "received",
+    "reason": "Items have been received and added to inventory",
+    "suggestion": "Process a return instead of cancellation"
+  }
+  ```
+
+  **422 Unprocessable Entity** - Cancellation requires vendor approval
+  ```json
+  {
+    "error": "Vendor Approval Required",
+    "message": "Order has been shipped and requires vendor approval to cancel",
+    "currentStatus": "placed",
+    "vendorContact": "sales@officesupplies.com",
+    "estimatedCancellationFee": 150,
+    "suggestion": "Contact vendor to request cancellation"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Budget Changes**: Cancel orders when budget is cut or reallocated
+  - **Project Cancellation**: Cancel orders for cancelled projects
+  - **Duplicate Orders**: Cancel duplicate or erroneous orders
+  - **Vendor Issues**: Cancel orders due to vendor problems
+  - **Requirement Changes**: Cancel when requirements change
+  - **Better Pricing**: Cancel to reorder at better price
+  - **Error Correction**: Cancel orders with incorrect information
+
+  ## Notes
+
+  - Draft and pending_approval orders can be cancelled without vendor notification
+  - Approved orders can be cancelled before placement without fees
+  - Placed orders may incur cancellation fees depending on vendor terms
+  - Received orders cannot be cancelled (use return process instead)
+  - Cancellation releases any budget allocations
+  - Inventory reservations are automatically released
+  - Vendor notification is automatic for placed orders
+  - Cancellation reason is required for audit trail
+  - Some vendors may not accept cancellations after shipment
+  - Cancellation affects vendor performance metrics
+url: "{{baseUrl}}/api/procurement/purchase-orders/:id/cancel"
+method: POST
+pathVariables:
+  id: po-123
+order: 7000

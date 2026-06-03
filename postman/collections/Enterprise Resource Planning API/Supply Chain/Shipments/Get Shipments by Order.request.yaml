@@ -1,0 +1,223 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves all shipments associated with a specific order. This endpoint is essential for orders that are split into multiple shipments or require tracking of partial deliveries. Provides complete visibility into all shipments related to a single order.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `logistics_coordinator`, `customer_service`, `admin`
+
+  Users must have appropriate logistics or customer service privileges to view order shipments.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | orderId | string | Yes | Unique order identifier (e.g., order-123) |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/supply-chain/shipments/order/order-123
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns all shipments for the specified order:
+
+  ```json
+  {
+    "orderId": "order-123",
+    "orderTotal": 1250.00,
+    "orderDate": "2024-01-10",
+    "customerName": "Acme Corporation",
+    "shipmentCount": 2,
+    "allDelivered": false,
+    "shipments": [
+      {
+        "shipmentId": "ship-456",
+        "trackingNumber": "1Z999AA10123456784",
+        "carrier": "FedEx",
+        "status": "delivered",
+        "origin": "Warehouse A, Springfield, IL",
+        "destination": "456 Customer Street, Chicago, IL 60601",
+        "dispatchedAt": "2024-01-12T10:00:00Z",
+        "estimatedDeliveryDate": "2024-01-15",
+        "actualDeliveryDate": "2024-01-14",
+        "items": [
+          {
+            "itemId": "item-789",
+            "sku": "WIDGET-PRO-001",
+            "name": "Widget Pro",
+            "quantity": 10,
+            "weight": 25.0
+          }
+        ],
+        "packageDetails": {
+          "weight": 25.0,
+          "dimensions": "24x18x12 inches",
+          "packageCount": 1
+        },
+        "shippingCost": 45.00,
+        "deliveredEarly": true,
+        "signedBy": "J. Smith",
+        "deliveryNotes": "Left at front desk"
+      },
+      {
+        "shipmentId": "ship-457",
+        "trackingNumber": "1Z999AA10123456785",
+        "carrier": "UPS",
+        "status": "in_transit",
+        "origin": "Warehouse B, Indianapolis, IN",
+        "destination": "456 Customer Street, Chicago, IL 60601",
+        "dispatchedAt": "2024-01-15T14:00:00Z",
+        "estimatedDeliveryDate": "2024-01-18",
+        "actualDeliveryDate": null,
+        "items": [
+          {
+            "itemId": "item-790",
+            "sku": "GADGET-PLUS-002",
+            "name": "Gadget Plus",
+            "quantity": 5,
+            "weight": 6.0
+          },
+          {
+            "itemId": "item-791",
+            "sku": "ACCESSORY-KIT-003",
+            "name": "Accessory Kit",
+            "quantity": 5,
+            "weight": 2.5
+          }
+        ],
+        "packageDetails": {
+          "weight": 8.5,
+          "dimensions": "18x12x8 inches",
+          "packageCount": 1
+        },
+        "shippingCost": 32.50,
+        "currentLocation": {
+          "facility": "UPS Facility",
+          "city": "Chicago",
+          "state": "IL",
+          "lastScan": "2024-01-17T08:30:00Z"
+        },
+        "onSchedule": true
+      }
+    ],
+    "summary": {
+      "totalShipments": 2,
+      "delivered": 1,
+      "inTransit": 1,
+      "pending": 0,
+      "cancelled": 0,
+      "totalItems": 20,
+      "totalWeight": 33.5,
+      "totalShippingCost": 77.50,
+      "earliestDispatchDate": "2024-01-12",
+      "latestEstimatedDelivery": "2024-01-18",
+      "allItemsShipped": true,
+      "percentageDelivered": 50
+    },
+    "deliveryAddress": {
+      "address": "456 Customer Street",
+      "city": "Chicago",
+      "state": "IL",
+      "zipCode": "60601",
+      "country": "USA",
+      "contactName": "John Doe",
+      "contactPhone": "(555) 123-4567"
+    }
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | orderId | string | Order identifier |
+  | orderTotal | number | Total order value |
+  | orderDate | string | Order creation date (YYYY-MM-DD) |
+  | customerName | string | Customer name |
+  | shipmentCount | number | Total number of shipments |
+  | allDelivered | boolean | Whether all shipments are delivered |
+  | shipments | array | Array of shipment objects |
+  | summary | object | Aggregated shipment statistics |
+  | deliveryAddress | object | Delivery address details |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to view order shipments"
+  }
+  ```
+
+  **404 Not Found** - Order not found
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Order with ID 'order-123' not found"
+  }
+  ```
+
+  **404 Not Found** - No shipments for order
+  ```json
+  {
+    "error": "Not Found",
+    "message": "No shipments found for order 'order-123'",
+    "suggestion": "Order may not have been shipped yet"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Order Tracking**: Track all shipments for a customer order
+  - **Split Shipments**: Monitor orders split across multiple shipments
+  - **Partial Deliveries**: Track partial order fulfillment
+  - **Customer Service**: Provide complete order shipment status to customers
+  - **Delivery Coordination**: Coordinate multiple shipments to same destination
+  - **Order Completion**: Verify all order items have been shipped
+  - **Shipping Analysis**: Analyze shipping patterns for specific orders
+  - **Issue Resolution**: Investigate shipment issues at order level
+
+  ## Notes
+
+  - Orders may have multiple shipments if items ship from different warehouses
+  - Large orders may be split into multiple shipments for logistics efficiency
+  - Summary provides aggregated statistics across all shipments
+  - Percentage delivered calculated based on number of shipments
+  - All shipments share the same delivery address
+  - Each shipment has its own tracking number and carrier
+  - Shipments may have different estimated delivery dates
+  - Status of each shipment is tracked independently
+  - Total shipping cost is sum of all shipment costs
+  - All items shipped indicator confirms complete order fulfillment
+url: "{{baseUrl}}/api/supply-chain/shipments/order/:orderId"
+method: GET
+pathVariables:
+  orderId: order-123
+order: 5000

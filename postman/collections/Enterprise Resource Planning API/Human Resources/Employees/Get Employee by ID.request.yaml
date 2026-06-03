@@ -1,0 +1,110 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed information about a specific employee by their unique employee ID. This endpoint is useful for viewing complete employee records, including personal information, job details, and employment status.
+
+  ## Authentication
+
+  **Required Role:** `hr_manager`, `admin`, or `employee` (employees can only view their own record)
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  | --- | --- | --- | --- |
+  | id | string | Yes | The unique identifier of the employee to retrieve |
+
+  ### Headers
+
+  | Header | Type | Required | Description |
+  | --- | --- | --- | --- |
+  | Authorization | string | Yes | Bearer token for authentication |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/hr/employees/emp-789
+
+   ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns a single employee object with complete details:
+
+  ``` json
+  {
+    "id": "emp-789",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "departmentId": "dept-001",
+    "position": "Software Engineer",
+    "salary": 75000,
+    "hireDate": "2024-01-15",
+    "phoneNumber": "(555) 123-4567",
+    "status": "active",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  }
+
+   ```
+
+  ### Error Responses
+
+  **404 Not Found** - Employee does not exist
+
+  ``` json
+  {
+    "error": "Employee not found",
+    "employeeId": "emp-789"
+  }
+
+   ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+
+  ``` json
+  {
+    "error": "Authentication required"
+  }
+
+   ```
+
+  **403 Forbidden** - Insufficient permissions to view this employee
+
+  ``` json
+  {
+    "error": "Insufficient permissions. You can only view your own employee record."
+  }
+
+   ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  | --- | --- | --- |
+  | id | string | Unique employee identifier |
+  | firstName | string | Employee's first name |
+  | lastName | string | Employee's last name |
+  | email | string | Employee's email address |
+  | departmentId | string | ID of the department the employee belongs to |
+  | position | string | Employee's job title/position |
+  | salary | number | Annual salary amount |
+  | hireDate | string | Date of hire (YYYY-MM-DD format) |
+  | phoneNumber | string | Employee's contact phone number |
+  | status | string | Current employment status (active, inactive, on_leave, terminated) |
+  | createdAt | string | Timestamp when the record was created |
+  | updatedAt | string | Timestamp when the record was last updated |
+url: "{{baseUrl}}/api/hr/employees/{{lastCreatedEmployeeId}}"
+method: GET
+pathVariables:
+  id: "{{lastCreatedEmployeeId}}"
+order: 3000

@@ -1,0 +1,116 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves comprehensive HR statistics and metrics for the organization. This endpoint provides high-level analytics including employee counts by status, department statistics, salary information, and other key HR metrics useful for dashboards and reporting.
+
+  ## Authentication
+
+  **Required Role:** `hr_manager`, `admin`, or `finance_manager`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/hr/statistics
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns comprehensive HR statistics:
+
+  ```json
+  {
+    "employees": {
+      "total": 150,
+      "active": 142,
+      "inactive": 3,
+      "onLeave": 5,
+      "terminated": 8,
+      "newHiresThisMonth": 4,
+      "newHiresThisYear": 23
+    },
+    "departments": {
+      "total": 8,
+      "averageSize": 18.75,
+      "largest": {
+        "name": "Engineering",
+        "employeeCount": 45
+      },
+      "smallest": {
+        "name": "Legal",
+        "employeeCount": 3
+      }
+    },
+    "salary": {
+      "averageSalary": 72500,
+      "medianSalary": 68000,
+      "totalPayroll": 10875000,
+      "highestSalary": 185000,
+      "lowestSalary": 45000
+    },
+    "demographics": {
+      "averageTenure": 3.2,
+      "turnoverRate": 8.5,
+      "retentionRate": 91.5
+    },
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires hr_manager, admin, or finance_manager role."
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | employees.total | number | Total number of employees (all statuses) |
+  | employees.active | number | Number of active employees |
+  | employees.inactive | number | Number of inactive employees |
+  | employees.onLeave | number | Number of employees on leave |
+  | employees.terminated | number | Number of terminated employees |
+  | employees.newHiresThisMonth | number | New hires in current month |
+  | employees.newHiresThisYear | number | New hires in current year |
+  | departments.total | number | Total number of departments |
+  | departments.averageSize | number | Average employees per department |
+  | salary.averageSalary | number | Average salary across all employees |
+  | salary.medianSalary | number | Median salary |
+  | salary.totalPayroll | number | Total annual payroll |
+  | demographics.averageTenure | number | Average years of employment |
+  | demographics.turnoverRate | number | Annual turnover rate (percentage) |
+  | demographics.retentionRate | number | Employee retention rate (percentage) |
+  | timestamp | string | When statistics were generated |
+
+  ## Use Cases
+
+  - **Executive Dashboards**: Display key HR metrics for leadership
+  - **HR Planning**: Analyze workforce composition and trends
+  - **Budget Planning**: Understand payroll costs and projections
+  - **Reporting**: Generate HR reports and presentations
+  - **Trend Analysis**: Monitor hiring, turnover, and retention rates
+url: "{{baseUrl}}/api/hr/statistics"
+method: GET
+order: 3000

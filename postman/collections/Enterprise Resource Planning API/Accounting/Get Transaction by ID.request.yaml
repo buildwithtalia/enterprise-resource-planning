@@ -1,0 +1,101 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed information about a specific accounting transaction by its unique identifier. This endpoint provides complete transaction details including all associated entries, amounts, and metadata.
+
+  ## Authentication
+
+  **Required Role:** `accountant`, `finance_manager`, `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | The unique identifier of the transaction |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/accounting/transactions/txn-123
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns detailed transaction information:
+
+  ```json
+  {
+    "id": "txn-123",
+    "date": "2024-01-15",
+    "type": "journal_entry",
+    "description": "Office supplies purchase",
+    "journalEntryId": "je-001",
+    "entries": [
+      {
+        "accountCode": "5000",
+        "accountName": "Office Supplies Expense",
+        "debit": 500,
+        "credit": 0
+      },
+      {
+        "accountCode": "1000",
+        "accountName": "Cash",
+        "debit": 0,
+        "credit": 500
+      }
+    ],
+    "totalAmount": 500,
+    "balanced": true,
+    "status": "posted",
+    "createdBy": "user-123",
+    "createdByName": "Jane Smith",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "lastModified": "2024-01-15T10:00:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - Transaction does not exist
+  ```json
+  {
+    "error": "Transaction not found",
+    "transactionId": "txn-123"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions to view transaction details"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Transaction Review**: Examine specific transaction details
+  - **Audit Investigation**: Investigate flagged transactions
+  - **Error Correction**: Review transaction before making corrections
+  - **Documentation**: Retrieve transaction details for documentation
+  - **Dispute Resolution**: Provide transaction evidence for disputes
+url: "{{baseUrl}}/api/accounting/transactions/:id"
+method: GET
+pathVariables:
+  id: txn-123
+order: 3000

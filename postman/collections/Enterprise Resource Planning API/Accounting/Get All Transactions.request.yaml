@@ -1,0 +1,110 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves all accounting transactions recorded in the system. This endpoint provides a comprehensive view of all financial activities, including journal entries, payments, receipts, and other monetary transactions. Essential for financial analysis, reporting, and audit trails.
+
+  ## Authentication
+
+  **Required Role:** `accountant`, `finance_manager`, `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | startDate | string | No | Filter transactions from this date (YYYY-MM-DD) |
+  | endDate | string | No | Filter transactions to this date (YYYY-MM-DD) |
+  | accountCode | string | No | Filter by specific account code |
+  | type | string | No | Filter by transaction type (journal_entry, payment, receipt) |
+  | limit | number | No | Maximum number of records to return (default: 100) |
+  | offset | number | No | Number of records to skip for pagination (default: 0) |
+
+  ### Example Requests
+
+  **Get all transactions:**
+  ```
+  GET {{baseUrl}}/api/accounting/transactions
+  ```
+
+  **Get transactions for a date range:**
+  ```
+  GET {{baseUrl}}/api/accounting/transactions?startDate=2024-01-01&endDate=2024-01-31
+  ```
+
+  **Get transactions for specific account:**
+  ```
+  GET {{baseUrl}}/api/accounting/transactions?accountCode=1000
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of transactions:
+
+  ```json
+  {
+    "total": 150,
+    "limit": 100,
+    "offset": 0,
+    "transactions": [
+      {
+        "id": "txn-001",
+        "date": "2024-01-15",
+        "type": "journal_entry",
+        "description": "Office supplies purchase",
+        "amount": 500,
+        "accountCode": "5000",
+        "accountName": "Office Supplies Expense",
+        "debitCredit": "debit",
+        "referenceNumber": "je-001",
+        "createdAt": "2024-01-15T10:00:00Z"
+      },
+      {
+        "id": "txn-002",
+        "date": "2024-01-16",
+        "type": "payment",
+        "description": "Vendor payment",
+        "amount": 2500,
+        "accountCode": "2000",
+        "accountName": "Accounts Payable",
+        "debitCredit": "debit",
+        "referenceNumber": "pmt-045",
+        "createdAt": "2024-01-16T14:30:00Z"
+      }
+    ]
+  }
+  ```
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions to view transactions"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Financial Reporting**: Generate financial statements and reports
+  - **Audit Trail**: Review all financial activities for compliance
+  - **Transaction Analysis**: Analyze spending patterns and trends
+  - **Reconciliation**: Match transactions with bank statements
+  - **Period Closing**: Review all transactions before closing a period
+url: "{{baseUrl}}/api/accounting/transactions"
+method: GET
+order: 2000

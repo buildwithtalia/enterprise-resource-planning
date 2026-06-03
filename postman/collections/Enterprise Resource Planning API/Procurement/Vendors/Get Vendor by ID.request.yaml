@@ -1,0 +1,152 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed information for a specific vendor by their unique identifier. This endpoint provides comprehensive vendor data including contact information, payment terms, performance metrics, and transaction history, enabling procurement teams to make informed decisions when selecting vendors for purchase orders.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `procurement_staff`, `admin`
+
+  Users must have procurement or administrative privileges to view vendor details.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique vendor identifier (e.g., vendor-123) |
+
+  ### Example Request
+
+  ```http
+  GET {{baseUrl}}/api/procurement/vendors/vendor-123
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns a detailed vendor object:
+
+  ```json
+  {
+    "id": "vendor-123",
+    "name": "Office Supplies Inc",
+    "email": "sales@officesupplies.com",
+    "phone": "+1-555-0456",
+    "address": "456 Vendor St, City, State 12345",
+    "paymentTerms": "Net 30",
+    "category": "Office Supplies",
+    "rating": 4.5,
+    "status": "active",
+    "totalOrders": 45,
+    "totalSpend": 125000.00,
+    "averageOrderValue": 2777.78,
+    "onTimeDeliveryRate": 92.5,
+    "qualityRating": 4.6,
+    "lastOrderDate": "2024-01-10T14:30:00Z",
+    "createdAt": "2023-06-15T10:30:00Z",
+    "updatedAt": "2024-01-10T14:20:00Z",
+    "notes": "Preferred vendor for office supplies. Excellent customer service.",
+    "contacts": [
+      {
+        "name": "John Smith",
+        "role": "Sales Manager",
+        "email": "john.smith@officesupplies.com",
+        "phone": "+1-555-0457"
+      }
+    ]
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique vendor identifier |
+  | name | string | Vendor company name |
+  | email | string | Primary vendor contact email |
+  | phone | string | Primary vendor contact phone |
+  | address | string | Vendor business address |
+  | paymentTerms | string | Payment terms agreement |
+  | category | string | Vendor category/industry |
+  | rating | number | Overall vendor performance rating (0-5) |
+  | status | string | Vendor status (active, inactive, suspended) |
+  | totalOrders | number | Total purchase orders placed with vendor |
+  | totalSpend | number | Total amount spent with vendor |
+  | averageOrderValue | number | Average purchase order value |
+  | onTimeDeliveryRate | number | Percentage of on-time deliveries |
+  | qualityRating | number | Product/service quality rating (0-5) |
+  | lastOrderDate | string | Date of most recent order (ISO 8601) |
+  | createdAt | string | Vendor creation timestamp (ISO 8601) |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+  | notes | string | Internal notes about the vendor |
+  | contacts | array | Array of vendor contact persons |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to view vendor details",
+    "requiredRole": "procurement_manager, procurement_staff, or admin"
+  }
+  ```
+
+  **404 Not Found** - Vendor does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Vendor with ID 'vendor-123' not found"
+  }
+  ```
+
+  **500 Internal Server Error** - Server error
+  ```json
+  {
+    "error": "Internal Server Error",
+    "message": "An error occurred while retrieving vendor details"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Vendor Evaluation**: Review detailed vendor information before creating purchase orders
+  - **Performance Review**: Assess vendor performance metrics and ratings
+  - **Contact Management**: Access vendor contact information for communication
+  - **Due Diligence**: Verify vendor details and history before major purchases
+  - **Vendor Comparison**: Compare specific vendors side-by-side
+  - **Audit Trail**: Review vendor transaction history and spending patterns
+
+  ## Notes
+
+  - Performance metrics are calculated from historical purchase order data
+  - Rating is a composite score based on delivery time, quality, and reliability
+  - On-time delivery rate is calculated from completed purchase orders
+  - Contact information may include multiple contacts for different departments
+  - Vendor status affects ability to create new purchase orders
+url: "{{baseUrl}}/api/procurement/vendors/:id"
+method: GET
+pathVariables:
+  id: vendor-123
+order: 3000

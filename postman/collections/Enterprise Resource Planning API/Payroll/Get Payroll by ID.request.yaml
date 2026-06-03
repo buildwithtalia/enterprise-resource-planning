@@ -1,0 +1,137 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed information about a specific payroll record by its unique identifier. This endpoint provides complete payroll details including all calculations, deductions, taxes, and payment information for a single payroll record.
+
+  ## Authentication
+
+  **Required Role:** `payroll_manager`, `admin`, `finance_manager`, or `employee` (employees can only view their own payroll)
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | The unique identifier of the payroll record to retrieve |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/payroll/pay-001
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns a single payroll record with complete details:
+
+  ```json
+  {
+    "id": "pay-001",
+    "employeeId": "emp-789",
+    "employeeName": "John Doe",
+    "employeeEmail": "john.doe@example.com",
+    "departmentId": "dept-001",
+    "departmentName": "Engineering",
+    "payPeriodStart": "2024-01-01",
+    "payPeriodEnd": "2024-01-31",
+    "grossPay": 6250,
+    "deductions": {
+      "healthInsurance": 300,
+      "retirement401k": 500,
+      "other": 200,
+      "total": 1000
+    },
+    "taxWithheld": {
+      "federal": 900,
+      "state": 250,
+      "socialSecurity": 100,
+      "total": 1250
+    },
+    "netPay": 4000,
+    "bonus": 500,
+    "overtime": 10,
+    "overtimePay": 250,
+    "status": "approved",
+    "approvedBy": "admin-user-123",
+    "approvedAt": "2024-02-01T14:30:00Z",
+    "paymentDate": "2024-02-05",
+    "paymentMethod": "direct_deposit",
+    "createdAt": "2024-02-01T10:00:00Z",
+    "updatedAt": "2024-02-01T14:30:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - Payroll record does not exist
+  ```json
+  {
+    "error": "Payroll record not found",
+    "payrollId": "pay-001"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. You can only view your own payroll records."
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique payroll record identifier |
+  | employeeId | string | ID of the employee |
+  | employeeName | string | Name of the employee |
+  | employeeEmail | string | Email of the employee |
+  | departmentId | string | ID of the department |
+  | departmentName | string | Name of the department |
+  | payPeriodStart | string | Start date of pay period |
+  | payPeriodEnd | string | End date of pay period |
+  | grossPay | number | Total gross pay |
+  | deductions | object | Breakdown of all deductions |
+  | taxWithheld | object | Breakdown of all taxes |
+  | netPay | number | Net pay amount |
+  | bonus | number | Bonus amount |
+  | overtime | number | Overtime hours |
+  | overtimePay | number | Overtime pay amount |
+  | status | string | Payroll status |
+  | approvedBy | string | ID of approver (if approved) |
+  | approvedAt | string | Approval timestamp (if approved) |
+  | paymentDate | string | Payment date |
+  | paymentMethod | string | Payment method |
+  | createdAt | string | Record creation timestamp |
+  | updatedAt | string | Last update timestamp |
+
+  ## Use Cases
+
+  - **Payroll Review**: View detailed payroll calculations
+  - **Employee Inquiry**: Employees can view their own payroll details
+  - **Audit**: Review specific payroll records for compliance
+  - **Dispute Resolution**: Investigate payroll discrepancies
+url: "{{baseUrl}}/api/payroll/:id"
+method: GET
+pathVariables:
+  id: 123e4567-e89b-12d3-a456-426614174000
+auth:
+  type: bearer
+  credentials:
+    token: "{{authToken}}"
+order: 5000

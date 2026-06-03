@@ -1,0 +1,133 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Approves a pending payroll record, marking it ready for payment disbursement. This endpoint is part of the payroll approval workflow, ensuring that payroll calculations are reviewed and authorized before payments are issued to employees.
+
+  ## Authentication
+
+  **Required Role:** `payroll_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | The unique identifier of the payroll record to approve |
+
+  ### Headers
+
+  | Header | Type | Required | Description |
+  |--------|------|----------|-------------|
+  | Authorization | string | Yes | Bearer token for authentication |
+
+  ### Example Request
+
+  ```
+  POST {{baseUrl}}/api/payroll/pay-001/approve
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the approved payroll record:
+
+  ```json
+  {
+    "id": "pay-001",
+    "employeeId": "emp-789",
+    "employeeName": "John Doe",
+    "payPeriodStart": "2024-01-01",
+    "payPeriodEnd": "2024-01-31",
+    "grossPay": 6250,
+    "deductions": 1000,
+    "taxWithheld": 1250,
+    "netPay": 4000,
+    "status": "approved",
+    "approvedBy": "admin-user-123",
+    "approvedAt": "2024-02-01T14:30:00Z",
+    "createdAt": "2024-02-01T10:00:00Z",
+    "updatedAt": "2024-02-01T14:30:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - Payroll record does not exist
+  ```json
+  {
+    "error": "Payroll record not found",
+    "payrollId": "pay-001"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires payroll_manager or admin role."
+  }
+  ```
+
+  **409 Conflict** - Payroll already approved or paid
+  ```json
+  {
+    "error": "Payroll record is already approved or paid"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique payroll record identifier |
+  | employeeId | string | ID of the employee |
+  | employeeName | string | Name of the employee |
+  | payPeriodStart | string | Start date of pay period |
+  | payPeriodEnd | string | End date of pay period |
+  | grossPay | number | Total gross pay |
+  | deductions | number | Total deductions |
+  | taxWithheld | number | Tax amount withheld |
+  | netPay | number | Net pay amount |
+  | status | string | Payroll status (now "approved") |
+  | approvedBy | string | ID of user who approved |
+  | approvedAt | string | Approval timestamp |
+  | createdAt | string | Record creation timestamp |
+  | updatedAt | string | Last update timestamp |
+
+  ## Use Cases
+
+  - **Payroll Approval Workflow**: Review and approve payroll before payment
+  - **Compliance**: Ensure payroll is reviewed by authorized personnel
+  - **Audit Trail**: Track who approved payroll and when
+  - **Payment Authorization**: Authorize payroll for payment processing
+
+  ## Notes
+
+  - Only payroll records with "pending" status can be approved
+  - Approval is required before payroll can be paid
+  - The approver's user ID is automatically recorded
+  - Once approved, payroll calculations cannot be modified without creating a new record
+url: "{{baseUrl}}/api/payroll/:id/approve"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: f9a4e110-4daa-4011-a1d3-0955d78fe6c4
+auth:
+  type: bearer
+  credentials:
+    token: "{{authToken}}"
+order: 3000

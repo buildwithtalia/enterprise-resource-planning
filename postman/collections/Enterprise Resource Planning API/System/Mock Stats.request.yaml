@@ -1,0 +1,85 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock statistical data for demonstration and testing purposes. This endpoint is particularly useful when the database is not configured or when you need sample data to test frontend components, dashboards, or reporting features without affecting production data.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/mock-stats
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns mock statistics across all ERP modules:
+
+  ```json
+  {
+    "employees": {
+      "total": 150,
+      "active": 142,
+      "onLeave": 5,
+      "terminated": 3
+    },
+    "departments": {
+      "total": 8,
+      "averageSize": 18.75
+    },
+    "payroll": {
+      "totalProcessed": 1250,
+      "monthlyPayroll": 875000,
+      "averageSalary": 65000
+    },
+    "inventory": {
+      "totalItems": 450,
+      "lowStockItems": 23,
+      "totalValue": 2500000
+    },
+    "invoices": {
+      "total": 320,
+      "paid": 280,
+      "pending": 35,
+      "overdue": 5,
+      "totalRevenue": 1850000
+    },
+    "purchaseOrders": {
+      "total": 180,
+      "pending": 25,
+      "approved": 140,
+      "received": 15
+    }
+  }
+  ```
+
+  **Response Fields:**
+
+  The response contains statistical summaries for each major module, including counts, totals, and averages.
+
+  ## Use Cases
+
+  - **Development**: Test dashboard and reporting components without a database
+  - **Demos**: Show potential clients realistic data without exposing real information
+  - **Testing**: Validate frontend logic with consistent mock data
+  - **Prototyping**: Build UI components before backend implementation is complete
+
+  ## Notes
+
+  - Data is static and does not reflect real system state
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/mock-stats"
+method: GET
+order: 3000

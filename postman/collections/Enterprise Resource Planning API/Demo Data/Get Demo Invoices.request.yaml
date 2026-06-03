@@ -1,0 +1,115 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock invoice data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of billing invoices without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/invoices
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock invoice objects:
+
+  ```json
+  [
+    {
+      "id": "inv-001",
+      "invoiceNumber": "INV-2024-001",
+      "customerId": "cust-001",
+      "customerName": "Acme Corporation",
+      "issueDate": "2024-01-15",
+      "dueDate": "2024-02-14",
+      "subtotal": 10000,
+      "taxAmount": 800,
+      "totalAmount": 10800,
+      "paidAmount": 10800,
+      "balanceDue": 0,
+      "status": "paid",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "description": "Professional Services",
+          "quantity": 40,
+          "unitPrice": 250,
+          "amount": 10000
+        }
+      ]
+    },
+    {
+      "id": "inv-002",
+      "invoiceNumber": "INV-2024-002",
+      "customerId": "cust-002",
+      "customerName": "TechStart Inc",
+      "issueDate": "2024-01-20",
+      "dueDate": "2024-03-05",
+      "subtotal": 25000,
+      "taxAmount": 2000,
+      "totalAmount": 27000,
+      "paidAmount": 0,
+      "balanceDue": 27000,
+      "status": "pending",
+      "paymentTerms": "Net 45",
+      "items": [
+        {
+          "description": "Software License",
+          "quantity": 50,
+          "unitPrice": 500,
+          "amount": 25000
+        }
+      ]
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique invoice identifier |
+  | invoiceNumber | string | Human-readable invoice number |
+  | customerId | string | ID of the customer |
+  | customerName | string | Name of the customer |
+  | issueDate | string | Date invoice was issued (YYYY-MM-DD) |
+  | dueDate | string | Payment due date (YYYY-MM-DD) |
+  | subtotal | number | Subtotal before tax |
+  | taxAmount | number | Tax amount |
+  | totalAmount | number | Total amount including tax |
+  | paidAmount | number | Amount paid so far |
+  | balanceDue | number | Remaining balance due |
+  | status | string | Invoice status (draft, pending, paid, overdue, cancelled) |
+  | paymentTerms | string | Payment terms (e.g., Net 30, Net 45) |
+  | items | array | Line items on the invoice |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test invoice management UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase billing and invoicing features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/invoices"
+method: GET
+order: 7000

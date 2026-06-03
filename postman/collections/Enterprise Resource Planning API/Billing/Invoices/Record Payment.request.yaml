@@ -1,0 +1,15 @@
+$kind: http-request
+description: Record a payment for an invoice. Requires 'billing_manager' or 'admin' role.
+url: "{{baseUrl}}/api/billing/invoices/:id/payment"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: inv-123
+body:
+  type: text
+  content: |-
+    {
+      "amount": 6480
+    }
+order: 5000

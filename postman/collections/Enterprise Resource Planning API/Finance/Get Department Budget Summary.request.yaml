@@ -1,0 +1,244 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves a comprehensive budget summary for a specific department and fiscal year, aggregating all budgets across different categories. This endpoint provides a high-level overview of department financial performance, including total allocations, spending, and utilization metrics across all budget categories.
+
+  ## Authentication
+
+  **Required Role:** `finance_manager`, `admin`, `department_manager`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | department | string | Yes | Name of the department (e.g., Engineering, Marketing) |
+  | fiscalYear | number | Yes | Fiscal year (e.g., 2024) |
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | includeDetails | boolean | No | Include detailed breakdown by category (default: false) |
+
+  ### Example Requests
+
+  **Get department summary:**
+  ```
+  GET {{baseUrl}}/api/finance/department/Engineering/fiscal-year/2024
+  ```
+
+  **Get detailed summary:**
+  ```
+  GET {{baseUrl}}/api/finance/department/Engineering/fiscal-year/2024?includeDetails=true
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns aggregated budget summary for the department:
+
+  ```json
+  {
+    "department": "Engineering",
+    "fiscalYear": 2024,
+    "summary": {
+      "totalAllocated": 1500000,
+      "totalSpent": 875000,
+      "totalRemaining": 625000,
+      "overallUtilizationPercentage": 58.3,
+      "numberOfBudgets": 5,
+      "activeBudgets": 4,
+      "closedBudgets": 1,
+      "exceededBudgets": 0
+    },
+    "budgetsByCategory": [
+      {
+        "category": "Operations",
+        "allocated": 500000,
+        "spent": 325000,
+        "remaining": 175000,
+        "utilizationPercentage": 65,
+        "status": "active"
+      },
+      {
+        "category": "Personnel",
+        "allocated": 600000,
+        "spent": 350000,
+        "remaining": 250000,
+        "utilizationPercentage": 58.3,
+        "status": "active"
+      },
+      {
+        "category": "Capital",
+        "allocated": 250000,
+        "spent": 125000,
+        "remaining": 125000,
+        "utilizationPercentage": 50,
+        "status": "active"
+      },
+      {
+        "category": "Training",
+        "allocated": 100000,
+        "spent": 55000,
+        "remaining": 45000,
+        "utilizationPercentage": 55,
+        "status": "active"
+      },
+      {
+        "category": "Marketing",
+        "allocated": 50000,
+        "spent": 20000,
+        "remaining": 30000,
+        "utilizationPercentage": 40,
+        "status": "closed"
+      }
+    ],
+    "quarterlyTrends": [
+      {
+        "quarter": "Q1",
+        "allocated": 375000,
+        "spent": 285000,
+        "utilizationPercentage": 76
+      },
+      {
+        "quarter": "Q2",
+        "allocated": 375000,
+        "spent": 320000,
+        "utilizationPercentage": 85.3
+      },
+      {
+        "quarter": "Q3",
+        "allocated": 375000,
+        "spent": 270000,
+        "utilizationPercentage": 72
+      },
+      {
+        "quarter": "Q4",
+        "allocated": 375000,
+        "spent": 0,
+        "utilizationPercentage": 0
+      }
+    ],
+    "topExpenseCategories": [
+      {
+        "name": "Salaries",
+        "amount": 350000,
+        "percentage": 40
+      },
+      {
+        "name": "Cloud Infrastructure",
+        "amount": 175000,
+        "percentage": 20
+      },
+      {
+        "name": "Software Licenses",
+        "amount": 150000,
+        "percentage": 17.1
+      },
+      {
+        "name": "Equipment",
+        "amount": 125000,
+        "percentage": 14.3
+      },
+      {
+        "name": "Other",
+        "amount": 75000,
+        "percentage": 8.6
+      }
+    ],
+    "performance": {
+      "status": "on_track",
+      "efficiency": "good",
+      "projectedYearEndUtilization": 95,
+      "projectedSavings": 75000
+    },
+    "alerts": [
+      {
+        "severity": "info",
+        "message": "Department is on track to finish under budget"
+      },
+      {
+        "severity": "warning",
+        "message": "Q2 spending was 13.3% higher than Q1"
+      }
+    ],
+    "comparisonToPreviousYear": {
+      "previousYearTotal": 1400000,
+      "currentYearTotal": 1500000,
+      "changeAmount": 100000,
+      "changePercentage": 7.1
+    },
+    "generatedAt": "2024-09-30T10:00:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - No budgets found for department/year
+  ```json
+  {
+    "error": "No budgets found",
+    "department": "Engineering",
+    "fiscalYear": 2024
+  }
+  ```
+
+  **400 Bad Request** - Invalid fiscal year
+  ```json
+  {
+    "error": "Invalid fiscal year",
+    "details": "Fiscal year must be a valid 4-digit year"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions to view department budget summary"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | department | string | Department name |
+  | fiscalYear | number | Fiscal year |
+  | summary | object | Aggregated budget summary |
+  | budgetsByCategory | array | Breakdown by budget category |
+  | quarterlyTrends | array | Quarterly spending trends |
+  | topExpenseCategories | array | Top expense categories |
+  | performance | object | Performance metrics and status |
+  | alerts | array | Department-level alerts |
+  | comparisonToPreviousYear | object | Year-over-year comparison |
+  | generatedAt | string | Report generation timestamp |
+
+  ## Use Cases
+
+  - **Department Review**: Comprehensive overview of department finances
+  - **Executive Reporting**: High-level financial summaries for leadership
+  - **Budget Planning**: Historical data for next year's budget planning
+  - **Performance Evaluation**: Assess department financial management
+  - **Comparative Analysis**: Compare department performance across years
+  - **Resource Allocation**: Identify opportunities for budget optimization
+url: "{{baseUrl}}/api/finance/department/:department/fiscal-year/:fiscalYear"
+method: GET
+pathVariables:
+  department: Engineering
+  fiscalYear: "2024"
+order: 2000

@@ -1,0 +1,170 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Cancels a shipment, terminating the delivery process and updating the shipment status to 'cancelled'. This endpoint is used when a shipment needs to be stopped due to order changes, customer requests, carrier issues, or other exceptions. Cancellation may trigger inventory adjustments and customer/vendor notifications.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `logistics_coordinator`, `admin`
+
+  Users must have warehouse management, logistics coordination, or administrative privileges to cancel shipments.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | Yes | Indicates JSON request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique shipment identifier (e.g., ship-123) |
+
+  ### Body Parameters
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | reason | string | Yes | Reason for cancellation |
+  | notes | string | No | Additional notes or comments |
+  | notifyCustomer | boolean | No | Notify customer of cancellation (default: true) |
+  | notifyCarrier | boolean | No | Notify carrier of cancellation (default: true) |
+  | restockInventory | boolean | No | Restock items to inventory (default: true if not shipped) |
+
+  ### Example Request
+
+  ```json
+  POST {{baseUrl}}/api/supply-chain/shipments/ship-123/cancel
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  {
+    "reason": "Customer requested cancellation before dispatch",
+    "notes": "Order was cancelled by customer prior to shipment",
+    "notifyCustomer": true,
+    "notifyCarrier": false,
+    "restockInventory": true
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the cancelled shipment:
+
+  ```json
+  {
+    "shipmentId": "ship-123",
+    "orderId": "order-456",
+    "trackingNumber": "1Z999AA10123456784",
+    "carrier": "FedEx",
+    "status": "cancelled",
+    "previousStatus": "pending",
+    "reason": "Customer requested cancellation before dispatch",
+    "notes": "Order was cancelled by customer prior to shipment",
+    "restockInventory": true,
+    "customerNotified": true,
+    "carrierNotified": false,
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2024-01-15T10:30:00Z"
+      },
+      {
+        "status": "cancelled",
+        "timestamp": "2024-01-15T11:00:00Z",
+        "reason": "Customer requested cancellation before dispatch",
+        "notes": "Order was cancelled by customer prior to shipment"
+      }
+    ],
+    "message": "Shipment cancelled successfully",
+    "updatedAt": "2024-01-15T11:00:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | shipmentId | string | Unique shipment identifier |
+  | orderId | string | Associated order identifier |
+  | trackingNumber | string | Carrier tracking number |
+  | carrier | string | Shipping carrier name |
+  | status | string | Updated status (cancelled) |
+  | previousStatus | string | Previous status before cancellation |
+  | reason | string | Reason for cancellation |
+  | notes | string | Additional notes |
+  | restockInventory | boolean | Whether inventory was restocked |
+  | customerNotified | boolean | Whether customer was notified |
+  | carrierNotified | boolean | Whether carrier was notified |
+  | statusHistory | array | Complete status change history |
+  | message | string | Success message |
+  | updatedAt | string | Last update timestamp |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to cancel shipments",
+    "requiredRole": "warehouse_manager, logistics_coordinator, or admin"
+  }
+  ```
+
+  **404 Not Found** - Shipment does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Shipment with ID 'ship-123' not found"
+  }
+  ```
+
+  **409 Conflict** - Cannot cancel in current status
+  ```json
+  {
+    "error": "Conflict",
+    "message": "Shipment cannot be cancelled in current status",
+    "currentStatus": "delivered",
+    "allowedStatuses": ["pending", "dispatched", "in_transit"],
+    "reason": "Delivered shipments cannot be cancelled"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Order Cancellation**: Cancel shipments when orders are cancelled by customer
+  - **Carrier Issues**: Cancel shipments due to carrier problems
+  - **Inventory Correction**: Restock items if shipment is cancelled before dispatch
+  - **Exception Handling**: Handle lost, damaged, or undeliverable shipments
+  - **Audit Trail**: Maintain complete cancellation history
+  - **Customer Communication**: Notify customers of shipment cancellation
+
+  ## Notes
+
+  - Only shipments in 'pending', 'dispatched', or 'in_transit' status can be cancelled
+  - Delivered shipments cannot be cancelled
+  - Inventory is restocked if shipment is cancelled before dispatch
+  - Customer and carrier notifications are optional
+  - Status history is updated with cancellation event
+  - Reason for cancellation is required for audit purposes
+url: "{{baseUrl}}/api/supply-chain/shipments/:id/cancel"
+method: POST
+pathVariables:
+  id: ship-123
+order: 9000

@@ -1,0 +1,351 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Generates a comprehensive financial report aggregating data across all departments, budgets, and fiscal periods. This endpoint provides executive-level financial insights including organizational spending patterns, budget performance, financial health indicators, and trend analysis. Essential for strategic planning and board-level reporting.
+
+  ## Authentication
+
+  **Required Role:** `finance_manager`, `admin`, `cfo`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | fiscalYear | number | No | Filter by fiscal year (default: current year) |
+  | startDate | string | No | Report start date (YYYY-MM-DD) |
+  | endDate | string | No | Report end date (YYYY-MM-DD) |
+  | departments | string | No | Comma-separated list of departments to include |
+  | reportType | string | No | Report type (summary, detailed, executive) (default: summary) |
+  | format | string | No | Response format (json, pdf, csv) (default: json) |
+  | includeProjections | boolean | No | Include financial projections (default: true) |
+  | includeComparisons | boolean | No | Include year-over-year comparisons (default: true) |
+
+  ### Example Requests
+
+  **Get current year financial report:**
+  ```
+  GET {{baseUrl}}/api/finance/reports/financial
+  ```
+
+  **Get detailed report for fiscal year 2024:**
+  ```
+  GET {{baseUrl}}/api/finance/reports/financial?fiscalYear=2024&reportType=detailed
+  ```
+
+  **Get executive summary for specific departments:**
+  ```
+  GET {{baseUrl}}/api/finance/reports/financial?departments=Engineering,Marketing,Sales&reportType=executive
+  ```
+
+  **Get report for date range:**
+  ```
+  GET {{baseUrl}}/api/finance/reports/financial?startDate=2024-01-01&endDate=2024-06-30
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns comprehensive financial report:
+
+  ```json
+  {
+    "reportId": "report-2024-001",
+    "reportType": "summary",
+    "fiscalYear": 2024,
+    "reportPeriod": {
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-31"
+    },
+    "organizationSummary": {
+      "totalBudgetAllocated": 5000000,
+      "totalSpent": 3250000,
+      "totalRemaining": 1750000,
+      "overallUtilizationPercentage": 65,
+      "numberOfDepartments": 8,
+      "numberOfBudgets": 32,
+      "activeBudgets": 28,
+      "closedBudgets": 3,
+      "exceededBudgets": 1
+    },
+    "departmentSummaries": [
+      {
+        "department": "Engineering",
+        "allocated": 1500000,
+        "spent": 975000,
+        "remaining": 525000,
+        "utilizationPercentage": 65,
+        "status": "on_track",
+        "numberOfBudgets": 5
+      },
+      {
+        "department": "Marketing",
+        "allocated": 800000,
+        "spent": 680000,
+        "remaining": 120000,
+        "utilizationPercentage": 85,
+        "status": "at_risk",
+        "numberOfBudgets": 4
+      },
+      {
+        "department": "Sales",
+        "allocated": 1200000,
+        "spent": 780000,
+        "remaining": 420000,
+        "utilizationPercentage": 65,
+        "status": "on_track",
+        "numberOfBudgets": 6
+      },
+      {
+        "department": "Operations",
+        "allocated": 600000,
+        "spent": 390000,
+        "remaining": 210000,
+        "utilizationPercentage": 65,
+        "status": "on_track",
+        "numberOfBudgets": 4
+      },
+      {
+        "department": "HR",
+        "allocated": 400000,
+        "spent": 260000,
+        "remaining": 140000,
+        "utilizationPercentage": 65,
+        "status": "on_track",
+        "numberOfBudgets": 3
+      }
+    ],
+    "categoryBreakdown": [
+      {
+        "category": "Personnel",
+        "allocated": 2000000,
+        "spent": 1400000,
+        "percentage": 43.1
+      },
+      {
+        "category": "Operations",
+        "allocated": 1500000,
+        "spent": 975000,
+        "percentage": 30
+      },
+      {
+        "category": "Marketing",
+        "allocated": 800000,
+        "spent": 520000,
+        "percentage": 16
+      },
+      {
+        "category": "Capital",
+        "allocated": 500000,
+        "spent": 275000,
+        "percentage": 8.5
+      },
+      {
+        "category": "Other",
+        "allocated": 200000,
+        "spent": 80000,
+        "percentage": 2.4
+      }
+    ],
+    "quarterlyPerformance": [
+      {
+        "quarter": "Q1",
+        "allocated": 1250000,
+        "spent": 950000,
+        "utilizationPercentage": 76
+      },
+      {
+        "quarter": "Q2",
+        "allocated": 1250000,
+        "spent": 1050000,
+        "utilizationPercentage": 84
+      },
+      {
+        "quarter": "Q3",
+        "allocated": 1250000,
+        "spent": 900000,
+        "utilizationPercentage": 72
+      },
+      {
+        "quarter": "Q4",
+        "allocated": 1250000,
+        "spent": 350000,
+        "utilizationPercentage": 28
+      }
+    ],
+    "financialProjections": {
+      "projectedYearEndSpend": 4750000,
+      "projectedRemaining": 250000,
+      "projectedUtilization": 95,
+      "confidenceLevel": "high",
+      "projectionBasis": "Historical trends and current burn rate"
+    },
+    "yearOverYearComparison": {
+      "previousYear": {
+        "fiscalYear": 2023,
+        "totalAllocated": 4500000,
+        "totalSpent": 4200000,
+        "utilizationPercentage": 93.3
+      },
+      "currentYear": {
+        "fiscalYear": 2024,
+        "totalAllocated": 5000000,
+        "totalSpent": 3250000,
+        "utilizationPercentage": 65
+      },
+      "changes": {
+        "budgetIncrease": 500000,
+        "budgetIncreasePercentage": 11.1,
+        "spendingChange": -950000,
+        "spendingChangePercentage": -22.6
+      }
+    },
+    "keyMetrics": {
+      "averageBudgetUtilization": 65,
+      "averageMonthlySpend": 270833,
+      "budgetEfficiency": "good",
+      "costSavings": 250000,
+      "costSavingsPercentage": 5,
+      "departmentsOnTrack": 7,
+      "departmentsAtRisk": 1,
+      "departmentsExceeded": 0
+    },
+    "topExpenses": [
+      {
+        "description": "Salaries and Benefits",
+        "amount": 1400000,
+        "percentage": 43.1,
+        "department": "All"
+      },
+      {
+        "description": "Cloud Infrastructure",
+        "amount": 450000,
+        "percentage": 13.8,
+        "department": "Engineering"
+      },
+      {
+        "description": "Marketing Campaigns",
+        "amount": 380000,
+        "percentage": 11.7,
+        "department": "Marketing"
+      },
+      {
+        "description": "Software Licenses",
+        "amount": 325000,
+        "percentage": 10,
+        "department": "Engineering"
+      },
+      {
+        "description": "Office Rent",
+        "amount": 240000,
+        "percentage": 7.4,
+        "department": "Operations"
+      }
+    ],
+    "alerts": [
+      {
+        "severity": "warning",
+        "type": "overspend_risk",
+        "message": "Marketing department at 85% utilization with 3 months remaining",
+        "department": "Marketing"
+      },
+      {
+        "severity": "info",
+        "type": "underspend",
+        "message": "HR department significantly under budget - consider reallocation",
+        "department": "HR"
+      },
+      {
+        "severity": "success",
+        "type": "performance",
+        "message": "Organization projected to finish 5% under budget"
+      }
+    ],
+    "recommendations": [
+      "Consider reallocating unused HR budget to Marketing to prevent overspend",
+      "Engineering cloud costs trending upward - review optimization opportunities",
+      "Q4 spending significantly lower than other quarters - investigate seasonal patterns",
+      "Overall budget efficiency is good - maintain current spending controls"
+    ],
+    "executiveSummary": "The organization is performing well financially with 65% budget utilization year-to-date. All departments except Marketing are on track to finish within budget. Projected year-end utilization is 95%, indicating efficient budget management with an estimated $250,000 in cost savings. Key areas of focus should be Marketing department spending and potential reallocation of underutilized budgets.",
+    "generatedAt": "2024-09-30T10:00:00Z",
+    "generatedBy": "user-123",
+    "generatedByName": "Jane Smith"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid parameters
+  ```json
+  {
+    "error": "Invalid report parameters",
+    "details": "Fiscal year must be between 2000 and 2100"
+  }
+  ```
+
+  **400 Bad Request** - Invalid date range
+  ```json
+  {
+    "error": "Invalid date range",
+    "details": "End date must be after start date"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires finance_manager, admin, or cfo role."
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | reportId | string | Unique report identifier |
+  | reportType | string | Type of report generated |
+  | fiscalYear | number | Fiscal year covered |
+  | reportPeriod | object | Start and end dates |
+  | organizationSummary | object | Organization-wide financial summary |
+  | departmentSummaries | array | Summary for each department |
+  | categoryBreakdown | array | Spending by category |
+  | quarterlyPerformance | array | Quarterly spending trends |
+  | financialProjections | object | Future spending projections |
+  | yearOverYearComparison | object | Comparison with previous year |
+  | keyMetrics | object | Key financial performance indicators |
+  | topExpenses | array | Largest expense items |
+  | alerts | array | Financial alerts and warnings |
+  | recommendations | array | AI-generated recommendations |
+  | executiveSummary | string | High-level summary for executives |
+  | generatedAt | string | Report generation timestamp |
+  | generatedBy | string | ID of user who generated report |
+  | generatedByName | string | Name of user who generated report |
+
+  ## Use Cases
+
+  - **Executive Reporting**: Provide comprehensive financial overview to leadership
+  - **Board Meetings**: Generate reports for board presentations
+  - **Strategic Planning**: Use financial data for strategic decision-making
+  - **Budget Planning**: Historical data for next year's budget planning
+  - **Investor Relations**: Financial performance reporting for investors
+  - **Audit Preparation**: Comprehensive financial documentation for audits
+  - **Performance Review**: Evaluate organizational financial performance
+  - **Trend Analysis**: Identify spending patterns and trends across the organization
+url: "{{baseUrl}}/api/finance/reports/financial"
+method: GET
+order: 3000

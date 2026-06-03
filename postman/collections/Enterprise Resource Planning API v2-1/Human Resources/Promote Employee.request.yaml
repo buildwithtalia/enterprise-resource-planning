@@ -1,0 +1,18 @@
+$kind: http-request
+description: Promotes an employee to a new position with an updated job title and salary increase.
+url: "{{baseUrl}}/api/v2/hr/employees/:id/promote"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: ""
+body:
+  type: text
+  content: |-
+    {
+      "newPosition": "Engineering Manager",
+      "newSalary": 120000.00,
+      "effectiveDate": "2024-02-01",
+      "reason": "Outstanding performance and leadership"
+    }
+order: 6000

@@ -1,0 +1,7 @@
+$kind: http-request
+description: Retrieves detailed information about a specific employee by their unique employee ID.
+url: "{{baseUrl}}/api/v2/hr/employees/:id"
+method: GET
+pathVariables:
+  id: ""
+order: 3000

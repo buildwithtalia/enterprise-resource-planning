@@ -1,0 +1,103 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves a list of all departments in the organization. This endpoint provides comprehensive information about each department including their managers, budgets, employee counts, and organizational structure.
+
+  ## Authentication
+
+  **Required:** Yes (any authenticated user)
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/hr/departments
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of department objects:
+
+  ```json
+  [
+    {
+      "id": "dept-001",
+      "name": "Engineering",
+      "code": "ENG",
+      "managerId": "emp-456",
+      "managerName": "Jane Smith",
+      "budget": 5000000,
+      "description": "Software development and technical operations",
+      "location": "Building A, Floor 3",
+      "employeeCount": 45,
+      "createdAt": "2023-01-15T00:00:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": "dept-002",
+      "name": "Human Resources",
+      "code": "HR",
+      "managerId": "emp-123",
+      "managerName": "John Doe",
+      "budget": 1200000,
+      "description": "Employee management and organizational development",
+      "location": "Building B, Floor 1",
+      "employeeCount": 12,
+      "createdAt": "2023-01-15T00:00:00Z",
+      "updatedAt": "2023-06-20T14:15:00Z"
+    }
+  ]
+  ```
+
+  ### Empty Result (200 OK)
+
+  If no departments exist:
+
+  ```json
+  []
+  ```
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique department identifier |
+  | name | string | Department name |
+  | code | string | Department code/abbreviation |
+  | managerId | string | ID of the department manager |
+  | managerName | string | Name of the department manager |
+  | budget | number | Annual department budget |
+  | description | string | Department description |
+  | location | string | Physical location |
+  | employeeCount | number | Number of employees in the department |
+  | createdAt | string | Department creation timestamp |
+  | updatedAt | string | Last update timestamp |
+
+  ## Use Cases
+
+  - **Organization Overview**: View complete organizational structure
+  - **Department Selection**: Populate dropdown lists for employee assignment
+  - **Budget Planning**: Review budget allocations across departments
+  - **Reporting**: Generate organizational reports and analytics
+url: "{{baseUrl}}/api/hr/departments"
+method: GET
+order: 2000

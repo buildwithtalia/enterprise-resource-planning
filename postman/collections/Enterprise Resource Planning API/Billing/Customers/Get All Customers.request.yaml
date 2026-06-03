@@ -1,0 +1,159 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves a list of all customers in the billing system with optional filtering capabilities. This endpoint allows billing managers and administrators to view and search through customer records, filter by status, and access customer information for billing operations.
+
+  ## Authentication
+
+  **Required Role:** `billing_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | status | string | No | Filter customers by status (active, inactive, suspended) |
+  | limit | number | No | Maximum number of results to return (default: 50, max: 100) |
+  | offset | number | No | Number of records to skip for pagination (default: 0) |
+  | search | string | No | Search by customer name or email |
+  | sortBy | string | No | Field to sort by (name, email, createdAt, creditLimit) |
+  | sortOrder | string | No | Sort order (asc, desc) (default: asc) |
+
+  ### Example Requests
+
+  **Get all active customers:**
+  ```
+  GET {{baseUrl}}/api/billing/customers?status=active
+  ```
+
+  **Get customers with pagination:**
+  ```
+  GET {{baseUrl}}/api/billing/customers?limit=20&offset=40
+  ```
+
+  **Search for specific customer:**
+  ```
+  GET {{baseUrl}}/api/billing/customers?search=acme
+  ```
+
+  **Get sorted customer list:**
+  ```
+  GET {{baseUrl}}/api/billing/customers?sortBy=creditLimit&sortOrder=desc
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of customer objects:
+
+  ```json
+  {
+    "customers": [
+      {
+        "id": "cust-789",
+        "name": "Acme Corporation",
+        "email": "billing@acme.com",
+        "phone": "+1-555-0123",
+        "address": "123 Main St, City, State 12345",
+        "creditLimit": 50000,
+        "currentBalance": 12500,
+        "paymentTerms": "Net 30",
+        "status": "active",
+        "createdAt": "2024-01-15T10:30:00Z",
+        "updatedAt": "2024-03-20T14:15:00Z"
+      },
+      {
+        "id": "cust-790",
+        "name": "TechStart Inc",
+        "email": "accounts@techstart.com",
+        "phone": "+1-555-0124",
+        "address": "456 Innovation Dr, Tech City, State 12346",
+        "creditLimit": 75000,
+        "currentBalance": 0,
+        "paymentTerms": "Net 60",
+        "status": "active",
+        "createdAt": "2024-02-01T09:00:00Z",
+        "updatedAt": "2024-02-01T09:00:00Z"
+      },
+      {
+        "id": "cust-791",
+        "name": "Global Services Ltd",
+        "email": "billing@globalservices.com",
+        "phone": "+1-555-0125",
+        "address": "789 Business Blvd, Metro City, State 12347",
+        "creditLimit": 100000,
+        "currentBalance": 45000,
+        "paymentTerms": "Net 30",
+        "status": "active",
+        "createdAt": "2024-01-10T11:20:00Z",
+        "updatedAt": "2024-03-15T16:45:00Z"
+      }
+    ],
+    "pagination": {
+      "total": 156,
+      "limit": 50,
+      "offset": 0,
+      "hasMore": true
+    }
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid query parameters
+  ```json
+  {
+    "error": "Invalid query parameters",
+    "details": "Status must be one of: active, inactive, suspended"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires billing_manager or admin role."
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique customer identifier |
+  | name | string | Customer's company or individual name |
+  | email | string | Customer's billing email address |
+  | phone | string | Customer's contact phone number |
+  | address | string | Customer's billing address |
+  | creditLimit | number | Maximum credit limit allowed |
+  | currentBalance | number | Current outstanding balance |
+  | paymentTerms | string | Payment terms (e.g., "Net 30") |
+  | status | string | Customer status (active, inactive, suspended) |
+  | createdAt | string | Customer creation timestamp (ISO 8601) |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ## Use Cases
+
+  - **Customer Management**: View and manage all customer records
+  - **Credit Monitoring**: Review customer credit limits and balances
+  - **Status Tracking**: Filter customers by their current status
+  - **Search Operations**: Find specific customers quickly
+  - **Reporting**: Generate customer lists for reports
+  - **Account Review**: Identify customers with outstanding balances
+  - **Pagination**: Handle large customer databases efficiently
+url: "{{baseUrl}}/api/billing/customers"
+method: GET
+order: 2000

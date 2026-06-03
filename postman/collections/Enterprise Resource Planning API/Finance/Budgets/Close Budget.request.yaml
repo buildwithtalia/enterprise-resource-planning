@@ -1,0 +1,141 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Closes an active budget, marking it as completed and preventing further spending against it. This endpoint is typically used at the end of a fiscal period or when a budget is no longer needed. Closing a budget locks the final spending amounts and creates a permanent record for audit and historical analysis.
+
+  ## Authentication
+
+  **Required Role:** `finance_manager`, `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | The unique identifier of the budget to close |
+
+  ### Example Request
+
+  ```
+  POST {{baseUrl}}/api/finance/budgets/budget-123/close
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the closed budget with final status:
+
+  ```json
+  {
+    "id": "budget-123",
+    "department": "Engineering",
+    "fiscalYear": 2024,
+    "amount": 500000,
+    "category": "Operations",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "closed",
+    "finalSpent": 485000,
+    "finalRemaining": 15000,
+    "finalUtilizationPercentage": 97,
+    "closedBy": "user-123",
+    "closedByName": "Jane Smith",
+    "closedAt": "2024-12-31T23:59:59Z",
+    "closureNotes": "Budget closed at end of fiscal year 2024",
+    "summary": {
+      "totalAllocated": 500000,
+      "totalSpent": 485000,
+      "totalSaved": 15000,
+      "savingsPercentage": 3,
+      "budgetEfficiency": "excellent"
+    },
+    "createdAt": "2024-01-01T10:00:00Z",
+    "updatedAt": "2024-12-31T23:59:59Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - Budget does not exist
+  ```json
+  {
+    "error": "Budget not found",
+    "budgetId": "budget-123"
+  }
+  ```
+
+  **400 Bad Request** - Budget already closed
+  ```json
+  {
+    "error": "Budget is already closed",
+    "budgetId": "budget-123",
+    "closedAt": "2024-12-31T23:59:59Z"
+  }
+  ```
+
+  **400 Bad Request** - Cannot close future budget
+  ```json
+  {
+    "error": "Cannot close budget before end date",
+    "budgetId": "budget-123",
+    "endDate": "2024-12-31"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires finance_manager or admin role."
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique budget identifier |
+  | department | string | Department name |
+  | fiscalYear | number | Fiscal year |
+  | amount | number | Total allocated budget |
+  | category | string | Budget category |
+  | startDate | string | Budget period start date |
+  | endDate | string | Budget period end date |
+  | status | string | Budget status (now "closed") |
+  | finalSpent | number | Final amount spent |
+  | finalRemaining | number | Final remaining amount |
+  | finalUtilizationPercentage | number | Final utilization percentage |
+  | closedBy | string | ID of user who closed the budget |
+  | closedByName | string | Name of user who closed the budget |
+  | closedAt | string | Budget closure timestamp |
+  | closureNotes | string | Notes about budget closure |
+  | summary | object | Summary of budget performance |
+  | createdAt | string | Budget creation timestamp |
+  | updatedAt | string | Last update timestamp |
+
+  ## Use Cases
+
+  - **Period Closing**: Close budgets at the end of fiscal periods
+  - **Project Completion**: Close project-specific budgets when projects end
+  - **Budget Reallocation**: Close unused budgets to reallocate funds
+  - **Financial Reporting**: Lock budget data for annual reports
+  - **Audit Preparation**: Create permanent budget records for audits
+  - **Historical Analysis**: Preserve final budget data for future analysis
+url: "{{baseUrl}}/api/finance/budgets/:id/close"
+method: POST
+pathVariables:
+  id: budget-123
+order: 4000

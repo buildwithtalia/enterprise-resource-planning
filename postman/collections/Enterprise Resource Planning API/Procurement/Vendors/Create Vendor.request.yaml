@@ -1,0 +1,159 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Creates a new vendor record in the procurement system. This endpoint allows procurement managers to register new suppliers and vendors for purchase order management, enabling the organization to track vendor information, payment terms, and performance metrics.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `admin`
+
+  Users must have procurement management or administrative privileges to create vendor records.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | Yes | Indicates JSON request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Body Parameters
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | name | string | Yes | Vendor company name |
+  | email | string | Yes | Vendor contact email address |
+  | phone | string | Yes | Vendor contact phone number |
+  | address | string | Yes | Vendor business address |
+  | paymentTerms | string | Yes | Payment terms (e.g., Net 30, Net 45) |
+  | category | string | Yes | Vendor category/industry |
+
+  ### Example Request
+
+  ```json
+  POST {{baseUrl}}/api/procurement/vendors
+  Content-Type: application/json
+
+  {
+    "name": "Office Supplies Inc",
+    "email": "sales@officesupplies.com",
+    "phone": "+1-555-0456",
+    "address": "456 Vendor St, City, State 12345",
+    "paymentTerms": "Net 30",
+    "category": "Office Supplies"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (201 Created)
+
+  Returns the newly created vendor object:
+
+  ```json
+  {
+    "id": "vendor-789",
+    "name": "Office Supplies Inc",
+    "email": "sales@officesupplies.com",
+    "phone": "+1-555-0456",
+    "address": "456 Vendor St, City, State 12345",
+    "paymentTerms": "Net 30",
+    "category": "Office Supplies",
+    "rating": 0,
+    "status": "active",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique vendor identifier |
+  | name | string | Vendor company name |
+  | email | string | Vendor contact email |
+  | phone | string | Vendor contact phone |
+  | address | string | Vendor business address |
+  | paymentTerms | string | Payment terms |
+  | category | string | Vendor category |
+  | rating | number | Initial vendor rating (0-5) |
+  | status | string | Vendor status (active) |
+  | createdAt | string | Creation timestamp (ISO 8601) |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid input data
+  ```json
+  {
+    "error": "Validation Error",
+    "message": "Invalid email format",
+    "details": {
+      "field": "email",
+      "value": "invalid-email"
+    }
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to create vendors",
+    "requiredRole": "procurement_manager or admin"
+  }
+  ```
+
+  **409 Conflict** - Vendor already exists
+  ```json
+  {
+    "error": "Conflict",
+    "message": "Vendor with this email already exists",
+    "existingVendorId": "vendor-123"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Vendor Onboarding**: Register new suppliers for procurement operations
+  - **Supplier Management**: Build a comprehensive vendor database
+  - **Purchase Order Setup**: Create vendor records before placing orders
+  - **Vendor Diversification**: Expand supplier base for better pricing and reliability
+  - **Category Management**: Organize vendors by product/service categories
+
+  ## Notes
+
+  - Vendor email addresses must be unique in the system
+  - New vendors are created with an initial rating of 0
+  - Vendor status is automatically set to 'active' upon creation
+  - Payment terms should follow standard formats (Net 30, Net 45, etc.)
+  - Category helps in vendor segmentation and reporting
+url: "{{baseUrl}}/api/procurement/vendors"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Office Supplies Inc",
+      "email": "sales@officesupplies.com",
+      "phone": "+1-555-0456",
+      "address": "456 Vendor St, City, State 12345",
+      "paymentTerms": "Net 30",
+      "category": "Office Supplies"
+    }
+order: 1000

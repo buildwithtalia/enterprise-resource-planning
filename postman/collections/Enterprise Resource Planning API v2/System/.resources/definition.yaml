@@ -1,0 +1,3 @@
+$kind: collection
+description: System-level endpoints for health checks and API information
+order: 1000

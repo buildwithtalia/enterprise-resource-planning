@@ -1,0 +1,15 @@
+$kind: http-request
+description: Reserve stock for an order. Requires 'warehouse_manager' or 'admin' role.
+url: "{{baseUrl}}/api/inventory/items/:id/reserve"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: item-123
+body:
+  type: text
+  content: |-
+    {
+      "quantity": 10
+    }
+order: 2000

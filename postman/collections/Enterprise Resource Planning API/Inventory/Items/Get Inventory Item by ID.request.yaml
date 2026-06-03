@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get a specific inventory item by ID.
+url: "{{baseUrl}}/api/inventory/items/:id"
+method: GET
+pathVariables:
+  id: item-123
+order: 3000

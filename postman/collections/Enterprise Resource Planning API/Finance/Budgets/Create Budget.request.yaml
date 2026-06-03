@@ -1,0 +1,128 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Creates a new budget allocation for a specific department and fiscal year. Budgets are essential for financial planning, expense control, and resource allocation across the organization. This endpoint allows finance managers to establish spending limits and track financial performance against planned allocations.
+
+  ## Authentication
+
+  **Required Role:** `finance_manager`, `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Body Parameters (JSON)
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | department | string | Yes | Name of the department (e.g., Engineering, Marketing, Sales) |
+  | fiscalYear | number | Yes | Fiscal year for the budget (e.g., 2024) |
+  | amount | number | Yes | Total budget amount allocated |
+  | category | string | Yes | Budget category (Operations, Capital, Personnel, Marketing, etc.) |
+  | startDate | string | Yes | Budget period start date (YYYY-MM-DD) |
+  | endDate | string | Yes | Budget period end date (YYYY-MM-DD) |
+
+  ### Example Request
+
+  ```json
+  {
+    "department": "Engineering",
+    "fiscalYear": 2024,
+    "amount": 500000,
+    "category": "Operations",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (201 Created)
+
+  Returns the created budget with additional metadata:
+
+  ```json
+  {
+    "id": "budget-001",
+    "department": "Engineering",
+    "fiscalYear": 2024,
+    "amount": 500000,
+    "category": "Operations",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "active",
+    "spent": 0,
+    "remaining": 500000,
+    "utilizationPercentage": 0,
+    "createdBy": "user-123",
+    "createdAt": "2024-01-01T10:00:00Z",
+    "updatedAt": "2024-01-01T10:00:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid input data
+  ```json
+  {
+    "error": "Invalid budget data",
+    "details": "Amount must be a positive number"
+  }
+  ```
+
+  **400 Bad Request** - Date validation error
+  ```json
+  {
+    "error": "Invalid date range",
+    "details": "End date must be after start date"
+  }
+  ```
+
+  **409 Conflict** - Budget already exists
+  ```json
+  {
+    "error": "Budget already exists",
+    "details": "A budget for Engineering in fiscal year 2024 already exists"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires finance_manager or admin role."
+  }
+  ```
+
+  ## Use Cases
+
+  - **Annual Planning**: Create budgets for the upcoming fiscal year
+  - **Department Allocation**: Allocate funds to different departments
+  - **Project Budgeting**: Set budget limits for specific projects or initiatives
+  - **Expense Control**: Establish spending limits to control costs
+  - **Financial Planning**: Support strategic financial planning and forecasting
+url: "{{baseUrl}}/api/finance/budgets"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "department": "Engineering",
+      "fiscalYear": 2024,
+      "amount": 500000,
+      "category": "Operations",
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-31"
+    }
+order: 1000

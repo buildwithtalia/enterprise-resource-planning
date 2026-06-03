@@ -1,0 +1,7 @@
+$kind: http-request
+description: Performs a health check on the ERP API service to verify that the system is operational and responding to requests.
+url: "{{baseUrl}}/health"
+method: GET
+auth:
+  type: noauth
+order: 1000

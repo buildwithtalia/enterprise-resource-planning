@@ -1,0 +1,117 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves all general ledger entries for a specific account code. The general ledger is the master record of all financial transactions organized by account. This endpoint provides a complete transaction history for any account in the chart of accounts.
+
+  ## Authentication
+
+  **Required Role:** `accountant`, `finance_manager`, `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | accountCode | string | Yes | The account code from the chart of accounts |
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | startDate | string | No | Filter entries from this date (YYYY-MM-DD) |
+  | endDate | string | No | Filter entries to this date (YYYY-MM-DD) |
+  | limit | number | No | Maximum number of records to return (default: 100) |
+  | offset | number | No | Number of records to skip for pagination (default: 0) |
+
+  ### Example Requests
+
+  **Get all entries for account:**
+  ```
+  GET {{baseUrl}}/api/accounting/ledger/1000
+  ```
+
+  **Get entries for date range:**
+  ```
+  GET {{baseUrl}}/api/accounting/ledger/1000?startDate=2024-01-01&endDate=2024-01-31
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns ledger entries with running balance:
+
+  ```json
+  {
+    "accountCode": "1000",
+    "accountName": "Cash",
+    "accountType": "Asset",
+    "openingBalance": 50000,
+    "closingBalance": 49500,
+    "totalDebits": 5000,
+    "totalCredits": 5500,
+    "entries": [
+      {
+        "date": "2024-01-15",
+        "transactionId": "txn-001",
+        "description": "Office supplies purchase",
+        "debit": 0,
+        "credit": 500,
+        "balance": 49500,
+        "referenceNumber": "je-001"
+      },
+      {
+        "date": "2024-01-16",
+        "transactionId": "txn-002",
+        "description": "Customer payment received",
+        "debit": 2000,
+        "credit": 0,
+        "balance": 51500,
+        "referenceNumber": "rcpt-023"
+      }
+    ]
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - Account code does not exist
+  ```json
+  {
+    "error": "Account code not found",
+    "accountCode": "1000"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions to view ledger"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Account Analysis**: Review all activity for a specific account
+  - **Balance Verification**: Verify account balances and transactions
+  - **Reconciliation**: Reconcile account with external records
+  - **Audit Trail**: Provide complete transaction history for audits
+  - **Financial Reporting**: Generate account-specific reports
+url: "{{baseUrl}}/api/accounting/ledger/:accountCode"
+method: GET
+pathVariables:
+  accountCode: "1000"
+order: 4000

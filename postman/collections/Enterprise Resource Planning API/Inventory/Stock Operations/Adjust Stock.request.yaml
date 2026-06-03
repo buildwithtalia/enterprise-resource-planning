@@ -1,0 +1,16 @@
+$kind: http-request
+description: Adjust stock quantity (positive or negative). Requires 'warehouse_manager' or 'admin' role.
+url: "{{baseUrl}}/api/inventory/items/:id/adjust"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: item-123
+body:
+  type: text
+  content: |-
+    {
+      "adjustment": -5,
+      "reason": "Damaged items removed from inventory"
+    }
+order: 1000

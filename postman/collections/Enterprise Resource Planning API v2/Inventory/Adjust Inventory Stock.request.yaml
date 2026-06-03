@@ -1,0 +1,18 @@
+$kind: http-request
+description: Adjusts the stock quantity of an inventory item.
+url: "{{baseUrl}}/api/v2/inventory/items/:id/adjust"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: ""
+body:
+  type: text
+  content: |-
+    {
+      "adjustmentType": "increase",
+      "quantity": 20,
+      "reason": "New stock received",
+      "notes": "Shipment from vendor received and verified"
+    }
+order: 5000

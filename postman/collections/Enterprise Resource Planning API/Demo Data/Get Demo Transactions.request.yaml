@@ -1,0 +1,89 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock accounting transaction data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of financial transactions without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/transactions
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock transaction objects:
+
+  ```json
+  [
+    {
+      "id": "txn-001",
+      "date": "2024-01-15",
+      "description": "Office supplies purchase",
+      "accountCode": "5000",
+      "accountName": "Office Expenses",
+      "debit": 500,
+      "credit": 0,
+      "balance": 500,
+      "type": "expense",
+      "reference": "INV-12345"
+    },
+    {
+      "id": "txn-002",
+      "date": "2024-01-15",
+      "description": "Payment from customer",
+      "accountCode": "1000",
+      "accountName": "Cash",
+      "debit": 10000,
+      "credit": 0,
+      "balance": 10000,
+      "type": "revenue",
+      "reference": "PAY-67890"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique transaction identifier |
+  | date | string | Transaction date (YYYY-MM-DD) |
+  | description | string | Transaction description |
+  | accountCode | string | General ledger account code |
+  | accountName | string | Account name |
+  | debit | number | Debit amount |
+  | credit | number | Credit amount |
+  | balance | number | Running balance |
+  | type | string | Transaction type (expense, revenue, asset, liability) |
+  | reference | string | Reference number or document ID |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test accounting UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase financial transaction tracking features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/transactions"
+method: GET
+order: 4000

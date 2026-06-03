@@ -1,0 +1,32 @@
+name: ERP Development
+values:
+  - key: baseUrl
+    value: 'http://localhost:3004'
+    description: '[object Object]'
+  - key: authToken
+    value: your-auth-token-here
+    description: '[object Object]'
+  - key: firstName
+    value: John
+    description: '[object Object]'
+  - key: lastName
+    value: Doe
+    description: '[object Object]'
+  - key: email
+    value: john.doe@company.com
+    description: '[object Object]'
+  - key: departmentId
+    value: dept-123
+    description: '[object Object]'
+  - key: position
+    value: Software Engineer
+    description: '[object Object]'
+  - key: salary
+    value: '75000'
+    description: '[object Object]'
+  - key: hireDate
+    value: '2024-01-15'
+    description: '[object Object]'
+  - key: status
+    value: active
+    description: '[object Object]'

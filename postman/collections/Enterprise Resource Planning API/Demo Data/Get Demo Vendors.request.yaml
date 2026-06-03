@@ -1,0 +1,89 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock vendor data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of vendor/supplier records without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/vendors
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock vendor objects:
+
+  ```json
+  [
+    {
+      "id": "vendor-001",
+      "name": "Office Supplies Inc",
+      "email": "sales@officesupplies.com",
+      "phone": "+1-555-0789",
+      "address": "789 Vendor Lane, City, State 12345",
+      "category": "Office Supplies",
+      "paymentTerms": "Net 30",
+      "rating": 4.5,
+      "status": "active",
+      "createdAt": "2023-02-10T00:00:00Z"
+    },
+    {
+      "id": "vendor-002",
+      "name": "Tech Equipment Co",
+      "email": "orders@techequipment.com",
+      "phone": "+1-555-0321",
+      "address": "321 Tech Street, City, State 12345",
+      "category": "Technology",
+      "paymentTerms": "Net 45",
+      "rating": 4.8,
+      "status": "active",
+      "createdAt": "2023-01-05T00:00:00Z"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique vendor identifier |
+  | name | string | Vendor company name |
+  | email | string | Vendor contact email address |
+  | phone | string | Vendor contact phone number |
+  | address | string | Vendor business address |
+  | category | string | Vendor category/industry |
+  | paymentTerms | string | Payment terms (e.g., Net 30, Net 45) |
+  | rating | number | Vendor performance rating (0-5) |
+  | status | string | Vendor status (active, inactive, suspended) |
+  | createdAt | string | Vendor creation timestamp (ISO 8601) |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test vendor management UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase procurement and vendor management features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/vendors"
+method: GET
+order: 8000

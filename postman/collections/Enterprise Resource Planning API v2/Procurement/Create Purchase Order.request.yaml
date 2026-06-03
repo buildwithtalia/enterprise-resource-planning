@@ -1,0 +1,27 @@
+$kind: http-request
+description: Creates a new purchase order for a vendor.
+url: "{{baseUrl}}/api/v2/procurement/purchase-orders"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "vendorId": "vendor_1234567890",
+      "orderDate": "2024-01-15",
+      "expectedDeliveryDate": "2024-02-01",
+      "items": [
+        {
+          "itemId": "item_001",
+          "description": "Laptop Computer",
+          "quantity": 10,
+          "unitPrice": 1200.00,
+          "amount": 12000.00
+        }
+      ],
+      "subtotal": 12000.00,
+      "tax": 960.00,
+      "total": 12960.00
+    }
+order: 4000

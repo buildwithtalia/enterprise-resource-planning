@@ -1,0 +1,108 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed information about a specific department by its unique identifier. This endpoint provides comprehensive department data including manager information, budget details, employee count, and organizational metadata.
+
+  ## Authentication
+
+  **Required:** Yes (any authenticated user)
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | The unique identifier of the department to retrieve |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/hr/departments/dept-001
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns a single department object with complete details:
+
+  ```json
+  {
+    "id": "dept-001",
+    "name": "Engineering",
+    "code": "ENG",
+    "managerId": "emp-456",
+    "managerName": "Jane Smith",
+    "managerEmail": "jane.smith@example.com",
+    "budget": 5000000,
+    "spentBudget": 3250000,
+    "remainingBudget": 1750000,
+    "description": "Software development and technical operations",
+    "location": "Building A, Floor 3",
+    "employeeCount": 45,
+    "employees": [
+      {
+        "id": "emp-789",
+        "name": "John Doe",
+        "position": "Software Engineer"
+      }
+    ],
+    "createdAt": "2023-01-15T00:00:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - Department does not exist
+  ```json
+  {
+    "error": "Department not found",
+    "departmentId": "dept-001"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique department identifier |
+  | name | string | Department name |
+  | code | string | Department code/abbreviation |
+  | managerId | string | ID of the department manager |
+  | managerName | string | Name of the department manager |
+  | managerEmail | string | Email of the department manager |
+  | budget | number | Annual department budget |
+  | spentBudget | number | Amount of budget spent |
+  | remainingBudget | number | Remaining budget amount |
+  | description | string | Department description |
+  | location | string | Physical location |
+  | employeeCount | number | Number of employees |
+  | employees | array | List of employees in the department |
+  | createdAt | string | Department creation timestamp |
+  | updatedAt | string | Last update timestamp |
+
+  ## Use Cases
+
+  - **Department Details**: View complete information about a specific department
+  - **Budget Tracking**: Monitor department budget utilization
+  - **Team Management**: See all employees within a department
+  - **Organizational Planning**: Analyze department structure and resources
+url: "{{baseUrl}}/api/hr/departments/:id"
+method: GET
+pathVariables:
+  id: dept-123
+order: 3000

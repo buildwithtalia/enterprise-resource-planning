@@ -1,0 +1,5 @@
+$kind: http-request
+description: Check for overdue invoices. Requires 'billing_manager' or 'admin' role.
+url: "{{baseUrl}}/api/billing/invoices/overdue/check"
+method: GET
+order: 7000

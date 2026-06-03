@@ -1,0 +1,22 @@
+$kind: http-request
+description: Create a new inventory item. Requires 'warehouse_manager' or 'admin' role.
+url: "{{baseUrl}}/api/inventory/items"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "sku": "ITEM-001",
+      "name": "Office Chair",
+      "description": "Ergonomic office chair with lumbar support",
+      "category": "Furniture",
+      "quantity": 100,
+      "reservedQuantity": 0,
+      "unitPrice": 150,
+      "reorderPoint": 20,
+      "reorderQuantity": 50,
+      "location": "Warehouse A, Aisle 3"
+    }
+order: 1000

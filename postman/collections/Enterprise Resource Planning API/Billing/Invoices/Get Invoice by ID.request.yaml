@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get a specific invoice by ID.
+url: "{{baseUrl}}/api/billing/invoices/:id"
+method: GET
+pathVariables:
+  id: inv-123
+order: 3000

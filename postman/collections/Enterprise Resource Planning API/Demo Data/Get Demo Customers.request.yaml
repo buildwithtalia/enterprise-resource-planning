@@ -1,0 +1,89 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock customer data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of customer records without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/customers
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock customer objects:
+
+  ```json
+  [
+    {
+      "id": "cust-001",
+      "name": "Acme Corporation",
+      "email": "billing@acme.com",
+      "phone": "+1-555-0123",
+      "address": "123 Main St, City, State 12345",
+      "creditLimit": 50000,
+      "currentBalance": 12500,
+      "paymentTerms": "Net 30",
+      "status": "active",
+      "createdAt": "2023-01-15T00:00:00Z"
+    },
+    {
+      "id": "cust-002",
+      "name": "TechStart Inc",
+      "email": "accounts@techstart.com",
+      "phone": "+1-555-0456",
+      "address": "456 Tech Blvd, City, State 12345",
+      "creditLimit": 75000,
+      "currentBalance": 25000,
+      "paymentTerms": "Net 45",
+      "status": "active",
+      "createdAt": "2023-03-20T00:00:00Z"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique customer identifier |
+  | name | string | Customer company name |
+  | email | string | Customer billing email address |
+  | phone | string | Customer contact phone number |
+  | address | string | Customer billing address |
+  | creditLimit | number | Maximum credit limit for the customer |
+  | currentBalance | number | Current outstanding balance |
+  | paymentTerms | string | Payment terms (e.g., Net 30, Net 45) |
+  | status | string | Customer status (active, inactive, suspended) |
+  | createdAt | string | Customer creation timestamp (ISO 8601) |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test customer management UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase billing and customer management features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/customers"
+method: GET
+order: 6000

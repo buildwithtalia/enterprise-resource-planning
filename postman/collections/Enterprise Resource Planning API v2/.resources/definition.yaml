@@ -1,0 +1,68 @@
+$kind: collection
+description: |-
+  # Enterprise Resource Planning API v2.0.0
+
+  ## Overview
+
+  The Enterprise Resource Planning (ERP) API is a comprehensive, monolithic application designed to streamline and integrate core business processes across your organization. This RESTful API provides a unified interface for managing critical business operations including human resources, financial management, supply chain operations, and inventory control.
+
+  ## What's New in v2.0.0
+
+  - **Consistent camelCase naming** across all schemas and properties
+  - **Standardized response envelopes** for all endpoints
+  - **Universal pagination** on all list endpoints
+  - **Versioned URL paths** (`/api/v2/`)
+  - **Improved error responses** with detailed error codes
+  - **Consistent authentication** across all protected endpoints
+  - **Enhanced status code usage** including rate limiting and server errors
+
+  ## Main Features & Modules
+
+  - **Human Resources**: Employee and department management
+  - **Payroll**: Salary processing and tax calculations
+  - **Accounting**: General ledger and financial transactions
+  - **Finance**: Budgeting and financial reporting
+  - **Billing**: Invoicing and customer billing
+  - **Procurement**: Purchase orders and vendor management
+  - **Supply Chain**: Shipments and logistics
+  - **Inventory**: Stock tracking and management
+
+  ## Authentication
+
+  All endpoints except health check and API info require Bearer token authentication. Include the token in the Authorization header:
+
+  ```
+  Authorization: Bearer {{authToken}}
+  ```
+
+  **Endpoints NOT requiring authentication:**
+  - `GET /health` - Health check endpoint
+  - `GET /api/v2` - API information endpoint
+variables:
+  baseUrl: http://localhost:3001
+  authToken: ""
+  orderId: ""
+  carrier: ""
+  trackingNumber: ""
+  shipDate: ""
+  estimatedDeliveryDate: ""
+  originAddress: ""
+  originCity: ""
+  originState: ""
+  originZipCode: ""
+  destinationAddress: ""
+  destinationCity: ""
+  destinationState: ""
+  destinationZipCode: ""
+  shipmentId: ""
+  updatedShipmentId: ""
+  updatedCarrier: ""
+  updatedTrackingNumber: ""
+  updatedStatus: ""
+  updatedEstimatedDeliveryDate: ""
+auth:
+  - id: be4f7263-cbfc-49a0-8c4e-9a53dd816890
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{authToken}}"

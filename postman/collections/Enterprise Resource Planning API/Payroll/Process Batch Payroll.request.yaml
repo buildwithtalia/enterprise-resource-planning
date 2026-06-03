@@ -1,0 +1,183 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Processes payroll for all active employees in the organization for a specified pay period. This endpoint is designed for bulk payroll processing, automatically calculating pay for every active employee, applying deductions and taxes, and generating payroll records in a single operation.
+
+  ## Authentication
+
+  **Required Role:** `payroll_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Type | Required | Description |
+  |--------|------|----------|-------------|
+  | Content-Type | string | Yes | Must be `application/json` |
+  | Authorization | string | Yes | Bearer token for authentication |
+
+  ### Body Parameters (JSON)
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | payPeriodStart | string | Yes | Start date of the pay period (YYYY-MM-DD) |
+  | payPeriodEnd | string | Yes | End date of the pay period (YYYY-MM-DD) |
+  | departmentId | string | No | Process only employees in this department |
+  | excludeEmployees | array | No | Array of employee IDs to exclude from batch processing |
+
+  ### Example Request Body
+
+  ```json
+  {
+    "payPeriodStart": "2024-01-01",
+    "payPeriodEnd": "2024-01-31"
+  }
+  ```
+
+  **With department filter:**
+  ```json
+  {
+    "payPeriodStart": "2024-01-01",
+    "payPeriodEnd": "2024-01-31",
+    "departmentId": "dept-001"
+  }
+  ```
+
+  ### Example Request
+
+  ```
+  POST {{baseUrl}}/api/payroll/batch-process
+  Content-Type: application/json
+
+  {
+    "payPeriodStart": "2024-01-01",
+    "payPeriodEnd": "2024-01-31"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (201 Created)
+
+  Returns a summary of the batch payroll processing:
+
+  ```json
+  {
+    "batchId": "batch-001",
+    "payPeriodStart": "2024-01-01",
+    "payPeriodEnd": "2024-01-31",
+    "totalEmployees": 142,
+    "successfulProcessing": 140,
+    "failedProcessing": 2,
+    "totalGrossPay": 887500,
+    "totalDeductions": 177500,
+    "totalTaxWithheld": 177500,
+    "totalNetPay": 532500,
+    "status": "completed",
+    "processedAt": "2024-02-01T10:00:00Z",
+    "payrollRecords": [
+      {
+        "id": "pay-001",
+        "employeeId": "emp-789",
+        "employeeName": "John Doe",
+        "netPay": 4000,
+        "status": "pending"
+      }
+    ],
+    "errors": [
+      {
+        "employeeId": "emp-456",
+        "error": "Employee salary not configured"
+      }
+    ]
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid input data
+  ```json
+  {
+    "error": "Validation failed",
+    "details": [
+      "Pay period start date is required",
+      "Pay period start date must be before end date"
+    ]
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires payroll_manager or admin role."
+  }
+  ```
+
+  **409 Conflict** - Batch payroll already processed
+  ```json
+  {
+    "error": "Batch payroll already processed for this pay period"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | batchId | string | Unique batch processing identifier |
+  | payPeriodStart | string | Start date of pay period |
+  | payPeriodEnd | string | End date of pay period |
+  | totalEmployees | number | Total employees processed |
+  | successfulProcessing | number | Number of successful payroll records |
+  | failedProcessing | number | Number of failed payroll records |
+  | totalGrossPay | number | Sum of all gross pay |
+  | totalDeductions | number | Sum of all deductions |
+  | totalTaxWithheld | number | Sum of all taxes withheld |
+  | totalNetPay | number | Sum of all net pay |
+  | status | string | Batch processing status |
+  | processedAt | string | Processing timestamp |
+  | payrollRecords | array | Array of created payroll records |
+  | errors | array | Array of processing errors |
+
+  ## Use Cases
+
+  - **Monthly Payroll**: Process payroll for all employees at month-end
+  - **Department Payroll**: Process payroll for specific departments
+  - **Payroll Automation**: Automate regular payroll cycles
+  - **Bulk Processing**: Efficiently process large numbers of employees
+
+  ## Notes
+
+  - Only active employees are included in batch processing
+  - Employees with missing salary information will be skipped and reported in errors
+  - All payroll records are created with "pending" status and require approval
+  - Processing may take several seconds for large organizations
+  - Failed records do not prevent successful processing of other employees
+url: "{{baseUrl}}/api/payroll/batch-process"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "payPeriodStart": "2024-01-01",
+      "payPeriodEnd": "2024-01-31"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{authToken}}"
+order: 2000

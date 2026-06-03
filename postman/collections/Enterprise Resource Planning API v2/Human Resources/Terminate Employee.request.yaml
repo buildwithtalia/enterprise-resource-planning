@@ -1,0 +1,17 @@
+$kind: http-request
+description: Terminates an employee's employment in the HR system.
+url: "{{baseUrl}}/api/v2/hr/employees/:id/terminate"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: ""
+body:
+  type: text
+  content: |-
+    {
+      "terminationDate": "2024-03-01",
+      "reason": "Resignation",
+      "notes": "Employee resigned for personal reasons"
+    }
+order: 7000

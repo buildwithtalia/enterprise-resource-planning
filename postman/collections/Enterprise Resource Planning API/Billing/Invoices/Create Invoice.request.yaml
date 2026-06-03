@@ -1,0 +1,26 @@
+$kind: http-request
+description: Create a new invoice. Requires 'billing_manager' or 'admin' role.
+url: "{{baseUrl}}/api/billing/invoices"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "customerId": "cust-123",
+      "invoiceDate": "2024-01-15",
+      "dueDate": "2024-02-14",
+      "items": [
+        {
+          "description": "Professional Services",
+          "quantity": 40,
+          "unitPrice": 150,
+          "amount": 6000
+        }
+      ],
+      "subtotal": 6000,
+      "tax": 480,
+      "total": 6480
+    }
+order: 1000

@@ -1,0 +1,67 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Performs a health check on the ERP API service to verify that the system is operational and responding to requests. This endpoint is commonly used by monitoring systems, load balancers, and DevOps tools to ensure service availability and uptime.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint that can be accessed without authentication tokens, making it suitable for external monitoring services.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/health
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the current health status of the service:
+
+  ```json
+  {
+    "status": "healthy",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "uptime": 86400,
+    "version": "1.0.0"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | status | string | Current health status ("healthy", "degraded", or "unhealthy") |
+  | timestamp | string | ISO 8601 timestamp of the health check |
+  | uptime | number | Service uptime in seconds |
+  | version | string | Current API version |
+
+  ### Error Responses
+
+  **503 Service Unavailable** - Service is not healthy
+
+  ```json
+  {
+    "status": "unhealthy",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "error": "Database connection failed"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Monitoring**: Automated health checks by monitoring tools (Datadog, New Relic, etc.)
+  - **Load Balancing**: Health checks by load balancers to route traffic only to healthy instances
+  - **CI/CD Pipelines**: Verify service is running after deployment
+  - **Troubleshooting**: Quick verification that the API is accessible and operational
+url: "{{baseUrl}}/health"
+method: GET
+order: 1000

@@ -1,0 +1,188 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves a complete list of all shipments in the system with optional filtering and pagination capabilities. This endpoint provides comprehensive visibility into all shipment activities, enabling logistics managers to monitor, track, and analyze shipment operations across the entire supply chain.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `logistics_coordinator`, `admin`
+
+  Users must have warehouse management, logistics coordination, or administrative privileges to view shipments.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | status | string | No | Filter by shipment status (pending, dispatched, in_transit, delivered, cancelled) |
+  | carrier | string | No | Filter by carrier name (e.g., FedEx, UPS, DHL) |
+  | startDate | string | No | Filter shipments created after this date (YYYY-MM-DD) |
+  | endDate | string | No | Filter shipments created before this date (YYYY-MM-DD) |
+  | page | number | No | Page number for pagination (default: 1) |
+  | limit | number | No | Number of results per page (default: 50, max: 100) |
+  | sortBy | string | No | Sort field (createdAt, estimatedDeliveryDate, status) |
+  | sortOrder | string | No | Sort order (asc, desc) - default: desc |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/supply-chain/shipments?status=in_transit&carrier=FedEx&page=1&limit=20
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns paginated list of shipments:
+
+  ```json
+  {
+    "shipments": [
+      {
+        "shipmentId": "ship-789",
+        "orderId": "order-123",
+        "trackingNumber": "1234567890",
+        "carrier": "FedEx",
+        "status": "in_transit",
+        "origin": "Warehouse A, City, State",
+        "destination": "Customer Address, City, State",
+        "estimatedDeliveryDate": "2024-01-20",
+        "actualDeliveryDate": null,
+        "itemCount": 5,
+        "totalWeight": 12.5,
+        "shippingCost": 45.00,
+        "createdAt": "2024-01-15T10:30:00Z",
+        "lastUpdated": "2024-01-16T14:20:00Z",
+        "currentLocation": "Distribution Center, City, State"
+      },
+      {
+        "shipmentId": "ship-790",
+        "orderId": "order-124",
+        "trackingNumber": "0987654321",
+        "carrier": "UPS",
+        "status": "delivered",
+        "origin": "Warehouse B, City, State",
+        "destination": "Business Address, City, State",
+        "estimatedDeliveryDate": "2024-01-18",
+        "actualDeliveryDate": "2024-01-17",
+        "itemCount": 3,
+        "totalWeight": 8.2,
+        "shippingCost": 32.50,
+        "createdAt": "2024-01-14T09:15:00Z",
+        "lastUpdated": "2024-01-17T16:45:00Z",
+        "currentLocation": "Delivered"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalShipments": 98,
+      "shipmentsPerPage": 20,
+      "hasNextPage": true,
+      "hasPreviousPage": false
+    },
+    "summary": {
+      "totalShipments": 98,
+      "byStatus": {
+        "pending": 12,
+        "dispatched": 8,
+        "in_transit": 35,
+        "delivered": 40,
+        "cancelled": 3
+      },
+      "totalShippingCost": 4250.00,
+      "averageDeliveryTime": 3.2
+    }
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | shipments | array | Array of shipment objects |
+  | shipmentId | string | Unique shipment identifier |
+  | orderId | string | Associated order identifier |
+  | trackingNumber | string | Carrier tracking number |
+  | carrier | string | Shipping carrier name |
+  | status | string | Current shipment status |
+  | origin | string | Shipment origin address |
+  | destination | string | Shipment destination address |
+  | estimatedDeliveryDate | string | Expected delivery date (YYYY-MM-DD) |
+  | actualDeliveryDate | string | Actual delivery date or null |
+  | itemCount | number | Number of items in shipment |
+  | totalWeight | number | Total weight in pounds |
+  | shippingCost | number | Cost of shipping |
+  | createdAt | string | Creation timestamp (ISO 8601) |
+  | lastUpdated | string | Last update timestamp (ISO 8601) |
+  | currentLocation | string | Current shipment location |
+  | pagination | object | Pagination metadata |
+  | summary | object | Summary statistics |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to view shipments",
+    "requiredRole": "warehouse_manager, logistics_coordinator, or admin"
+  }
+  ```
+
+  **400 Bad Request** - Invalid query parameters
+  ```json
+  {
+    "error": "Bad Request",
+    "message": "Invalid query parameters",
+    "details": [
+      "status must be one of: pending, dispatched, in_transit, delivered, cancelled",
+      "limit must be between 1 and 100"
+    ]
+  }
+  ```
+
+  ## Use Cases
+
+  - **Shipment Monitoring**: View all active shipments and their current status
+  - **Logistics Dashboard**: Display real-time shipment data on dashboards
+  - **Performance Analysis**: Analyze shipment patterns and delivery performance
+  - **Carrier Comparison**: Compare shipment volumes across different carriers
+  - **Status Tracking**: Monitor shipments by status for operational planning
+  - **Date Range Reports**: Generate reports for specific time periods
+  - **Audit Trail**: Review historical shipment records
+  - **Exception Management**: Identify delayed or problematic shipments
+
+  ## Notes
+
+  - Results are paginated by default with 50 shipments per page
+  - Maximum limit per page is 100 shipments
+  - Default sort order is by creation date (newest first)
+  - Filtering by multiple parameters uses AND logic
+  - Summary statistics reflect the filtered dataset
+  - Timestamps are in UTC (ISO 8601 format)
+  - Cancelled shipments are included unless filtered out
+  - Use status filter to focus on specific shipment states
+  - Combine filters for precise queries (e.g., carrier + status + date range)
+url: "{{baseUrl}}/api/supply-chain/shipments"
+method: GET
+order: 2000

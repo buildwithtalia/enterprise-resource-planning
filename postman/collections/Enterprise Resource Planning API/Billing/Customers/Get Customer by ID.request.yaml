@@ -1,0 +1,122 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed information for a specific customer by their unique identifier. This endpoint allows billing managers and administrators to access complete customer records including contact information, credit limits, current balance, and payment terms.
+
+  ## Authentication
+
+  **Required Role:** `billing_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique customer identifier (e.g., cust-123) |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/billing/customers/cust-123
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns detailed customer information:
+
+  ```json
+  {
+    "id": "cust-123",
+    "name": "Acme Corporation",
+    "email": "billing@acme.com",
+    "phone": "+1-555-0123",
+    "address": "123 Main St, City, State 12345",
+    "creditLimit": 50000,
+    "currentBalance": 12500,
+    "availableCredit": 37500,
+    "paymentTerms": "Net 30",
+    "status": "active",
+    "invoiceCount": 15,
+    "totalInvoiced": 125000,
+    "totalPaid": 112500,
+    "lastInvoiceDate": "2024-03-15T10:00:00Z",
+    "lastPaymentDate": "2024-03-20T14:30:00Z",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-03-20T14:15:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid customer ID format
+  ```json
+  {
+    "error": "Invalid customer ID format"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires billing_manager or admin role."
+  }
+  ```
+
+  **404 Not Found** - Customer not found
+  ```json
+  {
+    "error": "Customer not found",
+    "customerId": "cust-123"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique customer identifier |
+  | name | string | Customer's company or individual name |
+  | email | string | Customer's billing email address |
+  | phone | string | Customer's contact phone number |
+  | address | string | Customer's billing address |
+  | creditLimit | number | Maximum credit limit allowed |
+  | currentBalance | number | Current outstanding balance |
+  | availableCredit | number | Remaining available credit (creditLimit - currentBalance) |
+  | paymentTerms | string | Payment terms (e.g., "Net 30") |
+  | status | string | Customer status (active, inactive, suspended) |
+  | invoiceCount | number | Total number of invoices issued |
+  | totalInvoiced | number | Total amount invoiced to date |
+  | totalPaid | number | Total amount paid to date |
+  | lastInvoiceDate | string | Date of most recent invoice (ISO 8601) |
+  | lastPaymentDate | string | Date of most recent payment (ISO 8601) |
+  | createdAt | string | Customer creation timestamp (ISO 8601) |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ## Use Cases
+
+  - **Customer Details**: View complete customer information
+  - **Credit Check**: Review customer credit status before creating new invoices
+  - **Account Review**: Assess customer payment history and current balance
+  - **Customer Support**: Access customer details for support inquiries
+  - **Billing Operations**: Retrieve customer information for billing processes
+  - **Financial Analysis**: Analyze individual customer financial relationships
+url: "{{baseUrl}}/api/billing/customers/:id"
+method: GET
+pathVariables:
+  id: cust-123
+order: 3000

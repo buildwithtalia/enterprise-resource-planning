@@ -1,0 +1,77 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves comprehensive information about the ERP API, including version details, system architecture, available modules, and their interdependencies. This endpoint serves as a discovery mechanism for developers to understand the API's capabilities and structure.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed to help developers explore the API without requiring authentication.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns detailed API information:
+
+  ```json
+  {
+    "name": "Enterprise Resource Planning API",
+    "version": "1.0.0",
+    "description": "Comprehensive ERP system for managing business operations",
+    "architecture": "monolithic",
+    "modules": [
+      {
+        "name": "Human Resources",
+        "path": "/api/hr",
+        "description": "Employee and department management",
+        "endpoints": 9
+      },
+      {
+        "name": "Payroll",
+        "path": "/api/payroll",
+        "description": "Salary processing and tax calculations",
+        "endpoints": 6
+      }
+    ],
+    "dependencies": {
+      "payroll": ["hr"],
+      "accounting": ["payroll", "billing", "procurement"]
+    },
+    "documentation": "https://docs.yourcompany.com/erp-api"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | name | string | API name |
+  | version | string | Current API version |
+  | description | string | Brief API description |
+  | architecture | string | System architecture type (monolithic, microservices, etc.) |
+  | modules | array | List of available modules with their details |
+  | dependencies | object | Module interdependencies |
+  | documentation | string | Link to full API documentation |
+
+  ## Use Cases
+
+  - **API Discovery**: Understand available modules and endpoints
+  - **Integration Planning**: Identify module dependencies for integration projects
+  - **Version Checking**: Verify API version for compatibility
+  - **Documentation**: Quick reference for API structure
+url: "{{baseUrl}}/api"
+method: GET
+order: 2000

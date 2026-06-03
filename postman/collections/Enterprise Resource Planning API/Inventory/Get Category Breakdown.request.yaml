@@ -1,0 +1,5 @@
+$kind: http-request
+description: Get inventory breakdown by category.
+url: "{{baseUrl}}/api/inventory/category-breakdown"
+method: GET
+order: 5000

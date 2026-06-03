@@ -1,0 +1,244 @@
+$kind: http-request
+description: "## Purpose\\\\n\\\\nRetrieves a list of all employees in the HR system. This endpoint supports optional filtering by employee status to help you find active, terminated, or employees with other statuses.\\\\n\\\\n## Authentication\\\\n\\\\n**Authentication Type:** Bearer Token (if required by your API configuration)\\\\n\\\\n**Header:** `Authorization: Bearer {{authToken}}` (if authentication is enabled)\\\\n\\\\n## Request Parameters\\\\n\\\\n### Query Parameters\\\\n\\\\n| Parameter | Type | Required | Description |\\\\n|-----------|------|----------|-------------|\\\\n| status | string | No | Filter employees by status. Valid values: `active`, `inactive`, `on_leave`, `terminated` |\\\\n\\\\n### Example Requests\\\\n\\\\n**Get all active employees:**\\\\n`\\nGET {{baseUrl}}/api/hr/employees?status=active\\n`\\\\n\\\\n**Get all employees (no filter):**\\\\n`\\nGET {{baseUrl}}/api/hr/employees\\n`\\\\n\\\\n**Get terminated employees:**\\\\n`\\nGET {{baseUrl}}/api/hr/employees?status=terminated\\n`\\\\n\\\\n## Response\\\\n\\\\n### Success Response (200 OK)\\\\n\\\\nReturns an array of employee objects:\\\\n\\\\n`json\\n[\\n {\\n \\\"id\\\": \\\"emp-001\\\",\\n \\\"firstName\\\": \\\"John\\\",\\n \\\"lastName\\\": \\\"Doe\\\",\\n \\\"email\\\": \\\"john.doe@example.com\\\",\\n \\\"departmentId\\\": \\\"dept-001\\\",\\n \\\"position\\\": \\\"Software Engineer\\\",\\n \\\"salary\\\": 75000,\\n \\\"hireDate\\\": \\\"2024-01-15\\\",\\n \\\"phoneNumber\\\": \\\"(555) 123-4567\\\",\\n \\\"status\\\": \\\"active\\\",\\n \\\"createdAt\\\": \\\"2024-01-15T10:30:00Z\\\",\\n \\\"updatedAt\\\": \\\"2024-01-15T10:30:00Z\\\"\\n },\\n {\\n \\\"id\\\": \\\"emp-002\\\",\\n \\\"firstName\\\": \\\"Jane\\\",\\n \\\"lastName\\\": \\\"Smith\\\",\\n \\\"email\\\": \\\"jane.smith@example.com\\\",\\n \\\"departmentId\\\": \\\"dept-002\\\",\\n \\\"position\\\": \\\"Product Manager\\\",\\n \\\"salary\\\": 95000,\\n \\\"hireDate\\\": \\\"2023-06-01\\\",\\n \\\"phoneNumber\\\": \\\"(555) 987-6543\\\",\\n \\\"status\\\": \\\"active\\\",\\n \\\"createdAt\\\": \\\"2023-06-01T09:00:00Z\\\",\\n \\\"updatedAt\\\": \\\"2023-06-01T09:00:00Z\\\"\\n }\\n]\\n`\\\\n\\\\n### Empty Result (200 OK)\\\\n\\\\nIf no employees match the filter criteria:\\\\n\\\\n`json\\n[]\\n`\\\\n\\\\n### Error Responses\\\\n\\\\n**400 Bad Request** - Invalid query parameter\\\\n`json\\n{\\n \\\"error\\\": \\\"Invalid status value. Must be one of: active, inactive, on_leave, terminated\\\"\\n}\\n`\\\\n\\\\n**401 Unauthorized** - Missing or invalid authentication token (if auth is required)\\\\n`json\\n{\\n \\\"error\\\": \\\"Authentication required\\\"\\n}\\n`\\\\n\\\\n## Response Fields\\\\n\\\\n| Field | Type | Description |\\\\n|-------|------|-------------|\\\\n| id | string | Unique employee identifier |\\\\n| firstName | string | Employee's first name |\\\\n| lastName | string | Employee's last name |\\\\n| email | string | Employee's email address |\\\\n| departmentId | string | ID of the department the employee belongs to |\\\\n| position | string | Employee's job title/position |\\\\n| salary | number | Annual salary amount |\\\\n| hireDate | string | Date of hire (YYYY-MM-DD format) |\\\\n| phoneNumber | string | Employee's contact phone number |\\\\n| status | string | Current employment status |\\\\n| createdAt | string | Timestamp when the record was created |\\\\n| updatedAt | string | Timestamp when the record was last updated |"
+url: "{{baseUrl}}/api/hr/employees?status=active"
+method: GET
+queryParams:
+  status: active
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      // Parse the response
+      const response = pm.response.json();
+
+      // Create the HTML template for the table
+      const template = `
+      <style>
+          body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+              padding: 20px;
+              background-color: #f5f5f5;
+          }
+          .container {
+              background-color: white;
+              border-radius: 8px;
+              padding: 20px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          h2 {
+              color: #333;
+              margin-top: 0;
+              border-bottom: 2px solid #FF6C37;
+              padding-bottom: 10px;
+          }
+          .summary {
+              margin-bottom: 20px;
+              padding: 10px;
+              background-color: #f8f9fa;
+              border-left: 4px solid #FF6C37;
+              border-radius: 4px;
+          }
+          table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+          }
+          th {
+              background-color: #FF6C37;
+              color: white;
+              padding: 12px;
+              text-align: left;
+              font-weight: 600;
+              text-transform: uppercase;
+              font-size: 12px;
+              letter-spacing: 0.5px;
+          }
+          td {
+              padding: 12px;
+              border-bottom: 1px solid #e0e0e0;
+              color: #333;
+          }
+          tr:hover {
+              background-color: #f8f9fa;
+          }
+          tr:last-child td {
+              border-bottom: none;
+          }
+          .status-badge {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 12px;
+              font-size: 11px;
+              font-weight: 600;
+              text-transform: uppercase;
+          }
+          .status-active {
+              background-color: #d4edda;
+              color: #155724;
+          }
+          .status-inactive {
+              background-color: #f8d7da;
+              color: #721c24;
+          }
+          .empty-state {
+              text-align: center;
+              padding: 40px;
+              color: #666;
+          }
+          .error-state {
+              padding: 20px;
+              background-color: #f8d7da;
+              border-left: 4px solid #dc3545;
+              border-radius: 4px;
+              color: #721c24;
+          }
+      </style>
+
+      <div class="container">
+          {{#if error}}
+              <div class="error-state">
+                  <h3>⚠️ Error</h3>
+                  <p>{{error}}</p>
+              </div>
+          {{else}}
+              <h2>👥 Employee Directory</h2>
+              <div class="summary">
+                  <strong>Total Employees:</strong> {{totalCount}}
+                  {{#if statusFilter}}
+                  <br><strong>Status Filter:</strong> {{statusFilter}}
+                  {{/if}}
+              </div>
+              
+              {{#if hasEmployees}}
+                  <table>
+                      <thead>
+                          <tr>
+                              {{#each headers}}
+                                  <th>{{this}}</th>
+                              {{/each}}
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {{#each employees}}
+                              <tr>
+                                  {{#each this}}
+                                      <td>{{{this}}}</td>
+                                  {{/each}}
+                              </tr>
+                          {{/each}}
+                      </tbody>
+                  </table>
+              {{else}}
+                  <div class="empty-state">
+                      <h3>📭 No Employees Found</h3>
+                      <p>No employee data available for the current filter.</p>
+                  </div>
+              {{/if}}
+          {{/if}}
+      </div>
+      `;
+
+      // Function to create the payload for visualization
+      function constructVisualizerPayload() {
+          try {
+              // Check if response is valid
+              if (!response) {
+                  return {
+                      error: "No response data available",
+                      hasEmployees: false
+                  };
+              }
+
+              // Handle different response structures
+              let employees = [];
+              
+              // Try to find the employees array in common response structures
+              if (Array.isArray(response)) {
+                  employees = response;
+              } else if (response.data && Array.isArray(response.data)) {
+                  employees = response.data;
+              } else if (response.employees && Array.isArray(response.employees)) {
+                  employees = response.employees;
+              } else if (response.results && Array.isArray(response.results)) {
+                  employees = response.results;
+              }
+
+              // If no employees found
+              if (!employees || employees.length === 0) {
+                  return {
+                      hasEmployees: false,
+                      totalCount: 0,
+                      statusFilter: pm.request.url.query.get("status") || "none"
+                  };
+              }
+
+              // Extract all unique keys from all employee objects
+              const allKeys = new Set();
+              employees.forEach(emp => {
+                  Object.keys(emp).forEach(key => allKeys.add(key));
+              });
+
+              // Convert to array and sort for consistent ordering
+              const headers = Array.from(allKeys).sort((a, b) => {
+                  // Prioritize common fields
+                  const priority = ['id', 'employeeId', 'name', 'firstName', 'lastName', 'email', 'department', 'position', 'status'];
+                  const aIndex = priority.indexOf(a);
+                  const bIndex = priority.indexOf(b);
+                  
+                  if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                  if (aIndex !== -1) return -1;
+                  if (bIndex !== -1) return 1;
+                  return a.localeCompare(b);
+              });
+
+              // Format employee data for table rows
+              const formattedEmployees = employees.map(emp => {
+                  return headers.map(header => {
+                      const value = emp[header];
+                      
+                      // Handle null/undefined
+                      if (value === null || value === undefined) {
+                          return '<span style="color: #999;">N/A</span>';
+                      }
+                      
+                      // Format status with badge
+                      if (header.toLowerCase() === 'status') {
+                          const statusClass = value.toLowerCase() === 'active' ? 'status-active' : 'status-inactive';
+                          return '<span class="status-badge ' + statusClass + '">' + value + '</span>';
+                      }
+                      
+                      // Handle objects/arrays
+                      if (typeof value === 'object') {
+                          return JSON.stringify(value);
+                      }
+                      
+                      // Handle booleans
+                      if (typeof value === 'boolean') {
+                          return value ? '✓' : '✗';
+                      }
+                      
+                      return String(value);
+                  });
+              });
+
+              return {
+                  hasEmployees: true,
+                  totalCount: employees.length,
+                  statusFilter: pm.request.url.query.get("status") || "none",
+                  headers: headers.map(h => h.charAt(0).toUpperCase() + h.slice(1).replace(/([A-Z])/g, ' $1').trim()),
+                  employees: formattedEmployees
+              };
+              
+          } catch (error) {
+              return {
+                  error: "Failed to parse response: " + error.message,
+                  hasEmployees: false
+              };
+          }
+      }
+
+      // Set the visualization
+      pm.visualizer.set(template, constructVisualizerPayload());
+    language: text/javascript
+order: 2000

@@ -1,0 +1,83 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock department data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of organizational departments without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/departments
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock department objects:
+
+  ```json
+  [
+    {
+      "id": "dept-001",
+      "name": "Engineering",
+      "description": "Software development and technical operations",
+      "managerId": "emp-001",
+      "employeeCount": 45,
+      "budget": 5000000,
+      "location": "Building A, Floor 3",
+      "createdAt": "2023-01-15T00:00:00Z"
+    },
+    {
+      "id": "dept-002",
+      "name": "Human Resources",
+      "description": "Employee management and organizational development",
+      "managerId": "emp-015",
+      "employeeCount": 12,
+      "budget": 1200000,
+      "location": "Building B, Floor 1",
+      "createdAt": "2023-01-15T00:00:00Z"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique department identifier |
+  | name | string | Department name |
+  | description | string | Department description and purpose |
+  | managerId | string | ID of the department manager |
+  | employeeCount | number | Number of employees in the department |
+  | budget | number | Annual department budget |
+  | location | string | Physical location of the department |
+  | createdAt | string | Department creation timestamp (ISO 8601) |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test department management UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase organizational structure features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/departments"
+method: GET
+order: 2000

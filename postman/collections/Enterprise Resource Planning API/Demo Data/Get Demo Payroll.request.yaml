@@ -1,0 +1,89 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock payroll data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of payroll records without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/payroll
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock payroll objects:
+
+  ```json
+  [
+    {
+      "id": "pay-001",
+      "employeeId": "emp-001",
+      "payPeriodStart": "2024-01-01",
+      "payPeriodEnd": "2024-01-31",
+      "grossPay": 6250,
+      "deductions": 1250,
+      "netPay": 5000,
+      "taxWithheld": 1000,
+      "status": "approved",
+      "paymentDate": "2024-02-01"
+    },
+    {
+      "id": "pay-002",
+      "employeeId": "emp-002",
+      "payPeriodStart": "2024-01-01",
+      "payPeriodEnd": "2024-01-31",
+      "grossPay": 7917,
+      "deductions": 1583,
+      "netPay": 6334,
+      "taxWithheld": 1267,
+      "status": "approved",
+      "paymentDate": "2024-02-01"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique payroll record identifier |
+  | employeeId | string | ID of the employee |
+  | payPeriodStart | string | Start date of pay period (YYYY-MM-DD) |
+  | payPeriodEnd | string | End date of pay period (YYYY-MM-DD) |
+  | grossPay | number | Total gross pay before deductions |
+  | deductions | number | Total deductions amount |
+  | netPay | number | Net pay after deductions |
+  | taxWithheld | number | Tax amount withheld |
+  | status | string | Payroll status (pending, approved, paid) |
+  | paymentDate | string | Date payment was/will be made (YYYY-MM-DD) |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test payroll management UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase payroll processing features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/payroll"
+method: GET
+order: 3000

@@ -1,0 +1,7 @@
+$kind: http-request
+description: Deletes an employee record from the HR system.
+url: "{{baseUrl}}/api/v2/hr/employees/:id"
+method: DELETE
+pathVariables:
+  id: ""
+order: 5000

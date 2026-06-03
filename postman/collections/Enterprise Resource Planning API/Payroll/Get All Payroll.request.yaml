@@ -1,0 +1,153 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves a list of all payroll records in the system. This endpoint supports filtering by status, employee, and pay period to help you find specific payroll records or generate reports.
+
+  ## Authentication
+
+  **Required Role:** `payroll_manager`, `admin`, or `finance_manager`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | status | string | No | Filter by payroll status (pending, approved, paid) |
+  | employeeId | string | No | Filter by specific employee ID |
+  | payPeriodStart | string | No | Filter by pay period start date (YYYY-MM-DD) |
+  | payPeriodEnd | string | No | Filter by pay period end date (YYYY-MM-DD) |
+  | limit | number | No | Maximum number of records to return (default: 100) |
+  | offset | number | No | Number of records to skip for pagination (default: 0) |
+
+  ### Example Requests
+
+  **Get all payroll records:**
+  ```
+  GET {{baseUrl}}/api/payroll/
+  ```
+
+  **Get pending payroll records:**
+  ```
+  GET {{baseUrl}}/api/payroll/?status=pending
+  ```
+
+  **Get payroll for specific employee:**
+  ```
+  GET {{baseUrl}}/api/payroll/?employeeId=emp-789
+  ```
+
+  **Get payroll for specific period:**
+  ```
+  GET {{baseUrl}}/api/payroll/?payPeriodStart=2024-01-01&payPeriodEnd=2024-01-31
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of payroll records:
+
+  ```json
+  [
+    {
+      "id": "pay-001",
+      "employeeId": "emp-789",
+      "employeeName": "John Doe",
+      "departmentName": "Engineering",
+      "payPeriodStart": "2024-01-01",
+      "payPeriodEnd": "2024-01-31",
+      "grossPay": 6250,
+      "deductions": 1000,
+      "taxWithheld": 1250,
+      "netPay": 4000,
+      "status": "approved",
+      "paymentDate": "2024-02-01",
+      "createdAt": "2024-02-01T10:00:00Z"
+    },
+    {
+      "id": "pay-002",
+      "employeeId": "emp-456",
+      "employeeName": "Jane Smith",
+      "departmentName": "Marketing",
+      "payPeriodStart": "2024-01-01",
+      "payPeriodEnd": "2024-01-31",
+      "grossPay": 7917,
+      "deductions": 1583,
+      "taxWithheld": 1583,
+      "netPay": 4751,
+      "status": "paid",
+      "paymentDate": "2024-02-01",
+      "createdAt": "2024-02-01T10:00:00Z"
+    }
+  ]
+  ```
+
+  ### Empty Result (200 OK)
+
+  If no payroll records match the criteria:
+
+  ```json
+  []
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid query parameters
+  ```json
+  {
+    "error": "Invalid status value. Must be one of: pending, approved, paid"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires payroll_manager, admin, or finance_manager role."
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique payroll record identifier |
+  | employeeId | string | ID of the employee |
+  | employeeName | string | Name of the employee |
+  | departmentName | string | Department name |
+  | payPeriodStart | string | Start date of pay period |
+  | payPeriodEnd | string | End date of pay period |
+  | grossPay | number | Total gross pay |
+  | deductions | number | Total deductions |
+  | taxWithheld | number | Tax amount withheld |
+  | netPay | number | Net pay amount |
+  | status | string | Payroll status |
+  | paymentDate | string | Date payment was/will be made |
+  | createdAt | string | Record creation timestamp |
+
+  ## Use Cases
+
+  - **Payroll Review**: Review all payroll records before approval
+  - **Financial Reporting**: Generate payroll reports and summaries
+  - **Audit**: Track payroll history for compliance
+  - **Payment Processing**: Identify approved payroll ready for payment
+  - **Department Analysis**: Analyze payroll by department
+url: "{{baseUrl}}/api/payroll"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{authToken}}"
+order: 4000

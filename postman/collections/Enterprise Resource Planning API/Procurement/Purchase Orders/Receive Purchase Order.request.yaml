@@ -1,0 +1,242 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Marks a purchase order as received, indicating that the ordered items have been delivered and accepted. This endpoint completes the procurement cycle by recording receipt of goods, updating inventory levels, and triggering payment processing. Receipt verification ensures that delivered items match the order specifications.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `procurement_manager`, `admin`
+
+  Users must have warehouse management, procurement, or administrative privileges to receive purchase orders.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | Yes | Indicates JSON request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique purchase order identifier (e.g., po-123) |
+
+  ### Body Parameters
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | receivedDate | string | Yes | Date items were received (YYYY-MM-DD) |
+  | receivedBy | string | No | Name of person who received items |
+  | items | array | Yes | Array of received items with quantities |
+  | items[].itemId | string | Yes | Item identifier |
+  | items[].receivedQuantity | number | Yes | Quantity actually received |
+  | items[].condition | string | No | Item condition (good, damaged, defective) |
+  | items[].notes | string | No | Notes about specific item |
+  | notes | string | No | General notes about the receipt |
+  | discrepancies | array | No | Array of discrepancies found |
+  | attachments | array | No | Receipt documents or photos |
+
+  ### Example Request
+
+  ```json
+  POST {{baseUrl}}/api/procurement/purchase-orders/po-123/receive
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  {
+    "receivedDate": "2024-01-25",
+    "receivedBy": "Mike Johnson",
+    "items": [
+      {
+        "itemId": "item-456",
+        "receivedQuantity": 20,
+        "condition": "good",
+        "notes": "All items in excellent condition"
+      },
+      {
+        "itemId": "item-789",
+        "receivedQuantity": 9,
+        "condition": "good",
+        "notes": "One item damaged during shipping"
+      }
+    ],
+    "notes": "Delivery arrived on time. One desk had minor damage.",
+    "discrepancies": [
+      {
+        "itemId": "item-789",
+        "ordered": 10,
+        "received": 9,
+        "reason": "One item damaged"
+      }
+    ]
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the updated purchase order with received status:
+
+  ```json
+  {
+    "id": "po-123",
+    "poNumber": "PO-2024-0123",
+    "vendorId": "vendor-123",
+    "vendorName": "Office Supplies Inc",
+    "status": "received",
+    "previousStatus": "placed",
+    "total": 5400,
+    "expectedDeliveryDate": "2024-01-25",
+    "actualDeliveryDate": "2024-01-25",
+    "receivedBy": "Mike Johnson",
+    "receivedAt": "2024-01-25T10:30:00Z",
+    "receiptSummary": {
+      "totalItemsOrdered": 30,
+      "totalItemsReceived": 29,
+      "fulfillmentRate": 96.67,
+      "itemsInGoodCondition": 29,
+      "itemsDamaged": 1,
+      "discrepancyCount": 1
+    },
+    "items": [
+      {
+        "itemId": "item-456",
+        "description": "Ergonomic Office Chair",
+        "orderedQuantity": 20,
+        "receivedQuantity": 20,
+        "condition": "good",
+        "status": "received"
+      },
+      {
+        "itemId": "item-789",
+        "description": "Standard Office Desk",
+        "orderedQuantity": 10,
+        "receivedQuantity": 9,
+        "condition": "good",
+        "status": "partial",
+        "discrepancy": true
+      }
+    ],
+    "discrepancies": [
+      {
+        "itemId": "item-789",
+        "ordered": 10,
+        "received": 9,
+        "reason": "One item damaged",
+        "action": "vendor_credit_requested"
+      }
+    ],
+    "inventoryUpdated": true,
+    "paymentTriggered": true,
+    "nextActions": ["process_payment", "resolve_discrepancies"],
+    "message": "Purchase order received successfully",
+    "updatedAt": "2024-01-25T10:30:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique purchase order identifier |
+  | poNumber | string | Human-readable PO number |
+  | vendorId | string | Vendor identifier |
+  | vendorName | string | Vendor company name |
+  | status | string | Updated status (received or partial) |
+  | previousStatus | string | Previous status before receipt |
+  | total | number | Total order amount |
+  | expectedDeliveryDate | string | Expected delivery date |
+  | actualDeliveryDate | string | Actual delivery date |
+  | receivedBy | string | Name of person who received items |
+  | receivedAt | string | Receipt timestamp (ISO 8601) |
+  | receiptSummary | object | Summary of receipt results |
+  | items | array | Detailed item receipt information |
+  | discrepancies | array | List of discrepancies found |
+  | inventoryUpdated | boolean | Whether inventory was updated |
+  | paymentTriggered | boolean | Whether payment processing was initiated |
+  | nextActions | array | Recommended next actions |
+  | message | string | Success message |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to receive purchase orders",
+    "requiredRole": "warehouse_manager, procurement_manager, or admin"
+  }
+  ```
+
+  **404 Not Found** - Purchase order does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Purchase order with ID 'po-123' not found"
+  }
+  ```
+
+  **409 Conflict** - Invalid status transition
+  ```json
+  {
+    "error": "Conflict",
+    "message": "Purchase order cannot be received in current status",
+    "currentStatus": "approved",
+    "requiredStatus": "placed",
+    "suggestion": "Purchase order must be placed before it can be received"
+  }
+  ```
+
+  **400 Bad Request** - Invalid receipt data
+  ```json
+  {
+    "error": "Validation Error",
+    "message": "Received quantity exceeds ordered quantity",
+    "itemId": "item-456",
+    "ordered": 20,
+    "received": 25
+  }
+  ```
+
+  ## Use Cases
+
+  - **Goods Receipt**: Record delivery of ordered items
+  - **Inventory Update**: Automatically update inventory levels
+  - **Quality Control**: Document item condition and quality
+  - **Discrepancy Management**: Track and resolve delivery discrepancies
+  - **Payment Processing**: Trigger accounts payable for vendor payment
+  - **Vendor Performance**: Record delivery accuracy and timeliness
+  - **Audit Trail**: Maintain complete receiving documentation
+
+  ## Notes
+
+  - Purchase order must be in 'placed' status to be received
+  - Received quantities can be less than ordered (partial receipt)
+  - Received quantities cannot exceed ordered quantities
+  - Inventory levels are automatically updated upon receipt
+  - Discrepancies may trigger vendor credit or replacement requests
+  - Receipt triggers payment processing workflow
+  - Damaged items should be documented with photos if possible
+  - Partial receipts may keep order in 'partial' status until complete
+  - Receipt date affects vendor on-time delivery metrics
+url: "{{baseUrl}}/api/procurement/purchase-orders/:id/receive"
+method: POST
+pathVariables:
+  id: po-123
+order: 6000

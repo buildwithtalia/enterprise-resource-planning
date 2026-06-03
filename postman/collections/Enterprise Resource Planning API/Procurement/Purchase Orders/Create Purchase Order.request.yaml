@@ -1,0 +1,209 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Creates a new purchase order for ordering goods or services from a vendor. This endpoint initiates the procurement workflow by generating a purchase order with line items, pricing, and delivery details. The purchase order must be approved before it can be placed with the vendor.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `admin`
+
+  Users must have procurement management or administrative privileges to create purchase orders.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | Yes | Indicates JSON request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Body Parameters
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | vendorId | string | Yes | ID of the vendor to order from |
+  | orderDate | string | Yes | Date of order creation (YYYY-MM-DD) |
+  | expectedDeliveryDate | string | Yes | Expected delivery date (YYYY-MM-DD) |
+  | items | array | Yes | Array of line items to order |
+  | items[].itemId | string | Yes | Inventory item identifier |
+  | items[].description | string | Yes | Item description |
+  | items[].quantity | number | Yes | Quantity to order |
+  | items[].unitPrice | number | Yes | Price per unit |
+  | items[].amount | number | Yes | Total amount (quantity × unitPrice) |
+  | subtotal | number | Yes | Subtotal before tax |
+  | tax | number | Yes | Tax amount |
+  | total | number | Yes | Total amount including tax |
+  | notes | string | No | Additional notes or instructions |
+  | shippingAddress | string | No | Delivery address (defaults to company address) |
+
+  ### Example Request
+
+  ```json
+  POST {{baseUrl}}/api/procurement/purchase-orders
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  {
+    "vendorId": "vendor-123",
+    "orderDate": "2024-01-15",
+    "expectedDeliveryDate": "2024-02-01",
+    "items": [
+      {
+        "itemId": "item-456",
+        "description": "Office Chairs",
+        "quantity": 20,
+        "unitPrice": 150,
+        "amount": 3000
+      }
+    ],
+    "subtotal": 3000,
+    "tax": 240,
+    "total": 3240,
+    "notes": "Please deliver to warehouse loading dock",
+    "shippingAddress": "123 Company Way, City, State 12345"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (201 Created)
+
+  Returns the newly created purchase order:
+
+  ```json
+  {
+    "id": "po-789",
+    "poNumber": "PO-2024-0789",
+    "vendorId": "vendor-123",
+    "vendorName": "Office Supplies Inc",
+    "orderDate": "2024-01-15",
+    "expectedDeliveryDate": "2024-02-01",
+    "status": "draft",
+    "items": [
+      {
+        "itemId": "item-456",
+        "description": "Office Chairs",
+        "quantity": 20,
+        "unitPrice": 150,
+        "amount": 3000
+      }
+    ],
+    "subtotal": 3000,
+    "tax": 240,
+    "total": 3240,
+    "notes": "Please deliver to warehouse loading dock",
+    "shippingAddress": "123 Company Way, City, State 12345",
+    "createdBy": "user-456",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique purchase order identifier |
+  | poNumber | string | Human-readable PO number |
+  | vendorId | string | Vendor identifier |
+  | vendorName | string | Vendor company name |
+  | orderDate | string | Order creation date |
+  | expectedDeliveryDate | string | Expected delivery date |
+  | status | string | PO status (draft, pending_approval, approved, placed, received, cancelled) |
+  | items | array | Array of ordered items |
+  | subtotal | number | Subtotal before tax |
+  | tax | number | Tax amount |
+  | total | number | Total amount including tax |
+  | notes | string | Additional notes |
+  | shippingAddress | string | Delivery address |
+  | createdBy | string | User who created the PO |
+  | createdAt | string | Creation timestamp (ISO 8601) |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid input data
+  ```json
+  {
+    "error": "Validation Error",
+    "message": "Invalid vendor ID or vendor is inactive",
+    "details": {
+      "field": "vendorId",
+      "value": "vendor-999"
+    }
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to create purchase orders",
+    "requiredRole": "procurement_manager or admin"
+  }
+  ```
+
+  **422 Unprocessable Entity** - Business logic validation failed
+  ```json
+  {
+    "error": "Validation Error",
+    "message": "Total amount does not match sum of items",
+    "expected": 3240,
+    "received": 3000
+  }
+  ```
+
+  ## Use Cases
+
+  - **Inventory Replenishment**: Order items when stock levels are low
+  - **Bulk Purchasing**: Create large orders for cost savings
+  - **Project Procurement**: Order materials for specific projects
+  - **Regular Supplies**: Reorder frequently used items
+  - **New Vendor Orders**: Place initial orders with new vendors
+
+  ## Notes
+
+  - Purchase orders are created in 'draft' status and require approval
+  - PO numbers are automatically generated in sequential format
+  - Vendor must be active to create purchase orders
+  - Item amounts must equal quantity × unitPrice
+  - Total must equal subtotal + tax
+  - Expected delivery date must be in the future
+  - Purchase orders can be edited while in 'draft' status
+url: "{{baseUrl}}/api/procurement/purchase-orders"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "vendorId": "vendor-123",
+      "orderDate": "2024-01-15",
+      "expectedDeliveryDate": "2024-02-01",
+      "items": [
+        {
+          "itemId": "item-456",
+          "description": "Office Chairs",
+          "quantity": 20,
+          "unitPrice": 150,
+          "amount": 3000
+        }
+      ],
+      "subtotal": 3000,
+      "tax": 240,
+      "total": 3240
+    }
+order: 1000

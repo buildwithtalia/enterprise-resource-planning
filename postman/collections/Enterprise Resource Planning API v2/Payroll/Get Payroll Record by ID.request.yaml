@@ -1,0 +1,7 @@
+$kind: http-request
+description: Retrieves detailed information about a specific payroll record.
+url: "{{baseUrl}}/api/v2/payroll/records/:id"
+method: GET
+pathVariables:
+  id: ""
+order: 2000

@@ -1,0 +1,154 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves performance metrics and analytics for a specific shipping carrier (e.g., FedEx, UPS, DHL) based on all shipments handled by that carrier. This endpoint provides insights into carrier reliability, delivery times, on-time rates, exception rates, and cost efficiency, enabling logistics teams to evaluate and compare carrier performance.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `logistics_coordinator`, `admin`
+
+  Users must have warehouse management, logistics coordination, or administrative privileges to view carrier performance.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | carrier | string | Yes | Carrier name (e.g., FedEx, UPS, DHL) |
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | startDate | string | No | Start date for metrics period (YYYY-MM-DD) |
+  | endDate | string | No | End date for metrics period (YYYY-MM-DD) |
+  | period | string | No | Predefined period (30d, 90d, 1y, all) |
+
+  ### Example Request
+
+  ```json
+  GET {{baseUrl}}/api/supply-chain/carriers/FedEx/performance?period=90d
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns carrier performance metrics:
+
+  ```json
+  {
+    "carrier": "FedEx",
+    "period": {
+      "startDate": "2024-01-01",
+      "endDate": "2024-03-31",
+      "days": 90
+    },
+    "totalShipments": 120,
+    "onTimeDeliveryRate": 94.2,
+    "averageDeliveryTime": 3.1,
+    "delayedShipments": 7,
+    "exceptionRate": 2.5,
+    "cancelledShipments": 2,
+    "averageShippingCost": 38.50,
+    "totalShippingCost": 4620.00,
+    "deliveryTimeDistribution": {
+      "0-2 days": 40,
+      "3-5 days": 65,
+      "6+ days": 15
+    },
+    "topRoutes": [
+      {
+        "origin": "Warehouse A",
+        "destination": "Chicago, IL",
+        "shipmentCount": 25,
+        "averageDeliveryTime": 2.8
+      }
+    ],
+    "performanceTrend": "improving",
+    "lastUpdated": "2024-03-31T23:59:59Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | carrier | string | Carrier name |
+  | period | object | Metrics calculation period |
+  | totalShipments | number | Total shipments handled by carrier |
+  | onTimeDeliveryRate | number | Percentage of shipments delivered on time |
+  | averageDeliveryTime | number | Average delivery time in days |
+  | delayedShipments | number | Number of delayed shipments |
+  | exceptionRate | number | Percentage of shipments with exceptions |
+  | cancelledShipments | number | Number of cancelled shipments |
+  | averageShippingCost | number | Average shipping cost per shipment |
+  | totalShippingCost | number | Total shipping cost for period |
+  | deliveryTimeDistribution | object | Distribution of delivery times |
+  | topRoutes | array | Most frequent shipping routes |
+  | performanceTrend | string | Trend indicator (improving, declining, stable) |
+  | lastUpdated | string | Metrics last updated timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to view carrier performance",
+    "requiredRole": "warehouse_manager, logistics_coordinator, or admin"
+  }
+  ```
+
+  **404 Not Found** - Carrier not found
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Carrier 'FedEx' not found"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Carrier Evaluation**: Assess carrier reliability and performance
+  - **Logistics Optimization**: Identify best-performing carriers for routes
+  - **Cost Analysis**: Analyze shipping costs by carrier
+  - **Exception Management**: Monitor exception and delay rates
+  - **Vendor Negotiations**: Use performance data in carrier negotiations
+  - **Trend Analysis**: Track carrier performance over time
+  - **Reporting**: Generate carrier performance reports for management
+
+  ## Notes
+
+  - Metrics are calculated from all shipments handled by the carrier
+  - Default period is last 90 days if not specified
+  - On-time delivery rate is percentage of shipments delivered by estimated date
+  - Exception rate includes lost, damaged, or returned shipments
+  - Delivery time distribution shows shipment speed breakdown
+  - Top routes highlight most common shipping lanes
+  - Performance trend compares current period to previous period
+  - Data is updated nightly or after significant events
+url: "{{baseUrl}}/api/supply-chain/carriers/:carrier/performance"
+method: GET
+pathVariables:
+  carrier: FedEx
+order: 2000

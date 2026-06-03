@@ -1,0 +1,179 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Marks a shipment as delivered, completing the delivery workflow and updating the shipment status to 'delivered'. This endpoint is used when a carrier confirms successful delivery to the recipient, and may capture delivery confirmation details such as recipient name, delivery time, and proof of delivery.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `logistics_coordinator`, `admin`
+
+  Users must have warehouse management, logistics coordination, or administrative privileges to mark shipments as delivered.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | Yes | Indicates JSON request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique shipment identifier (e.g., ship-123) |
+
+  ### Body Parameters
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | deliveredBy | string | No | Name of person/carrier delivering the shipment |
+  | deliveredTo | string | No | Name of recipient |
+  | deliveryTime | string | No | Actual delivery timestamp (ISO 8601) |
+  | signature | string | No | Recipient signature or proof of delivery |
+  | deliveryNotes | string | No | Notes about delivery (e.g., left at front desk) |
+  | proofOfDeliveryUrl | string | No | URL to photo or document as proof of delivery |
+  | status | string | No | Custom status (default: delivered) |
+
+  ### Example Request
+
+  ```json
+  POST {{baseUrl}}/api/supply-chain/shipments/ship-123/deliver
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  {
+    "deliveredBy": "Sarah Williams",
+    "deliveredTo": "John Doe",
+    "deliveryTime": "2024-01-18T16:45:00Z",
+    "signature": "J. Doe",
+    "deliveryNotes": "Left at front desk",
+    "proofOfDeliveryUrl": "https://carrier.com/proof/ship-123.jpg"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the updated shipment with delivered status:
+
+  ```json
+  {
+    "shipmentId": "ship-123",
+    "status": "delivered",
+    "previousStatus": "in_transit",
+    "deliveredBy": "Sarah Williams",
+    "deliveredTo": "John Doe",
+    "deliveryTime": "2024-01-18T16:45:00Z",
+    "signature": "J. Doe",
+    "deliveryNotes": "Left at front desk",
+    "proofOfDeliveryUrl": "https://carrier.com/proof/ship-123.jpg",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2024-01-15T10:30:00Z"
+      },
+      {
+        "status": "dispatched",
+        "timestamp": "2024-01-15T14:00:00Z"
+      },
+      {
+        "status": "in_transit",
+        "timestamp": "2024-01-16T08:30:00Z"
+      },
+      {
+        "status": "delivered",
+        "timestamp": "2024-01-18T16:45:00Z",
+        "deliveredBy": "Sarah Williams",
+        "deliveredTo": "John Doe",
+        "signature": "J. Doe",
+        "deliveryNotes": "Left at front desk",
+        "proofOfDeliveryUrl": "https://carrier.com/proof/ship-123.jpg"
+      }
+    ],
+    "message": "Shipment marked as delivered",
+    "updatedAt": "2024-01-18T16:45:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | shipmentId | string | Unique shipment identifier |
+  | status | string | Updated status (delivered) |
+  | previousStatus | string | Previous status before delivery |
+  | deliveredBy | string | Name of person/carrier delivering |
+  | deliveredTo | string | Name of recipient |
+  | deliveryTime | string | Actual delivery timestamp |
+  | signature | string | Recipient signature |
+  | deliveryNotes | string | Notes about delivery |
+  | proofOfDeliveryUrl | string | URL to proof of delivery |
+  | statusHistory | array | Complete status change history |
+  | message | string | Success message |
+  | updatedAt | string | Last update timestamp |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to mark shipments as delivered",
+    "requiredRole": "warehouse_manager, logistics_coordinator, or admin"
+  }
+  ```
+
+  **404 Not Found** - Shipment does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Shipment with ID 'ship-123' not found"
+  }
+  ```
+
+  **409 Conflict** - Invalid status transition
+  ```json
+  {
+    "error": "Conflict",
+    "message": "Shipment cannot be marked as delivered in current status",
+    "currentStatus": "cancelled",
+    "allowedStatuses": ["in_transit"]
+  }
+  ```
+
+  ## Use Cases
+
+  - **Delivery Confirmation**: Mark shipments as delivered upon receipt by customer
+  - **Proof of Delivery**: Record recipient signature or photo as proof
+  - **Customer Notification**: Trigger delivery confirmation notifications
+  - **Audit Trail**: Maintain delivery records for compliance
+  - **Performance Metrics**: Track on-time delivery rates
+  - **Exception Handling**: Document delivery issues or notes
+
+  ## Notes
+
+  - Shipment must be in 'in_transit' status to be marked as delivered
+  - Delivery time and recipient details are recommended for audit
+  - Proof of delivery (signature/photo) is optional but recommended
+  - Status history is updated with delivery event
+  - Customer is notified automatically if enabled
+  - Once delivered, shipment cannot be reverted to previous statuses
+url: "{{baseUrl}}/api/supply-chain/shipments/:id/deliver"
+method: POST
+pathVariables:
+  id: ship-123
+order: 8000

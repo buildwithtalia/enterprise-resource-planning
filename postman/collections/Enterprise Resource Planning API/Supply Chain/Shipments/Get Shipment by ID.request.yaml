@@ -1,0 +1,221 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed information about a specific shipment using its unique identifier. This endpoint provides comprehensive shipment data including current status, location history, item details, and tracking information. Essential for detailed shipment tracking and customer service inquiries.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `logistics_coordinator`, `customer_service`, `admin`
+
+  Users must have appropriate logistics or customer service privileges to view shipment details.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique shipment identifier (e.g., ship-123) |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/supply-chain/shipments/ship-123
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns detailed shipment information:
+
+  ```json
+  {
+    "shipmentId": "ship-123",
+    "orderId": "order-456",
+    "trackingNumber": "1Z999AA10123456784",
+    "carrier": "FedEx",
+    "carrierService": "FedEx Ground",
+    "status": "in_transit",
+    "origin": {
+      "address": "Warehouse A, 123 Industrial Blvd",
+      "city": "Springfield",
+      "state": "IL",
+      "zipCode": "62701",
+      "country": "USA"
+    },
+    "destination": {
+      "address": "456 Customer Street",
+      "city": "Chicago",
+      "state": "IL",
+      "zipCode": "60601",
+      "country": "USA",
+      "contactName": "John Doe",
+      "contactPhone": "(555) 123-4567"
+    },
+    "items": [
+      {
+        "itemId": "item-789",
+        "sku": "WIDGET-PRO-001",
+        "name": "Widget Pro",
+        "quantity": 5,
+        "weight": 2.5,
+        "dimensions": "10x8x6 inches",
+        "value": 125.00
+      },
+      {
+        "itemId": "item-790",
+        "sku": "GADGET-PLUS-002",
+        "name": "Gadget Plus",
+        "quantity": 3,
+        "weight": 1.2,
+        "dimensions": "8x6x4 inches",
+        "value": 89.99
+      }
+    ],
+    "packageDetails": {
+      "totalWeight": 16.1,
+      "dimensions": "24x18x12 inches",
+      "packageCount": 1,
+      "insuranceValue": 339.97
+    },
+    "dates": {
+      "createdAt": "2024-01-15T10:30:00Z",
+      "dispatchedAt": "2024-01-15T14:00:00Z",
+      "estimatedDeliveryDate": "2024-01-20",
+      "actualDeliveryDate": null,
+      "lastUpdated": "2024-01-17T09:15:00Z"
+    },
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "location": "Warehouse A, Springfield, IL",
+        "description": "Shipment created"
+      },
+      {
+        "status": "dispatched",
+        "timestamp": "2024-01-15T14:00:00Z",
+        "location": "Warehouse A, Springfield, IL",
+        "description": "Package picked up by carrier"
+      },
+      {
+        "status": "in_transit",
+        "timestamp": "2024-01-16T08:30:00Z",
+        "location": "FedEx Hub, Indianapolis, IN",
+        "description": "In transit to destination"
+      },
+      {
+        "status": "in_transit",
+        "timestamp": "2024-01-17T09:15:00Z",
+        "location": "FedEx Facility, Chicago, IL",
+        "description": "Arrived at destination facility"
+      }
+    ],
+    "currentLocation": {
+      "facility": "FedEx Facility",
+      "city": "Chicago",
+      "state": "IL",
+      "lastScan": "2024-01-17T09:15:00Z"
+    },
+    "costs": {
+      "shippingCost": 45.00,
+      "insuranceCost": 5.00,
+      "totalCost": 50.00,
+      "currency": "USD"
+    },
+    "metadata": {
+      "createdBy": "user-123",
+      "createdByName": "Jane Smith",
+      "notes": "Fragile items - handle with care",
+      "specialInstructions": "Signature required",
+      "customerNotified": true,
+      "lastNotificationSent": "2024-01-17T09:30:00Z"
+    }
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | shipmentId | string | Unique shipment identifier |
+  | orderId | string | Associated order identifier |
+  | trackingNumber | string | Carrier tracking number |
+  | carrier | string | Shipping carrier name |
+  | carrierService | string | Specific carrier service used |
+  | status | string | Current shipment status |
+  | origin | object | Origin address details |
+  | destination | object | Destination address and contact details |
+  | items | array | List of items in shipment |
+  | packageDetails | object | Package specifications |
+  | dates | object | Important dates and timestamps |
+  | statusHistory | array | Complete history of status changes |
+  | currentLocation | object | Current shipment location |
+  | costs | object | Shipping cost breakdown |
+  | metadata | object | Additional shipment information |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to view shipment details"
+  }
+  ```
+
+  **404 Not Found** - Shipment does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Shipment with ID 'ship-123' not found"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Customer Service**: Provide detailed tracking information to customers
+  - **Shipment Tracking**: Monitor individual shipment progress
+  - **Delivery Verification**: Confirm shipment details and delivery status
+  - **Issue Resolution**: Investigate shipment problems or delays
+  - **Audit Trail**: Review complete shipment history
+  - **Location Tracking**: Track current shipment location
+  - **Cost Analysis**: Review shipping costs for specific shipments
+  - **Documentation**: Generate shipment documentation and reports
+
+  ## Notes
+
+  - Returns complete shipment history including all status changes
+  - Status history is ordered chronologically (oldest to newest)
+  - Timestamps are in UTC (ISO 8601 format)
+  - Current location reflects the most recent tracking scan
+  - Item details include SKU, quantity, weight, and value
+  - Package details include total weight and dimensions
+  - Cost breakdown includes shipping and insurance costs
+  - Metadata includes creator information and special instructions
+  - Customer notification status is tracked
+  - Tracking number can be used with carrier's tracking system
+url: "{{baseUrl}}/api/supply-chain/shipments/:id"
+method: GET
+pathVariables:
+  id: ship-123
+order: 3000

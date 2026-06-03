@@ -1,0 +1,287 @@
+$kind: collection
+description: |-
+  # Enterprise Resource Planning API
+
+  ## Overview
+
+  The Enterprise Resource Planning (ERP) API is a comprehensive, monolithic application designed to streamline and integrate core business processes across your organization. This RESTful API provides a unified interface for managing critical business operations including human resources, financial management, supply chain operations, and inventory control.
+
+  Built with modern architecture principles, this API serves as the backbone for enterprise-wide data management and business process automation, enabling seamless communication between different departments and systems within your organization.
+
+  ---
+
+  ## Purpose
+
+  This API solves key business challenges by:
+
+  - **Centralizing Data Management**: Eliminates data silos by providing a single source of truth for all business operations
+  - **Automating Business Processes**: Reduces manual work and human error through automated workflows and calculations
+  - **Improving Decision Making**: Provides real-time access to critical business data for informed decision-making
+  - **Ensuring Compliance**: Maintains accurate records for regulatory compliance and audit trails
+  - **Enhancing Efficiency**: Streamlines operations across departments with integrated modules that work seamlessly together
+  - **Reducing Operational Costs**: Minimizes redundancy and optimizes resource allocation across the organization
+
+  ---
+
+  ## Main Features & Modules
+
+  The ERP API is organized into the following functional modules:
+
+  ### 🏢 Human Resources
+  Manage your workforce with comprehensive employee and department management capabilities:
+  - Employee lifecycle management (create, update, promote, terminate)
+  - Department organization and hierarchy
+  - Employee records and profile management
+  - Position and role tracking
+
+  ### 💰 Payroll
+  Automate salary processing and ensure accurate compensation:
+  - Payroll processing and calculations
+  - Tax withholding and deductions
+  - Salary disbursement tracking
+  - Payroll reporting and analytics
+
+  ### 📊 Accounting
+  Maintain accurate financial records with general ledger capabilities:
+  - Transaction recording and tracking
+  - Account management
+  - Journal entries
+  - Financial statement preparation
+
+  ### 💼 Finance
+  Plan and monitor your organization's financial health:
+  - Budget creation and management
+  - Financial forecasting
+  - Expense tracking and analysis
+  - Financial reporting and dashboards
+
+  ### 🧾 Billing
+  Streamline customer invoicing and revenue management:
+  - Invoice generation and management
+  - Customer billing profiles
+  - Payment tracking
+  - Revenue recognition
+
+  ### 🛒 Procurement
+  Manage vendor relationships and purchasing processes:
+  - Purchase order creation and tracking
+  - Vendor management
+  - Procurement workflows
+  - Spend analysis
+
+  ### 🚚 Supply Chain
+  Optimize logistics and shipment operations:
+  - Shipment tracking and management
+  - Logistics coordination
+  - Delivery scheduling
+  - Supply chain visibility
+
+  ### 📦 Inventory
+  Maintain optimal stock levels with intelligent inventory management:
+  - Real-time stock tracking
+  - Automatic reordering
+  - Inventory valuation
+  - Warehouse management
+
+  ### 🔧 System & Demo Data
+  - Health monitoring and API information endpoints
+  - Mock data endpoints for testing and development
+  - System status and diagnostics
+
+  ---
+
+  ## Authentication
+
+  **Authentication Method**: Token-based authentication
+
+  Most endpoints in this API require authentication to ensure secure access to your business data. Authentication tokens should be included in your requests.
+
+  ### Endpoints Requiring Authentication
+  All endpoints **except** the following require authentication:
+  - `GET /health` - Health check endpoint
+  - `GET /api` - API information endpoint
+  - `GET /api/demo/*` - Demo data endpoints
+
+  ### How to Authenticate
+  1. Obtain an authentication token from your system administrator or authentication service
+  2. Include the token in your request headers
+  3. Ensure the token is valid and has not expired
+
+  **Note**: Specific authentication header requirements should be configured based on your implementation (e.g., `Authorization: Bearer <token>` or custom header).
+
+  ---
+
+  ## Base URL
+
+  The API uses a configurable base URL for flexibility across different environments:
+
+  ```
+  {{baseUrl}}
+  ```
+
+  ### Environment Configuration
+  Set the `baseUrl` variable in your Postman environment:
+
+  - **Development**: `http://localhost:3001`
+  - **Staging**: `https://staging-erp.yourcompany.com`
+  - **Production**: `https://erp.yourcompany.com`
+
+  ### Example Request
+  ```
+  GET {{baseUrl}}/api/hr/employees
+  ```
+
+  ---
+
+  ## Getting Started
+
+  Follow these steps to begin using the Enterprise Resource Planning API:
+
+  ### 1. Set Up Your Environment
+  - Create a Postman environment or configure your API client
+  - Set the `{{baseUrl}}` variable to your API server URL
+  - Configure authentication credentials if required
+
+  ### 2. Verify API Connectivity
+  Start by testing the health check endpoint:
+  ```
+  GET {{baseUrl}}/health
+  ```
+  This should return a successful response indicating the API is operational.
+
+  ### 3. Explore API Information
+  Get detailed information about available modules:
+  ```
+  GET {{baseUrl}}/api
+  ```
+  This returns API version, architecture details, and available modules.
+
+  ### 4. Test with Demo Data
+  If you're in a development environment, use the demo endpoints to explore functionality:
+  ```
+  GET {{baseUrl}}/api/demo/employees
+  GET {{baseUrl}}/api/demo/departments
+  ```
+
+  ### 5. Start Making Requests
+  Begin with basic operations:
+  - **View employees**: `GET {{baseUrl}}/api/hr/employees`
+  - **Create an employee**: `POST {{baseUrl}}/api/hr/employees`
+  - **View departments**: `GET {{baseUrl}}/api/hr/departments`
+
+  ### 6. Explore Other Modules
+  Navigate through the collection folders to discover endpoints for:
+  - Payroll processing
+  - Financial transactions
+  - Inventory management
+  - And more...
+
+  ---
+
+  ## Common Response Codes
+
+  The API uses standard HTTP status codes to indicate the success or failure of requests:
+
+  ### Success Codes
+  - **200 OK**: Request succeeded, response contains requested data
+  - **201 Created**: Resource successfully created, response includes new resource details
+  - **204 No Content**: Request succeeded, no response body (typically for DELETE operations)
+
+  ### Client Error Codes
+  - **400 Bad Request**: Invalid request format or missing required parameters
+  - **401 Unauthorized**: Authentication required or authentication failed
+  - **403 Forbidden**: Authenticated but lacking permissions for the requested resource
+  - **404 Not Found**: Requested resource does not exist
+  - **409 Conflict**: Request conflicts with current state (e.g., duplicate resource)
+  - **422 Unprocessable Entity**: Request format is correct but contains invalid data
+
+  ### Server Error Codes
+  - **500 Internal Server Error**: Unexpected server error occurred
+  - **502 Bad Gateway**: Invalid response from upstream server
+  - **503 Service Unavailable**: Service temporarily unavailable (maintenance or overload)
+
+  ### Error Response Format
+  Error responses typically include:
+  ```json
+  {
+    "error": "Error message describing what went wrong",
+    "statusCode": 400,
+    "details": "Additional context or validation errors"
+  }
+  ```
+
+  ---
+
+  ## Best Practices
+
+  ### Request Guidelines
+  - Always validate your request payload before sending
+  - Use appropriate HTTP methods (GET for retrieval, POST for creation, PUT/PATCH for updates, DELETE for removal)
+  - Include all required fields in your request body
+  - Set proper `Content-Type` headers (typically `application/json`)
+
+  ### Error Handling
+  - Implement proper error handling in your application
+  - Check response status codes before processing response data
+  - Log errors for debugging and monitoring
+  - Implement retry logic for transient failures (5xx errors)
+
+  ### Performance
+  - Use pagination for large datasets
+  - Cache responses when appropriate
+  - Avoid making unnecessary requests
+  - Use batch operations when available
+
+  ---
+
+  ## Support & Contact
+
+  ### Technical Support
+  For technical assistance, bug reports, or feature requests:
+  - **Email**: api-support@yourcompany.com
+  - **Support Portal**: https://support.yourcompany.com
+  - **Documentation**: https://docs.yourcompany.com/erp-api
+
+  ### API Status
+  Check the current API status and scheduled maintenance:
+  - **Status Page**: https://status.yourcompany.com
+
+  ### Contributing
+  If you'd like to contribute to API improvements or report issues:
+  - **Issue Tracker**: https://github.com/yourcompany/erp-api/issues
+  - **Developer Portal**: https://developers.yourcompany.com
+
+  ### Business Inquiries
+  For licensing, partnerships, or general business questions:
+  - **Email**: business@yourcompany.com
+  - **Phone**: +1 (555) 123-4567
+
+  ---
+
+  ## Additional Resources
+
+  - **API Changelog**: Track updates and changes to the API
+  - **Migration Guides**: Assistance for upgrading between API versions
+  - **Code Examples**: Sample implementations in various programming languages
+  - **Postman Collection**: This collection with pre-configured requests
+  - **OpenAPI Specification**: Machine-readable API definition
+
+  ---
+
+  **Version**: 1.0.0  
+  **Last Updated**: 2024  
+  **License**: Proprietary - All rights reserved
+variables:
+  baseUrl: http://localhost:3004
+  firstName: John
+  lastName: Doe
+  email: john.doe@example.com
+  departmentId: dept-001
+  position: Software Engineer
+  salary: "75000"
+  hireDate: 2024-01-15
+  status: active
+  phoneNumber: ""
+  lastCreatedEmployeeId: ""
+  jobTitle: ""
+  employeeId: ""

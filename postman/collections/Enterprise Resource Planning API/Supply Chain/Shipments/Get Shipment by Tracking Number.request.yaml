@@ -1,0 +1,204 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves shipment information using the carrier's tracking number. This endpoint enables quick shipment lookup using the tracking number provided to customers, making it ideal for customer-facing tracking interfaces and customer service inquiries without requiring internal shipment IDs.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `logistics_coordinator`, `customer_service`, `admin`
+
+  Users must have appropriate logistics or customer service privileges to track shipments.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | trackingNumber | string | Yes | Carrier tracking number (e.g., 1Z999AA10123456784) |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/supply-chain/shipments/tracking/1Z999AA10123456784
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns shipment details matching the tracking number:
+
+  ```json
+  {
+    "shipmentId": "ship-123",
+    "orderId": "order-456",
+    "trackingNumber": "1Z999AA10123456784",
+    "carrier": "FedEx",
+    "carrierService": "FedEx Ground",
+    "status": "in_transit",
+    "origin": "Warehouse A, Springfield, IL",
+    "destination": "456 Customer Street, Chicago, IL 60601",
+    "estimatedDeliveryDate": "2024-01-20",
+    "actualDeliveryDate": null,
+    "currentLocation": {
+      "facility": "FedEx Facility",
+      "city": "Chicago",
+      "state": "IL",
+      "lastScan": "2024-01-17T09:15:00Z",
+      "description": "Arrived at destination facility"
+    },
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "location": "Warehouse A, Springfield, IL",
+        "description": "Shipment created"
+      },
+      {
+        "status": "dispatched",
+        "timestamp": "2024-01-15T14:00:00Z",
+        "location": "Warehouse A, Springfield, IL",
+        "description": "Package picked up by carrier"
+      },
+      {
+        "status": "in_transit",
+        "timestamp": "2024-01-16T08:30:00Z",
+        "location": "FedEx Hub, Indianapolis, IN",
+        "description": "In transit to destination"
+      },
+      {
+        "status": "in_transit",
+        "timestamp": "2024-01-17T09:15:00Z",
+        "location": "FedEx Facility, Chicago, IL",
+        "description": "Arrived at destination facility"
+      }
+    ],
+    "items": [
+      {
+        "itemId": "item-789",
+        "name": "Widget Pro",
+        "quantity": 5
+      },
+      {
+        "itemId": "item-790",
+        "name": "Gadget Plus",
+        "quantity": 3
+      }
+    ],
+    "packageDetails": {
+      "weight": 16.1,
+      "dimensions": "24x18x12 inches",
+      "packageCount": 1
+    },
+    "deliveryProgress": {
+      "percentComplete": 75,
+      "estimatedDaysRemaining": 1,
+      "onSchedule": true
+    },
+    "contactInfo": {
+      "recipientName": "John Doe",
+      "recipientPhone": "(555) 123-4567"
+    },
+    "trackingUrl": "https://www.fedex.com/track?tracknumber=1Z999AA10123456784",
+    "lastUpdated": "2024-01-17T09:15:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | shipmentId | string | Internal shipment identifier |
+  | orderId | string | Associated order identifier |
+  | trackingNumber | string | Carrier tracking number |
+  | carrier | string | Shipping carrier name |
+  | carrierService | string | Specific carrier service |
+  | status | string | Current shipment status |
+  | origin | string | Shipment origin address |
+  | destination | string | Shipment destination address |
+  | estimatedDeliveryDate | string | Expected delivery date (YYYY-MM-DD) |
+  | actualDeliveryDate | string | Actual delivery date or null |
+  | currentLocation | object | Current shipment location details |
+  | statusHistory | array | Complete tracking history |
+  | items | array | Items in shipment (summary) |
+  | packageDetails | object | Package specifications |
+  | deliveryProgress | object | Delivery progress indicators |
+  | contactInfo | object | Recipient contact information |
+  | trackingUrl | string | Direct link to carrier tracking page |
+  | lastUpdated | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to track shipments"
+  }
+  ```
+
+  **404 Not Found** - Tracking number not found
+  ```json
+  {
+    "error": "Not Found",
+    "message": "No shipment found with tracking number '1Z999AA10123456784'",
+    "suggestion": "Verify the tracking number is correct and the shipment exists in the system"
+  }
+  ```
+
+  **400 Bad Request** - Invalid tracking number format
+  ```json
+  {
+    "error": "Bad Request",
+    "message": "Invalid tracking number format",
+    "details": "Tracking number must be alphanumeric and between 10-30 characters"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Customer Tracking**: Allow customers to track shipments using tracking number
+  - **Customer Service**: Quick shipment lookup for customer inquiries
+  - **Tracking Portal**: Power customer-facing tracking interfaces
+  - **Email Notifications**: Provide tracking links in customer emails
+  - **Mobile Apps**: Enable shipment tracking in mobile applications
+  - **Order Status**: Display shipment status on order pages
+  - **Delivery Updates**: Show real-time delivery progress
+  - **Issue Resolution**: Investigate shipment problems using tracking number
+
+  ## Notes
+
+  - Tracking numbers are unique across all carriers
+  - Tracking number format varies by carrier
+  - Status history shows complete shipment journey
+  - Current location reflects most recent carrier scan
+  - Delivery progress percentage is estimated based on typical transit times
+  - Tracking URL provides direct link to carrier's tracking page
+  - Response includes recipient contact information for delivery coordination
+  - On-schedule indicator compares actual progress to estimated delivery
+  - Timestamps are in UTC (ISO 8601 format)
+  - Some carriers may have delays in updating tracking information
+url: "{{baseUrl}}/api/supply-chain/shipments/tracking/:trackingNumber"
+method: GET
+pathVariables:
+  trackingNumber: "1234567890"
+order: 4000

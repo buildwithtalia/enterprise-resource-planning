@@ -1,0 +1,15 @@
+$kind: http-request
+description: Receive new stock into inventory. Requires 'warehouse_manager' or 'admin' role.
+url: "{{baseUrl}}/api/inventory/items/:id/receive"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: item-123
+body:
+  type: text
+  content: |-
+    {
+      "quantity": 50
+    }
+order: 5000

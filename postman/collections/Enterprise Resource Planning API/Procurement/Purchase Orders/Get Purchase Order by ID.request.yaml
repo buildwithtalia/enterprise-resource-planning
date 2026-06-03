@@ -1,0 +1,196 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed information for a specific purchase order by its unique identifier. This endpoint provides comprehensive purchase order data including line items, pricing, vendor details, status history, and delivery information, enabling detailed order tracking and management.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `procurement_staff`, `warehouse_manager`, `admin`
+
+  Users must have procurement, warehouse, or administrative privileges to view purchase order details.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique purchase order identifier (e.g., po-123) |
+
+  ### Example Request
+
+  ```http
+  GET {{baseUrl}}/api/procurement/purchase-orders/po-123
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns a detailed purchase order object:
+
+  ```json
+  {
+    "id": "po-123",
+    "poNumber": "PO-2024-0123",
+    "vendorId": "vendor-123",
+    "vendorName": "Office Supplies Inc",
+    "vendorEmail": "sales@officesupplies.com",
+    "vendorPhone": "+1-555-0456",
+    "orderDate": "2024-01-10",
+    "expectedDeliveryDate": "2024-01-25",
+    "actualDeliveryDate": null,
+    "status": "approved",
+    "items": [
+      {
+        "itemId": "item-456",
+        "sku": "CHAIR-ERG-001",
+        "description": "Ergonomic Office Chair",
+        "quantity": 20,
+        "unitPrice": 150,
+        "amount": 3000,
+        "receivedQuantity": 0,
+        "status": "pending"
+      },
+      {
+        "itemId": "item-789",
+        "sku": "DESK-STD-001",
+        "description": "Standard Office Desk",
+        "quantity": 10,
+        "unitPrice": 200,
+        "amount": 2000,
+        "receivedQuantity": 0,
+        "status": "pending"
+      }
+    ],
+    "subtotal": 5000,
+    "tax": 400,
+    "total": 5400,
+    "notes": "Please deliver to warehouse loading dock",
+    "shippingAddress": "123 Company Way, City, State 12345",
+    "paymentTerms": "Net 30",
+    "createdBy": "user-456",
+    "createdByName": "John Smith",
+    "approvedBy": "user-789",
+    "approvedByName": "Jane Doe",
+    "approvedAt": "2024-01-10T14:30:00Z",
+    "placedAt": null,
+    "receivedAt": null,
+    "statusHistory": [
+      {
+        "status": "draft",
+        "timestamp": "2024-01-10T09:00:00Z",
+        "userId": "user-456",
+        "userName": "John Smith"
+      },
+      {
+        "status": "pending_approval",
+        "timestamp": "2024-01-10T09:15:00Z",
+        "userId": "user-456",
+        "userName": "John Smith"
+      },
+      {
+        "status": "approved",
+        "timestamp": "2024-01-10T14:30:00Z",
+        "userId": "user-789",
+        "userName": "Jane Doe",
+        "notes": "Approved for immediate placement"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2024-01-10T09:00:00Z",
+    "updatedAt": "2024-01-10T14:30:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique purchase order identifier |
+  | poNumber | string | Human-readable PO number |
+  | vendorId | string | Vendor identifier |
+  | vendorName | string | Vendor company name |
+  | vendorEmail | string | Vendor contact email |
+  | vendorPhone | string | Vendor contact phone |
+  | orderDate | string | Order creation date |
+  | expectedDeliveryDate | string | Expected delivery date |
+  | actualDeliveryDate | string | Actual delivery date (null if not received) |
+  | status | string | Current PO status |
+  | items | array | Array of ordered items with details |
+  | subtotal | number | Subtotal before tax |
+  | tax | number | Tax amount |
+  | total | number | Total amount including tax |
+  | notes | string | Additional notes or instructions |
+  | shippingAddress | string | Delivery address |
+  | paymentTerms | string | Payment terms from vendor |
+  | createdBy | string | User ID who created the PO |
+  | createdByName | string | Name of user who created the PO |
+  | approvedBy | string | User ID who approved the PO |
+  | approvedByName | string | Name of user who approved the PO |
+  | approvedAt | string | Approval timestamp (ISO 8601) |
+  | placedAt | string | Placement timestamp (ISO 8601) |
+  | receivedAt | string | Receipt timestamp (ISO 8601) |
+  | statusHistory | array | Complete status change history |
+  | attachments | array | Attached documents or files |
+  | createdAt | string | Creation timestamp (ISO 8601) |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to view purchase order details",
+    "requiredRole": "procurement_manager, procurement_staff, warehouse_manager, or admin"
+  }
+  ```
+
+  **404 Not Found** - Purchase order does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Purchase order with ID 'po-123' not found"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Order Review**: Review complete purchase order details before approval
+  - **Status Tracking**: Monitor order progress through workflow stages
+  - **Receiving Verification**: Verify order details during receiving process
+  - **Audit Trail**: Review complete history of order changes
+  - **Vendor Communication**: Access vendor contact information for order inquiries
+  - **Financial Reconciliation**: Verify order amounts for payment processing
+
+  ## Notes
+
+  - Status history provides complete audit trail of all changes
+  - Item-level status tracks individual line item fulfillment
+  - Received quantity may differ from ordered quantity
+  - Payment terms are inherited from vendor settings
+  - Attachments may include quotes, specifications, or correspondence
+url: "{{baseUrl}}/api/procurement/purchase-orders/:id"
+method: GET
+pathVariables:
+  id: po-123
+order: 3000

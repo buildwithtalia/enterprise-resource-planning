@@ -1,0 +1,124 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Creates a new customer record in the billing system. This endpoint allows billing managers and administrators to register new customers who will receive invoices and make payments. Customer records include contact information, credit limits, and payment terms.
+
+  ## Authentication
+
+  **Required Role:** `billing_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Type | Required | Description |
+  |--------|------|----------|-------------|
+  | Content-Type | string | Yes | Must be `application/json` |
+  | Authorization | string | Yes | Bearer token for authentication |
+
+  ### Body Parameters (JSON)
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | name | string | Yes | Customer's company or individual name |
+  | email | string | Yes | Customer's billing email address (must be unique) |
+  | phone | string | Yes | Customer's contact phone number |
+  | address | string | Yes | Customer's billing address |
+  | creditLimit | number | Yes | Maximum credit limit allowed for the customer |
+  | paymentTerms | string | Yes | Payment terms (e.g., "Net 30", "Net 60", "Due on Receipt") |
+
+  ### Example Request Body
+
+  ```json
+  {
+    "name": "Acme Corporation",
+    "email": "billing@acme.com",
+    "phone": "+1-555-0123",
+    "address": "123 Main St, City, State 12345",
+    "creditLimit": 50000,
+    "paymentTerms": "Net 30"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (201 Created)
+
+  ```json
+  {
+    "id": "cust-789",
+    "name": "Acme Corporation",
+    "email": "billing@acme.com",
+    "phone": "+1-555-0123",
+    "address": "123 Main St, City, State 12345",
+    "creditLimit": 50000,
+    "currentBalance": 0,
+    "paymentTerms": "Net 30",
+    "status": "active",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid input data
+  ```json
+  {
+    "error": "Validation failed",
+    "details": [
+      "Email is required",
+      "Credit limit must be a positive number"
+    ]
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires billing_manager or admin role."
+  }
+  ```
+
+  **409 Conflict** - Email already exists
+  ```json
+  {
+    "error": "Customer with this email already exists"
+  }
+  ```
+
+  ## Use Cases
+
+  - **New Customer Onboarding**: Register new customers before creating invoices
+  - **B2B Client Setup**: Establish business relationships with credit terms
+  - **Customer Database Management**: Build and maintain customer records
+  - **Credit Management**: Set appropriate credit limits for customers
+  - **Payment Terms Configuration**: Define payment expectations upfront
+url: "{{baseUrl}}/api/billing/customers"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Acme Corporation",
+      "email": "billing@acme.com",
+      "phone": "+1-555-0123",
+      "address": "123 Main St, City, State 12345",
+      "creditLimit": 50000,
+      "paymentTerms": "Net 30"
+    }
+order: 1000

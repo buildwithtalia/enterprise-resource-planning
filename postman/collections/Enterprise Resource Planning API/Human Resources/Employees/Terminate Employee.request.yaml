@@ -1,0 +1,145 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Terminates an employee's employment in the HR system. This endpoint updates the employee's status to `terminated`, records the termination date, and optionally captures a reason for termination. It is used for offboarding employees and ensures their access and payroll are properly deactivated.
+
+  ## Authentication
+
+  **Required Role:** `hr_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | The unique identifier of the employee to terminate |
+
+  ### Headers
+
+  | Header | Type | Required | Description |
+  |--------|------|----------|-------------|
+  | Content-Type | string | Yes | Must be `application/json` |
+  | Authorization | string | Yes | Bearer token for authentication |
+
+  ### Body Parameters (JSON)
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | terminationDate | string | Yes | Date of termination (YYYY-MM-DD format) |
+  | reason | string | No | Reason for termination (e.g., resignation, layoff, misconduct) |
+  | notes | string | No | Additional notes about the termination |
+
+  ### Example Request Body
+
+  ```json
+  {
+    "terminationDate": "2024-12-31",
+    "reason": "Resignation",
+    "notes": "Employee resigned with 2 weeks notice."
+  }
+  ```
+
+  ### Example Request
+
+  ```
+  POST {{baseUrl}}/api/hr/employees/emp-789/terminate
+  Content-Type: application/json
+
+  {
+    "terminationDate": "2024-12-31"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the updated employee object with status set to `terminated`:
+
+  ```json
+  {
+    "id": "emp-789",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "departmentId": "dept-001",
+    "position": "Senior Software Engineer",
+    "salary": 90000,
+    "hireDate": "2024-01-15",
+    "phoneNumber": "(555) 123-4567",
+    "status": "terminated",
+    "terminationDate": "2024-12-31",
+    "terminationReason": "Resignation",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-12-31T17:00:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid input data
+  ```json
+  {
+    "error": "Validation failed",
+    "details": [
+      "Termination date is required",
+      "Termination date cannot be before hire date"
+    ]
+  }
+  ```
+
+  **404 Not Found** - Employee does not exist
+  ```json
+  {
+    "error": "Employee not found",
+    "employeeId": "emp-789"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires hr_manager or admin role."
+  }
+  ```
+
+  **409 Conflict** - Employee already terminated
+  ```json
+  {
+    "error": "Employee is already terminated"
+  }
+  ```
+
+  ## Notes
+
+  - The employee's status will be set to `terminated`
+  - The `terminationDate` and `terminationReason` fields will be recorded
+  - The `updatedAt` timestamp is automatically updated
+  - Terminated employees cannot be promoted or updated except for reactivation by an admin
+  - Payroll and system access should be reviewed after termination
+url: "{{baseUrl}}/api/hr/employees/{{lastCreatedEmployeeId}}/terminate"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: emp-123
+body:
+  type: text
+  content: |-
+    {
+      "terminationDate": "2024-12-31"
+    }
+order: 6000

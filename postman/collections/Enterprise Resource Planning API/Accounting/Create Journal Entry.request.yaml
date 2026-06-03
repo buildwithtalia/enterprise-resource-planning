@@ -1,0 +1,146 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Creates a new journal entry in the general ledger to record financial transactions. Journal entries are the foundation of double-entry bookkeeping, ensuring that debits equal credits for every transaction. This endpoint is essential for recording all financial activities including revenue, expenses, asset purchases, and liability changes.
+
+  ## Authentication
+
+  **Required Role:** `accountant`, `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Body Parameters (JSON)
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | date | string | Yes | Transaction date in YYYY-MM-DD format |
+  | description | string | Yes | Description of the transaction |
+  | entries | array | Yes | Array of debit and credit entries (must balance) |
+  | entries[].accountCode | string | Yes | Account code from chart of accounts |
+  | entries[].debit | number | Yes | Debit amount (0 if credit entry) |
+  | entries[].credit | number | Yes | Credit amount (0 if debit entry) |
+
+  ### Example Request
+
+  ```json
+  {
+    "date": "2024-01-15",
+    "description": "Office supplies purchase",
+    "entries": [
+      {
+        "accountCode": "5000",
+        "debit": 500,
+        "credit": 0
+      },
+      {
+        "accountCode": "1000",
+        "debit": 0,
+        "credit": 500
+      }
+    ]
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (201 Created)
+
+  Returns the created journal entry:
+
+  ```json
+  {
+    "id": "je-001",
+    "date": "2024-01-15",
+    "description": "Office supplies purchase",
+    "entries": [
+      {
+        "accountCode": "5000",
+        "accountName": "Office Supplies Expense",
+        "debit": 500,
+        "credit": 0
+      },
+      {
+        "accountCode": "1000",
+        "accountName": "Cash",
+        "debit": 0,
+        "credit": 500
+      }
+    ],
+    "totalDebits": 500,
+    "totalCredits": 500,
+    "balanced": true,
+    "createdBy": "user-123",
+    "createdAt": "2024-01-15T10:00:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Debits and credits don't balance
+  ```json
+  {
+    "error": "Journal entry must balance",
+    "totalDebits": 500,
+    "totalCredits": 450,
+    "difference": 50
+  }
+  ```
+
+  **400 Bad Request** - Invalid account code
+  ```json
+  {
+    "error": "Invalid account code",
+    "accountCode": "9999"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires accountant or admin role."
+  }
+  ```
+
+  ## Use Cases
+
+  - **Expense Recording**: Record business expenses and payments
+  - **Revenue Recognition**: Record sales and revenue transactions
+  - **Asset Purchases**: Record acquisition of assets
+  - **Adjusting Entries**: Make period-end adjustments
+  - **Corrections**: Correct previous accounting errors
+url: "{{baseUrl}}/api/accounting/journal-entries"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "date": "2024-01-15",
+      "description": "Office supplies purchase",
+      "entries": [
+        {
+          "accountCode": "5000",
+          "debit": 500,
+          "credit": 0
+        },
+        {
+          "accountCode": "1000",
+          "debit": 0,
+          "credit": 500
+        }
+      ]
+    }
+order: 1000

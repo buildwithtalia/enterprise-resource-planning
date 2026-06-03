@@ -1,0 +1,20 @@
+$kind: http-request
+description: Creates a new customer record in the billing system.
+url: "{{baseUrl}}/api/v2/billing/customers"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Acme Corporation",
+      "email": "billing@acme.com",
+      "phone": "+1-555-0199",
+      "address": "123 Business St, Suite 100",
+      "city": "San Francisco",
+      "state": "CA",
+      "zipCode": "94105",
+      "country": "USA"
+    }
+order: 2000

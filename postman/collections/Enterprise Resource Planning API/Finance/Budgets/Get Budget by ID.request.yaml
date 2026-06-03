@@ -1,0 +1,160 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed information about a specific budget by its unique identifier. This endpoint provides complete budget details including allocation amounts, spending data, utilization metrics, and status information for a single budget record.
+
+  ## Authentication
+
+  **Required Role:** `finance_manager`, `admin`, `department_manager`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | The unique identifier of the budget to retrieve |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/finance/budgets/budget-123
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns detailed budget information:
+
+  ```json
+  {
+    "id": "budget-123",
+    "department": "Engineering",
+    "fiscalYear": 2024,
+    "amount": 500000,
+    "category": "Operations",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "active",
+    "spent": 125000,
+    "remaining": 375000,
+    "utilizationPercentage": 25,
+    "monthlyBreakdown": [
+      {
+        "month": "2024-01",
+        "allocated": 41667,
+        "spent": 35000,
+        "variance": 6667
+      },
+      {
+        "month": "2024-02",
+        "allocated": 41667,
+        "spent": 42000,
+        "variance": -333
+      },
+      {
+        "month": "2024-03",
+        "allocated": 41667,
+        "spent": 48000,
+        "variance": -6333
+      }
+    ],
+    "topExpenses": [
+      {
+        "category": "Software Licenses",
+        "amount": 45000,
+        "percentage": 36
+      },
+      {
+        "category": "Cloud Infrastructure",
+        "amount": 38000,
+        "percentage": 30.4
+      },
+      {
+        "category": "Equipment",
+        "amount": 25000,
+        "percentage": 20
+      }
+    ],
+    "alerts": [
+      {
+        "type": "warning",
+        "message": "Budget utilization at 25% - on track"
+      }
+    ],
+    "createdBy": "user-123",
+    "createdByName": "Jane Smith",
+    "createdAt": "2024-01-01T10:00:00Z",
+    "updatedAt": "2024-03-31T15:30:00Z",
+    "lastModifiedBy": "user-456",
+    "lastModifiedByName": "John Doe"
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - Budget does not exist
+  ```json
+  {
+    "error": "Budget not found",
+    "budgetId": "budget-123"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions to view this budget"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique budget identifier |
+  | department | string | Department name |
+  | fiscalYear | number | Fiscal year |
+  | amount | number | Total allocated budget |
+  | category | string | Budget category |
+  | startDate | string | Budget period start date |
+  | endDate | string | Budget period end date |
+  | status | string | Budget status |
+  | spent | number | Amount spent to date |
+  | remaining | number | Remaining budget |
+  | utilizationPercentage | number | Percentage utilized |
+  | monthlyBreakdown | array | Monthly spending breakdown |
+  | topExpenses | array | Top expense categories |
+  | alerts | array | Budget alerts and warnings |
+  | createdBy | string | ID of creator |
+  | createdByName | string | Name of creator |
+  | createdAt | string | Creation timestamp |
+  | updatedAt | string | Last update timestamp |
+  | lastModifiedBy | string | ID of last modifier |
+  | lastModifiedByName | string | Name of last modifier |
+
+  ## Use Cases
+
+  - **Budget Review**: Examine detailed budget information
+  - **Performance Analysis**: Analyze budget utilization and spending patterns
+  - **Variance Analysis**: Compare actual spending vs. planned allocation
+  - **Audit Trail**: Review budget history and modifications
+  - **Decision Making**: Use detailed budget data for financial decisions
+url: "{{baseUrl}}/api/finance/budgets/:id"
+method: GET
+pathVariables:
+  id: budget-123
+order: 3000

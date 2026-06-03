@@ -1,0 +1,12 @@
+$kind: http-request
+description: Get all invoices with optional filters.
+url: "{{baseUrl}}/api/billing/invoices?status=pending&customerId=cust-123"
+method: GET
+queryParams:
+  - key: status
+    value: pending
+    description: Filter by invoice status
+  - key: customerId
+    value: cust-123
+    description: Filter by customer ID
+order: 2000

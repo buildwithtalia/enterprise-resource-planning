@@ -1,0 +1,222 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Dispatches a pending shipment by marking it as ready for carrier pickup and initiating the delivery process. This endpoint transitions a shipment from 'pending' status to 'dispatched', indicating that the package has been prepared, labeled, and is awaiting or has been picked up by the carrier. Essential for warehouse operations to signal shipment readiness.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `warehouse_manager`, `logistics_coordinator`, `admin`
+
+  Users must have warehouse management, logistics coordination, or administrative privileges to dispatch shipments.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | Yes | Indicates JSON request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique shipment identifier (e.g., ship-123) |
+
+  ### Body Parameters
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | dispatchedBy | string | No | Name of person dispatching shipment |
+  | pickupTime | string | No | Actual carrier pickup time (ISO 8601) |
+  | notes | string | No | Dispatch notes or special instructions |
+  | carrierRepresentative | string | No | Name of carrier representative who picked up |
+  | verificationCode | string | No | Carrier verification or pickup code |
+
+  ### Example Request
+
+  ```json
+  POST {{baseUrl}}/api/supply-chain/shipments/ship-123/dispatch
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  {
+    "dispatchedBy": "Mike Johnson",
+    "pickupTime": "2024-01-15T14:30:00Z",
+    "notes": "Package ready at loading dock B",
+    "carrierRepresentative": "Sarah Williams",
+    "verificationCode": "PKG-2024-0115-001"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the updated shipment with dispatched status:
+
+  ```json
+  {
+    "shipmentId": "ship-123",
+    "orderId": "order-456",
+    "trackingNumber": "1Z999AA10123456784",
+    "carrier": "FedEx",
+    "status": "dispatched",
+    "previousStatus": "pending",
+    "origin": "Warehouse A, Springfield, IL",
+    "destination": "456 Customer Street, Chicago, IL 60601",
+    "estimatedDeliveryDate": "2024-01-20",
+    "dispatchDetails": {
+      "dispatchedAt": "2024-01-15T14:30:00Z",
+      "dispatchedBy": "Mike Johnson",
+      "dispatchedByUserId": "user-789",
+      "pickupTime": "2024-01-15T14:30:00Z",
+      "carrierRepresentative": "Sarah Williams",
+      "verificationCode": "PKG-2024-0115-001",
+      "notes": "Package ready at loading dock B"
+    },
+    "items": [
+      {
+        "itemId": "item-789",
+        "name": "Widget Pro",
+        "quantity": 5,
+        "weight": 2.5
+      }
+    ],
+    "packageDetails": {
+      "totalWeight": 12.5,
+      "dimensions": "24x18x12 inches",
+      "packageCount": 1
+    },
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "location": "Warehouse A, Springfield, IL",
+        "description": "Shipment created"
+      },
+      {
+        "status": "dispatched",
+        "timestamp": "2024-01-15T14:30:00Z",
+        "location": "Warehouse A, Springfield, IL",
+        "description": "Package picked up by carrier",
+        "performedBy": "Mike Johnson"
+      }
+    ],
+    "notifications": {
+      "customerNotified": true,
+      "notificationSentAt": "2024-01-15T14:35:00Z",
+      "notificationMethod": "email"
+    },
+    "nextSteps": [
+      "Carrier will scan package at facility",
+      "Tracking updates will be available within 2-4 hours"
+    ],
+    "message": "Shipment dispatched successfully",
+    "updatedAt": "2024-01-15T14:30:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | shipmentId | string | Unique shipment identifier |
+  | orderId | string | Associated order identifier |
+  | trackingNumber | string | Carrier tracking number |
+  | carrier | string | Shipping carrier name |
+  | status | string | Updated status (dispatched) |
+  | previousStatus | string | Previous status before dispatch |
+  | origin | string | Shipment origin address |
+  | destination | string | Shipment destination address |
+  | estimatedDeliveryDate | string | Expected delivery date (YYYY-MM-DD) |
+  | dispatchDetails | object | Detailed dispatch information |
+  | items | array | Items in shipment |
+  | packageDetails | object | Package specifications |
+  | statusHistory | array | Complete status change history |
+  | notifications | object | Customer notification details |
+  | nextSteps | array | Expected next steps in delivery process |
+  | message | string | Success message |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to dispatch shipments",
+    "requiredRole": "warehouse_manager, logistics_coordinator, or admin"
+  }
+  ```
+
+  **404 Not Found** - Shipment does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Shipment with ID 'ship-123' not found"
+  }
+  ```
+
+  **409 Conflict** - Invalid status transition
+  ```json
+  {
+    "error": "Conflict",
+    "message": "Shipment cannot be dispatched in current status",
+    "currentStatus": "delivered",
+    "allowedStatuses": ["pending"],
+    "reason": "Only pending shipments can be dispatched"
+  }
+  ```
+
+  **400 Bad Request** - Missing required information
+  ```json
+  {
+    "error": "Bad Request",
+    "message": "Shipment missing required information for dispatch",
+    "missingFields": ["trackingNumber", "carrier"],
+    "suggestion": "Ensure tracking number and carrier are set before dispatching"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Warehouse Operations**: Mark packages as ready for carrier pickup
+  - **Carrier Coordination**: Record carrier pickup events
+  - **Customer Notifications**: Trigger shipping confirmation emails
+  - **Inventory Management**: Finalize inventory deductions
+  - **Tracking Activation**: Activate carrier tracking systems
+  - **Workflow Automation**: Trigger downstream processes (notifications, updates)
+  - **Audit Trail**: Record who dispatched shipment and when
+  - **Performance Metrics**: Track dispatch times and efficiency
+
+  ## Notes
+
+  - Shipment must be in 'pending' status to be dispatched
+  - Dispatch automatically triggers customer notification
+  - Tracking number must be assigned before dispatch
+  - Carrier must be specified before dispatch
+  - Dispatch time is recorded for performance metrics
+  - Status history is automatically updated
+  - Inventory is finalized and cannot be reversed after dispatch
+  - Customer receives tracking information via email/SMS
+  - Carrier pickup verification code is optional but recommended
+  - Dispatch triggers integration with carrier tracking systems
+  - Once dispatched, shipment cannot return to pending status
+url: "{{baseUrl}}/api/supply-chain/shipments/:id/dispatch"
+method: POST
+pathVariables:
+  id: ship-123
+order: 6000

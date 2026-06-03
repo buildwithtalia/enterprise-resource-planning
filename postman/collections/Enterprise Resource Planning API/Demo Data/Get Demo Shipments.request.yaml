@@ -1,0 +1,111 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock shipment data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of shipment records without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/shipments
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock shipment objects:
+
+  ```json
+  [
+    {
+      "id": "ship-001",
+      "trackingNumber": "1Z999AA10123456784",
+      "orderId": "order-001",
+      "carrier": "FedEx",
+      "origin": "Warehouse A, City, State 12345",
+      "destination": "123 Customer St, City, State 67890",
+      "shipDate": "2024-01-15",
+      "estimatedDeliveryDate": "2024-01-20",
+      "actualDeliveryDate": "2024-01-19",
+      "status": "delivered",
+      "weight": 25.5,
+      "dimensions": "24x18x12 inches",
+      "items": [
+        {
+          "itemId": "item-001",
+          "quantity": 5
+        }
+      ],
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": "ship-002",
+      "trackingNumber": "1Z999AA10123456785",
+      "orderId": "order-002",
+      "carrier": "UPS",
+      "origin": "Warehouse B, City, State 12345",
+      "destination": "456 Business Ave, City, State 67890",
+      "shipDate": "2024-01-18",
+      "estimatedDeliveryDate": "2024-01-23",
+      "actualDeliveryDate": null,
+      "status": "in_transit",
+      "weight": 45.0,
+      "dimensions": "36x24x18 inches",
+      "items": [
+        {
+          "itemId": "item-002",
+          "quantity": 10
+        }
+      ],
+      "createdAt": "2024-01-18T00:00:00Z"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique shipment identifier |
+  | trackingNumber | string | Carrier tracking number |
+  | orderId | string | Associated order ID |
+  | carrier | string | Shipping carrier name |
+  | origin | string | Shipment origin address |
+  | destination | string | Shipment destination address |
+  | shipDate | string | Date shipment was sent (YYYY-MM-DD) |
+  | estimatedDeliveryDate | string | Estimated delivery date (YYYY-MM-DD) |
+  | actualDeliveryDate | string | Actual delivery date (YYYY-MM-DD) or null |
+  | status | string | Shipment status (pending, in_transit, delivered, cancelled) |
+  | weight | number | Package weight in pounds |
+  | dimensions | string | Package dimensions |
+  | items | array | Items included in the shipment |
+  | createdAt | string | Shipment creation timestamp (ISO 8601) |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test shipment tracking UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase logistics and supply chain management features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/shipments"
+method: GET
+order: 11000

@@ -1,0 +1,15 @@
+$kind: http-request
+description: Release previously reserved stock. Requires 'warehouse_manager' or 'admin' role.
+url: "{{baseUrl}}/api/inventory/items/:id/release"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: item-123
+body:
+  type: text
+  content: |-
+    {
+      "quantity": 10
+    }
+order: 3000

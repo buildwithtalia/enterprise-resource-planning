@@ -1,0 +1,21 @@
+$kind: http-request
+description: Creates a new vendor record in the procurement system.
+url: "{{baseUrl}}/api/v2/procurement/vendors"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Tech Supplies Inc",
+      "email": "sales@techsupplies.com",
+      "phone": "+1-555-0188",
+      "address": "456 Vendor Ave",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78701",
+      "country": "USA",
+      "category": "Technology"
+    }
+order: 2000

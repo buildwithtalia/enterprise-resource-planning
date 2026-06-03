@@ -1,0 +1,189 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves a complete list of all purchase orders in the procurement system. This endpoint provides procurement teams with access to the entire purchase order database, enabling order tracking, status monitoring, and procurement analytics across all vendors and time periods.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `procurement_staff`, `warehouse_manager`, `admin`
+
+  Users must have procurement, warehouse, or administrative privileges to view purchase orders.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Query Parameters
+
+  Optional filtering and pagination parameters:
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | status | string | No | Filter by status (draft, pending_approval, approved, placed, received, cancelled) |
+  | vendorId | string | No | Filter by vendor ID |
+  | startDate | string | No | Filter by order date from (YYYY-MM-DD) |
+  | endDate | string | No | Filter by order date to (YYYY-MM-DD) |
+  | minAmount | number | No | Filter by minimum total amount |
+  | maxAmount | number | No | Filter by maximum total amount |
+  | page | number | No | Page number for pagination (default: 1) |
+  | limit | number | No | Items per page (default: 50, max: 100) |
+  | sortBy | string | No | Sort field (orderDate, total, status) |
+  | sortOrder | string | No | Sort order (asc, desc) |
+
+  ### Example Request
+
+  ```http
+  GET {{baseUrl}}/api/procurement/purchase-orders?status=approved&vendorId=vendor-123&limit=20
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of purchase order objects with pagination metadata:
+
+  ```json
+  {
+    "data": [
+      {
+        "id": "po-123",
+        "poNumber": "PO-2024-0123",
+        "vendorId": "vendor-123",
+        "vendorName": "Office Supplies Inc",
+        "orderDate": "2024-01-10",
+        "expectedDeliveryDate": "2024-01-25",
+        "actualDeliveryDate": null,
+        "status": "approved",
+        "subtotal": 5000,
+        "tax": 400,
+        "total": 5400,
+        "itemCount": 3,
+        "createdBy": "user-456",
+        "approvedBy": "user-789",
+        "createdAt": "2024-01-10T09:00:00Z",
+        "updatedAt": "2024-01-10T14:30:00Z"
+      },
+      {
+        "id": "po-456",
+        "poNumber": "PO-2024-0456",
+        "vendorId": "vendor-456",
+        "vendorName": "Tech Equipment Corp",
+        "orderDate": "2024-01-15",
+        "expectedDeliveryDate": "2024-02-01",
+        "actualDeliveryDate": null,
+        "status": "placed",
+        "subtotal": 15000,
+        "tax": 1200,
+        "total": 16200,
+        "itemCount": 5,
+        "createdBy": "user-456",
+        "approvedBy": "user-789",
+        "placedAt": "2024-01-15T16:00:00Z",
+        "createdAt": "2024-01-15T10:00:00Z",
+        "updatedAt": "2024-01-15T16:00:00Z"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalItems": 98,
+      "itemsPerPage": 20,
+      "hasNextPage": true,
+      "hasPreviousPage": false
+    },
+    "summary": {
+      "totalValue": 245600,
+      "averageOrderValue": 2506.12,
+      "statusBreakdown": {
+        "draft": 5,
+        "pending_approval": 8,
+        "approved": 15,
+        "placed": 45,
+        "received": 20,
+        "cancelled": 5
+      }
+    }
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | data | array | Array of purchase order objects |
+  | data[].id | string | Unique purchase order identifier |
+  | data[].poNumber | string | Human-readable PO number |
+  | data[].vendorId | string | Vendor identifier |
+  | data[].vendorName | string | Vendor company name |
+  | data[].orderDate | string | Order creation date |
+  | data[].expectedDeliveryDate | string | Expected delivery date |
+  | data[].actualDeliveryDate | string | Actual delivery date (null if not received) |
+  | data[].status | string | Current PO status |
+  | data[].subtotal | number | Subtotal before tax |
+  | data[].tax | number | Tax amount |
+  | data[].total | number | Total amount including tax |
+  | data[].itemCount | number | Number of line items |
+  | data[].createdBy | string | User who created the PO |
+  | data[].approvedBy | string | User who approved the PO |
+  | data[].createdAt | string | Creation timestamp (ISO 8601) |
+  | data[].updatedAt | string | Last update timestamp (ISO 8601) |
+  | pagination | object | Pagination metadata |
+  | summary | object | Summary statistics for the result set |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to view purchase orders",
+    "requiredRole": "procurement_manager, procurement_staff, warehouse_manager, or admin"
+  }
+  ```
+
+  **400 Bad Request** - Invalid query parameters
+  ```json
+  {
+    "error": "Bad Request",
+    "message": "Invalid status value",
+    "validValues": ["draft", "pending_approval", "approved", "placed", "received", "cancelled"]
+  }
+  ```
+
+  ## Use Cases
+
+  - **Order Tracking**: Monitor status of all purchase orders
+  - **Vendor Analysis**: Review orders by vendor for spend analysis
+  - **Approval Queue**: View pending purchase orders requiring approval
+  - **Delivery Monitoring**: Track expected vs actual delivery dates
+  - **Financial Reporting**: Analyze procurement spending patterns
+  - **Audit Trail**: Review historical purchase order data
+  - **Dashboard Views**: Display purchase order metrics and KPIs
+
+  ## Notes
+
+  - Results are paginated by default (50 items per page)
+  - Use filtering to narrow results for better performance
+  - Status breakdown provides quick overview of order pipeline
+  - Summary statistics are calculated based on filtered results
+  - Sorting by orderDate (desc) is default if not specified
+  - Consider using date ranges for large datasets
+url: "{{baseUrl}}/api/procurement/purchase-orders"
+method: GET
+order: 2000

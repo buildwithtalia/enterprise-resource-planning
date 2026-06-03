@@ -1,0 +1,16 @@
+# Use this workspace to collaborate
+workspace:
+  id: 6ec6128e-3b5f-42b1-a4d3-75b491883da7
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+
+localResources:
+  specs:
+    - ../postman/specifications/Enterprise Resource Planning API.openapi.yaml
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ../postman/collections/Enterprise Resource Planning API: 44848164-6751eadb-0b2b-4465-836c-1ec8f1915539

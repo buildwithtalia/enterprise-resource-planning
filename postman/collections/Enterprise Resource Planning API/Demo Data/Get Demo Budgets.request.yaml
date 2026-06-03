@@ -1,0 +1,92 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock budget data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of financial budgets without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/budgets
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock budget objects:
+
+  ```json
+  [
+    {
+      "id": "budget-001",
+      "departmentId": "dept-001",
+      "departmentName": "Engineering",
+      "fiscalYear": 2024,
+      "quarter": "Q1",
+      "allocatedAmount": 1250000,
+      "spentAmount": 875000,
+      "remainingAmount": 375000,
+      "utilizationPercentage": 70,
+      "status": "active",
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "budget-002",
+      "departmentId": "dept-002",
+      "departmentName": "Marketing",
+      "fiscalYear": 2024,
+      "quarter": "Q1",
+      "allocatedAmount": 500000,
+      "spentAmount": 425000,
+      "remainingAmount": 75000,
+      "utilizationPercentage": 85,
+      "status": "active",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique budget identifier |
+  | departmentId | string | ID of the department |
+  | departmentName | string | Name of the department |
+  | fiscalYear | number | Fiscal year for the budget |
+  | quarter | string | Budget quarter (Q1, Q2, Q3, Q4) |
+  | allocatedAmount | number | Total allocated budget amount |
+  | spentAmount | number | Amount spent so far |
+  | remainingAmount | number | Remaining budget amount |
+  | utilizationPercentage | number | Percentage of budget utilized |
+  | status | string | Budget status (active, closed, exceeded) |
+  | createdAt | string | Budget creation timestamp (ISO 8601) |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test budget management UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase financial planning and budget tracking features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/budgets"
+method: GET
+order: 5000

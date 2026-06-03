@@ -1,0 +1,7 @@
+$kind: http-request
+description: Retrieves detailed information about a specific department by its unique identifier.
+url: "{{baseUrl}}/api/v2/hr/departments/:id"
+method: GET
+pathVariables:
+  id: ""
+order: 10000

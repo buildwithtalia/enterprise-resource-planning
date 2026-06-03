@@ -1,0 +1,182 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves comprehensive performance metrics and analytics for a specific vendor. This endpoint provides detailed insights into vendor reliability, quality, delivery performance, and financial metrics, enabling data-driven vendor management decisions and performance evaluations.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `admin`
+
+  Users must have procurement management or administrative privileges to view vendor performance data.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique vendor identifier (e.g., vendor-123) |
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | startDate | string | No | Start date for metrics period (YYYY-MM-DD) |
+  | endDate | string | No | End date for metrics period (YYYY-MM-DD) |
+  | period | string | No | Predefined period (30d, 90d, 1y, all) |
+
+  ### Example Request
+
+  ```http
+  GET {{baseUrl}}/api/procurement/vendors/vendor-123/performance?period=90d
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns detailed vendor performance metrics:
+
+  ```json
+  {
+    "vendorId": "vendor-123",
+    "vendorName": "Office Supplies Inc",
+    "period": {
+      "startDate": "2023-10-15",
+      "endDate": "2024-01-15",
+      "days": 90
+    },
+    "overallRating": 4.5,
+    "deliveryPerformance": {
+      "onTimeDeliveryRate": 92.5,
+      "averageDeliveryTime": 12.3,
+      "expectedDeliveryTime": 14.0,
+      "lateDeliveries": 3,
+      "totalDeliveries": 40,
+      "averageDelayDays": 2.1
+    },
+    "qualityMetrics": {
+      "qualityRating": 4.6,
+      "defectRate": 1.2,
+      "returnRate": 0.8,
+      "complaintCount": 2,
+      "resolutionRate": 100
+    },
+    "financialMetrics": {
+      "totalSpend": 125000.00,
+      "orderCount": 45,
+      "averageOrderValue": 2777.78,
+      "largestOrder": 8500.00,
+      "smallestOrder": 450.00,
+      "paymentTermsCompliance": 98.5
+    },
+    "responsiveness": {
+      "averageResponseTime": 4.2,
+      "communicationRating": 4.7,
+      "issueResolutionTime": 24.5
+    },
+    "reliability": {
+      "orderFulfillmentRate": 99.2,
+      "stockAvailability": 96.5,
+      "orderCancellationRate": 0.8
+    },
+    "trends": {
+      "ratingTrend": "improving",
+      "spendTrend": "increasing",
+      "performanceTrend": "stable"
+    },
+    "recommendations": [
+      "Preferred vendor for office supplies",
+      "Consider for larger orders",
+      "Excellent customer service"
+    ],
+    "lastUpdated": "2024-01-15T10:30:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | vendorId | string | Unique vendor identifier |
+  | vendorName | string | Vendor company name |
+  | period | object | Time period for metrics calculation |
+  | overallRating | number | Composite performance rating (0-5) |
+  | deliveryPerformance | object | Delivery-related metrics |
+  | qualityMetrics | object | Product/service quality metrics |
+  | financialMetrics | object | Financial and spending metrics |
+  | responsiveness | object | Communication and response metrics |
+  | reliability | object | Reliability and fulfillment metrics |
+  | trends | object | Performance trend indicators |
+  | recommendations | array | System-generated recommendations |
+  | lastUpdated | string | Metrics last updated timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to view vendor performance metrics",
+    "requiredRole": "procurement_manager or admin"
+  }
+  ```
+
+  **404 Not Found** - Vendor does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Vendor with ID 'vendor-123' not found"
+  }
+  ```
+
+  **400 Bad Request** - Invalid date parameters
+  ```json
+  {
+    "error": "Bad Request",
+    "message": "Invalid date format. Use YYYY-MM-DD",
+    "field": "startDate"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Vendor Evaluation**: Assess vendor performance before contract renewals
+  - **Performance Reviews**: Conduct periodic vendor performance reviews
+  - **Vendor Selection**: Compare vendors based on objective performance data
+  - **Contract Negotiations**: Use performance data in vendor negotiations
+  - **Risk Management**: Identify underperforming vendors requiring attention
+  - **Strategic Planning**: Make data-driven decisions about vendor relationships
+  - **Reporting**: Generate vendor performance reports for management
+
+  ## Notes
+
+  - Metrics are calculated from historical purchase order and delivery data
+  - Default period is last 90 days if not specified
+  - Overall rating is a weighted composite of all performance metrics
+  - Trends are calculated by comparing current period to previous period
+  - Recommendations are system-generated based on performance thresholds
+  - Performance data is updated nightly or after significant events
+url: "{{baseUrl}}/api/procurement/vendors/:id/performance"
+method: GET
+pathVariables:
+  id: vendor-123
+order: 4000

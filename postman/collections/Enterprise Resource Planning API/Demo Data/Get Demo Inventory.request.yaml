@@ -1,0 +1,101 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock inventory data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of inventory items without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/inventory
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock inventory item objects:
+
+  ```json
+  [
+    {
+      "id": "item-001",
+      "sku": "CHAIR-ERG-001",
+      "name": "Ergonomic Office Chair",
+      "description": "Adjustable office chair with lumbar support",
+      "category": "Furniture",
+      "quantity": 150,
+      "reservedQuantity": 20,
+      "availableQuantity": 130,
+      "unitPrice": 250,
+      "reorderPoint": 30,
+      "reorderQuantity": 50,
+      "location": "Warehouse A, Aisle 3, Shelf B",
+      "status": "active",
+      "lastRestocked": "2024-01-05T00:00:00Z"
+    },
+    {
+      "id": "item-002",
+      "sku": "LAPTOP-BUS-001",
+      "name": "Business Laptop",
+      "description": "15-inch business laptop with SSD",
+      "category": "Technology",
+      "quantity": 45,
+      "reservedQuantity": 10,
+      "availableQuantity": 35,
+      "unitPrice": 1500,
+      "reorderPoint": 20,
+      "reorderQuantity": 25,
+      "location": "Warehouse B, Aisle 1, Shelf A",
+      "status": "active",
+      "lastRestocked": "2024-01-12T00:00:00Z"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique inventory item identifier |
+  | sku | string | Stock Keeping Unit (SKU) code |
+  | name | string | Item name |
+  | description | string | Item description |
+  | category | string | Item category |
+  | quantity | number | Total quantity in stock |
+  | reservedQuantity | number | Quantity reserved for orders |
+  | availableQuantity | number | Available quantity (total - reserved) |
+  | unitPrice | number | Price per unit |
+  | reorderPoint | number | Quantity threshold for reordering |
+  | reorderQuantity | number | Quantity to order when reorder point is reached |
+  | location | string | Physical location in warehouse |
+  | status | string | Item status (active, discontinued, out_of_stock) |
+  | lastRestocked | string | Last restock timestamp (ISO 8601) |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test inventory management UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase inventory tracking and stock management features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/inventory"
+method: GET
+order: 10000

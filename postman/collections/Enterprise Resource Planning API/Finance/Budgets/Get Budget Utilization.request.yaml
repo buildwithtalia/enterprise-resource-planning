@@ -1,0 +1,216 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves detailed budget utilization metrics for a specific budget, showing how much has been spent versus allocated amounts. This endpoint provides comprehensive spending analysis, including breakdowns by time period, expense category, and variance analysis. Essential for budget monitoring and financial control.
+
+  ## Authentication
+
+  **Required Role:** `finance_manager`, `admin`, `department_manager`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | The unique identifier of the budget |
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | startDate | string | No | Filter utilization from this date (YYYY-MM-DD) |
+  | endDate | string | No | Filter utilization to this date (YYYY-MM-DD) |
+  | groupBy | string | No | Group results by period (month, quarter, week) |
+
+  ### Example Requests
+
+  **Get current utilization:**
+  ```
+  GET {{baseUrl}}/api/finance/budgets/budget-123/utilization
+  ```
+
+  **Get utilization for specific period:**
+  ```
+  GET {{baseUrl}}/api/finance/budgets/budget-123/utilization?startDate=2024-01-01&endDate=2024-03-31
+  ```
+
+  **Get monthly breakdown:**
+  ```
+  GET {{baseUrl}}/api/finance/budgets/budget-123/utilization?groupBy=month
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns detailed utilization metrics:
+
+  ```json
+  {
+    "budgetId": "budget-123",
+    "department": "Engineering",
+    "fiscalYear": 2024,
+    "totalAllocated": 500000,
+    "totalSpent": 125000,
+    "totalRemaining": 375000,
+    "utilizationPercentage": 25,
+    "status": "on_track",
+    "projectedSpend": 480000,
+    "projectedVariance": 20000,
+    "burnRate": 41667,
+    "averageMonthlySpend": 41667,
+    "daysRemaining": 275,
+    "periodBreakdown": [
+      {
+        "period": "2024-01",
+        "allocated": 41667,
+        "spent": 35000,
+        "remaining": 6667,
+        "utilizationPercentage": 84,
+        "variance": 6667,
+        "variancePercentage": 16
+      },
+      {
+        "period": "2024-02",
+        "allocated": 41667,
+        "spent": 42000,
+        "remaining": -333,
+        "utilizationPercentage": 101,
+        "variance": -333,
+        "variancePercentage": -0.8
+      },
+      {
+        "period": "2024-03",
+        "allocated": 41667,
+        "spent": 48000,
+        "remaining": -6333,
+        "utilizationPercentage": 115,
+        "variance": -6333,
+        "variancePercentage": -15.2
+      }
+    ],
+    "categoryBreakdown": [
+      {
+        "category": "Software Licenses",
+        "allocated": 150000,
+        "spent": 45000,
+        "remaining": 105000,
+        "utilizationPercentage": 30
+      },
+      {
+        "category": "Cloud Infrastructure",
+        "allocated": 200000,
+        "spent": 38000,
+        "remaining": 162000,
+        "utilizationPercentage": 19
+      },
+      {
+        "category": "Equipment",
+        "allocated": 100000,
+        "spent": 25000,
+        "remaining": 75000,
+        "utilizationPercentage": 25
+      },
+      {
+        "category": "Other",
+        "allocated": 50000,
+        "spent": 17000,
+        "remaining": 33000,
+        "utilizationPercentage": 34
+      }
+    ],
+    "alerts": [
+      {
+        "severity": "warning",
+        "type": "overspend",
+        "message": "March spending exceeded monthly allocation by 15.2%",
+        "category": "Software Licenses"
+      },
+      {
+        "severity": "info",
+        "type": "projection",
+        "message": "Projected to finish under budget by $20,000"
+      }
+    ],
+    "recommendations": [
+      "Consider reallocating unused Equipment budget to Software Licenses",
+      "Monitor March spending trend to prevent future overages"
+    ],
+    "lastUpdated": "2024-03-31T23:59:59Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - Budget does not exist
+  ```json
+  {
+    "error": "Budget not found",
+    "budgetId": "budget-123"
+  }
+  ```
+
+  **400 Bad Request** - Invalid date range
+  ```json
+  {
+    "error": "Invalid date range",
+    "details": "End date must be after start date"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions to view budget utilization"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | budgetId | string | Unique budget identifier |
+  | department | string | Department name |
+  | fiscalYear | number | Fiscal year |
+  | totalAllocated | number | Total budget allocated |
+  | totalSpent | number | Total amount spent |
+  | totalRemaining | number | Total remaining budget |
+  | utilizationPercentage | number | Overall utilization percentage |
+  | status | string | Budget status (on_track, at_risk, exceeded) |
+  | projectedSpend | number | Projected total spend by end date |
+  | projectedVariance | number | Projected variance from budget |
+  | burnRate | number | Average spending rate per period |
+  | averageMonthlySpend | number | Average monthly spending |
+  | daysRemaining | number | Days remaining in budget period |
+  | periodBreakdown | array | Spending breakdown by time period |
+  | categoryBreakdown | array | Spending breakdown by category |
+  | alerts | array | Budget alerts and warnings |
+  | recommendations | array | AI-generated recommendations |
+  | lastUpdated | string | Last update timestamp |
+
+  ## Use Cases
+
+  - **Budget Monitoring**: Track real-time budget utilization
+  - **Variance Analysis**: Identify spending variances and trends
+  - **Forecasting**: Project future spending based on current trends
+  - **Expense Control**: Identify overspending categories
+  - **Performance Review**: Evaluate budget management effectiveness
+  - **Reallocation Decisions**: Identify opportunities to reallocate funds
+url: "{{baseUrl}}/api/finance/budgets/:id/utilization"
+method: GET
+pathVariables:
+  id: budget-123
+order: 5000

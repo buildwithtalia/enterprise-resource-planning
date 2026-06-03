@@ -1,0 +1,5 @@
+$kind: http-request
+description: Get all items that are below their reorder point.
+url: "{{baseUrl}}/api/inventory/low-stock"
+method: GET
+order: 3000

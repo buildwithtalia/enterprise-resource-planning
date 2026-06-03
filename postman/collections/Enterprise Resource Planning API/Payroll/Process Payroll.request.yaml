@@ -1,0 +1,174 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Processes payroll for a single employee for a specified pay period. This endpoint calculates gross pay based on the employee's salary, applies deductions and tax withholdings, and generates a payroll record. It's used for individual payroll processing when batch processing is not needed.
+
+  ## Authentication
+
+  **Required Role:** `payroll_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Type | Required | Description |
+  |--------|------|----------|-------------|
+  | Content-Type | string | Yes | Must be `application/json` |
+  | Authorization | string | Yes | Bearer token for authentication |
+
+  ### Body Parameters (JSON)
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | employeeId | string | Yes | The unique identifier of the employee |
+  | payPeriodStart | string | Yes | Start date of the pay period (YYYY-MM-DD) |
+  | payPeriodEnd | string | Yes | End date of the pay period (YYYY-MM-DD) |
+  | deductions | number | No | Additional deductions amount (e.g., benefits, garnishments) |
+  | bonus | number | No | Bonus amount to add to gross pay |
+  | overtime | number | No | Overtime hours worked |
+
+  ### Example Request Body
+
+  ```json
+  {
+    "employeeId": "emp-789",
+    "payPeriodStart": "2024-01-01",
+    "payPeriodEnd": "2024-01-31",
+    "deductions": 1000,
+    "bonus": 500,
+    "overtime": 10
+  }
+  ```
+
+  ### Example Request
+
+  ```
+  POST {{baseUrl}}/api/payroll/process
+  Content-Type: application/json
+
+  {
+    "employeeId": "emp-789",
+    "payPeriodStart": "2024-01-01",
+    "payPeriodEnd": "2024-01-31",
+    "deductions": 1000
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (201 Created)
+
+  Returns the newly created payroll record:
+
+  ```json
+  {
+    "id": "pay-001",
+    "employeeId": "emp-789",
+    "employeeName": "John Doe",
+    "payPeriodStart": "2024-01-01",
+    "payPeriodEnd": "2024-01-31",
+    "grossPay": 6250,
+    "deductions": 1000,
+    "taxWithheld": 1250,
+    "netPay": 4000,
+    "bonus": 500,
+    "overtime": 10,
+    "overtimePay": 250,
+    "status": "pending",
+    "createdAt": "2024-02-01T10:00:00Z",
+    "updatedAt": "2024-02-01T10:00:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid input data
+  ```json
+  {
+    "error": "Validation failed",
+    "details": [
+      "Employee ID is required",
+      "Pay period start date must be before end date"
+    ]
+  }
+  ```
+
+  **404 Not Found** - Employee does not exist
+  ```json
+  {
+    "error": "Employee not found",
+    "employeeId": "emp-789"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires payroll_manager or admin role."
+  }
+  ```
+
+  **409 Conflict** - Payroll already processed for this period
+  ```json
+  {
+    "error": "Payroll already exists for this employee and pay period"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique payroll record identifier |
+  | employeeId | string | ID of the employee |
+  | employeeName | string | Name of the employee |
+  | payPeriodStart | string | Start date of pay period |
+  | payPeriodEnd | string | End date of pay period |
+  | grossPay | number | Total gross pay before deductions |
+  | deductions | number | Total deductions amount |
+  | taxWithheld | number | Tax amount withheld |
+  | netPay | number | Net pay after deductions and taxes |
+  | bonus | number | Bonus amount |
+  | overtime | number | Overtime hours |
+  | overtimePay | number | Overtime pay amount |
+  | status | string | Payroll status (pending, approved, paid) |
+  | createdAt | string | Record creation timestamp |
+  | updatedAt | string | Last update timestamp |
+
+  ## Notes
+
+  - Gross pay is calculated based on the employee's annual salary divided by pay periods
+  - Tax withholding is automatically calculated based on tax rules
+  - The payroll record must be approved before payment can be issued
+  - Cannot process payroll for terminated employees
+  - Duplicate payroll records for the same period are prevented
+url: "{{baseUrl}}/api/payroll/process"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "employeeId": "{{employeeId}}",
+      "payPeriodStart": "2024-01-01",
+      "payPeriodEnd": "2024-01-31",
+      "deductions": 1000
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{authToken}}"
+order: 1000

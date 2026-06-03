@@ -1,0 +1,15 @@
+$kind: http-request
+description: Get all inventory items with optional filters.
+url: "{{baseUrl}}/api/inventory/items?category=Furniture&status=active&lowStock=false"
+method: GET
+queryParams:
+  - key: category
+    value: Furniture
+    description: Filter by category
+  - key: status
+    value: active
+    description: Filter by status
+  - key: lowStock
+    value: "false"
+    description: Filter for low stock items
+order: 2000

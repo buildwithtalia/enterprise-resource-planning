@@ -1,0 +1,89 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock employee data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of employee records without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/employees
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock employee objects:
+
+  ```json
+  [
+    {
+      "id": "emp-001",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "departmentId": "dept-001",
+      "position": "Software Engineer",
+      "salary": 75000,
+      "hireDate": "2023-01-15",
+      "status": "active",
+      "phoneNumber": "(555) 123-4567"
+    },
+    {
+      "id": "emp-002",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com",
+      "departmentId": "dept-002",
+      "position": "Product Manager",
+      "salary": 95000,
+      "hireDate": "2022-06-20",
+      "status": "active",
+      "phoneNumber": "(555) 234-5678"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique employee identifier |
+  | firstName | string | Employee's first name |
+  | lastName | string | Employee's last name |
+  | email | string | Employee's email address |
+  | departmentId | string | ID of the employee's department |
+  | position | string | Job title/position |
+  | salary | number | Annual salary |
+  | hireDate | string | Date of hire (YYYY-MM-DD format) |
+  | status | string | Employment status (active, inactive, on_leave, terminated) |
+  | phoneNumber | string | Contact phone number |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test employee management UI components without backend dependencies
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase employee management features to stakeholders or clients
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/employees"
+method: GET
+order: 1000

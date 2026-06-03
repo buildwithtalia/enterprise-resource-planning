@@ -1,0 +1,147 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Generates a trial balance report showing the balances of all accounts in the general ledger. The trial balance is a fundamental accounting report that verifies the equality of debits and credits, ensuring the books are in balance. This report is essential for financial statement preparation and period-end closing.
+
+  ## Authentication
+
+  **Required Role:** `accountant`, `finance_manager`, `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | asOfDate | string | No | Generate trial balance as of this date (YYYY-MM-DD, default: today) |
+  | includeZeroBalances | boolean | No | Include accounts with zero balance (default: false) |
+
+  ### Example Requests
+
+  **Get current trial balance:**
+  ```
+  GET {{baseUrl}}/api/accounting/trial-balance
+  ```
+
+  **Get trial balance as of specific date:**
+  ```
+  GET {{baseUrl}}/api/accounting/trial-balance?asOfDate=2024-01-31
+  ```
+
+  **Include zero balance accounts:**
+  ```
+  GET {{baseUrl}}/api/accounting/trial-balance?includeZeroBalances=true
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the trial balance report:
+
+  ```json
+  {
+    "asOfDate": "2024-01-31",
+    "totalDebits": 250000,
+    "totalCredits": 250000,
+    "balanced": true,
+    "accounts": [
+      {
+        "accountCode": "1000",
+        "accountName": "Cash",
+        "accountType": "Asset",
+        "debit": 50000,
+        "credit": 0,
+        "balance": 50000
+      },
+      {
+        "accountCode": "1200",
+        "accountName": "Accounts Receivable",
+        "accountType": "Asset",
+        "debit": 75000,
+        "credit": 0,
+        "balance": 75000
+      },
+      {
+        "accountCode": "2000",
+        "accountName": "Accounts Payable",
+        "accountType": "Liability",
+        "debit": 0,
+        "credit": 35000,
+        "balance": -35000
+      },
+      {
+        "accountCode": "3000",
+        "accountName": "Owner's Equity",
+        "accountType": "Equity",
+        "debit": 0,
+        "credit": 100000,
+        "balance": -100000
+      },
+      {
+        "accountCode": "4000",
+        "accountName": "Revenue",
+        "accountType": "Revenue",
+        "debit": 0,
+        "credit": 115000,
+        "balance": -115000
+      },
+      {
+        "accountCode": "5000",
+        "accountName": "Operating Expenses",
+        "accountType": "Expense",
+        "debit": 125000,
+        "credit": 0,
+        "balance": 125000
+      }
+    ],
+    "summary": {
+      "totalAssets": 125000,
+      "totalLiabilities": 35000,
+      "totalEquity": 100000,
+      "totalRevenue": 115000,
+      "totalExpenses": 125000,
+      "netIncome": -10000
+    },
+    "generatedAt": "2024-02-01T10:00:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid date format
+  ```json
+  {
+    "error": "Invalid date format. Use YYYY-MM-DD"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions to generate trial balance"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Period Closing**: Verify books balance before closing period
+  - **Financial Statement Preparation**: Foundation for preparing financial statements
+  - **Error Detection**: Identify posting errors and imbalances
+  - **Audit Preparation**: Provide summary of all account balances for auditors
+  - **Management Reporting**: Quick overview of financial position
+url: "{{baseUrl}}/api/accounting/trial-balance"
+method: GET
+order: 5000

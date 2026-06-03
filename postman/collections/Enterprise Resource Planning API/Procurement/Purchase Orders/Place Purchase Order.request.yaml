@@ -1,0 +1,181 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Places an approved purchase order with the vendor, officially transmitting the order and committing to the purchase. This endpoint transitions the order from approved status to placed status, typically triggering vendor notification and initiating the fulfillment process. Once placed, the order is considered active and awaiting delivery.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `admin`
+
+  Users must have procurement management or administrative privileges to place purchase orders.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | No | Optional for request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique purchase order identifier (e.g., po-123) |
+
+  ### Body Parameters (Optional)
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | confirmationMethod | string | No | How order was placed (email, phone, portal, fax) |
+  | confirmationNumber | string | No | Vendor confirmation or reference number |
+  | notes | string | No | Additional notes about order placement |
+  | notifyVendor | boolean | No | Send automated notification to vendor (default: true) |
+
+  ### Example Request
+
+  ```http
+  POST {{baseUrl}}/api/procurement/purchase-orders/po-123/place
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  {
+    "confirmationMethod": "email",
+    "confirmationNumber": "VENDOR-CONF-789",
+    "notes": "Vendor confirmed delivery date of Jan 25",
+    "notifyVendor": true
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the updated purchase order with placed status:
+
+  ```json
+  {
+    "id": "po-123",
+    "poNumber": "PO-2024-0123",
+    "vendorId": "vendor-123",
+    "vendorName": "Office Supplies Inc",
+    "status": "placed",
+    "previousStatus": "approved",
+    "total": 5400,
+    "expectedDeliveryDate": "2024-01-25",
+    "placedBy": "user-456",
+    "placedByName": "John Smith",
+    "placedAt": "2024-01-15T16:00:00Z",
+    "confirmationMethod": "email",
+    "confirmationNumber": "VENDOR-CONF-789",
+    "vendorNotified": true,
+    "trackingInfo": {
+      "status": "pending",
+      "estimatedShipDate": "2024-01-20"
+    },
+    "nextAction": "receive",
+    "message": "Purchase order placed successfully with vendor",
+    "updatedAt": "2024-01-15T16:00:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique purchase order identifier |
+  | poNumber | string | Human-readable PO number |
+  | vendorId | string | Vendor identifier |
+  | vendorName | string | Vendor company name |
+  | status | string | Updated status (placed) |
+  | previousStatus | string | Previous status before placement |
+  | total | number | Total order amount |
+  | expectedDeliveryDate | string | Expected delivery date |
+  | placedBy | string | User ID who placed the order |
+  | placedByName | string | Name of user who placed the order |
+  | placedAt | string | Placement timestamp (ISO 8601) |
+  | confirmationMethod | string | Method used to place order |
+  | confirmationNumber | string | Vendor confirmation number |
+  | vendorNotified | boolean | Whether vendor was notified |
+  | trackingInfo | object | Initial tracking information |
+  | nextAction | string | Next available action (receive) |
+  | message | string | Success message |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to place purchase orders",
+    "requiredRole": "procurement_manager or admin"
+  }
+  ```
+
+  **404 Not Found** - Purchase order does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Purchase order with ID 'po-123' not found"
+  }
+  ```
+
+  **409 Conflict** - Invalid status transition
+  ```json
+  {
+    "error": "Conflict",
+    "message": "Purchase order cannot be placed in current status",
+    "currentStatus": "draft",
+    "requiredStatus": "approved",
+    "suggestion": "Purchase order must be approved before it can be placed"
+  }
+  ```
+
+  **422 Unprocessable Entity** - Vendor validation failed
+  ```json
+  {
+    "error": "Vendor Validation Error",
+    "message": "Vendor is currently inactive or suspended",
+    "vendorId": "vendor-123",
+    "vendorStatus": "suspended",
+    "reason": "Payment issues"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Order Transmission**: Officially send order to vendor
+  - **Vendor Communication**: Initiate vendor fulfillment process
+  - **Order Tracking**: Begin tracking order through delivery
+  - **Commitment Recording**: Record formal purchase commitment
+  - **Workflow Progression**: Move order to active fulfillment stage
+  - **Automated Notifications**: Trigger vendor and stakeholder notifications
+
+  ## Notes
+
+  - Purchase order must be in 'approved' status to be placed
+  - Placement is recorded in status history with timestamp and user
+  - Vendor notification is typically sent automatically via email
+  - Confirmation number helps track order with vendor's system
+  - Once placed, order modifications require vendor coordination
+  - Expected delivery date may be updated based on vendor confirmation
+  - Placed orders can still be cancelled but may incur cancellation fees
+  - Some systems integrate with vendor portals for automatic placement
+url: "{{baseUrl}}/api/procurement/purchase-orders/:id/place"
+method: POST
+pathVariables:
+  id: po-123
+order: 5000

@@ -1,0 +1,111 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves mock purchase order data for demonstration, testing, and development purposes. This endpoint returns a realistic dataset of purchase orders without requiring database connectivity, making it ideal for frontend development, API testing, and client demonstrations.
+
+  ## Authentication
+
+  **Required:** No authentication required
+
+  This is a public endpoint designed for development and testing environments.
+
+  ## Request Parameters
+
+  No parameters required for this endpoint.
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/demo/purchase-orders
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of mock purchase order objects:
+
+  ```json
+  [
+    {
+      "id": "po-001",
+      "poNumber": "PO-2024-001",
+      "vendorId": "vendor-001",
+      "vendorName": "Office Supplies Inc",
+      "orderDate": "2024-01-10",
+      "expectedDeliveryDate": "2024-01-25",
+      "subtotal": 5000,
+      "taxAmount": 400,
+      "totalAmount": 5400,
+      "status": "approved",
+      "items": [
+        {
+          "itemId": "item-001",
+          "description": "Office Chairs",
+          "quantity": 20,
+          "unitPrice": 250,
+          "amount": 5000
+        }
+      ],
+      "createdAt": "2024-01-10T00:00:00Z"
+    },
+    {
+      "id": "po-002",
+      "poNumber": "PO-2024-002",
+      "vendorId": "vendor-002",
+      "vendorName": "Tech Equipment Co",
+      "orderDate": "2024-01-15",
+      "expectedDeliveryDate": "2024-02-01",
+      "subtotal": 15000,
+      "taxAmount": 1200,
+      "totalAmount": 16200,
+      "status": "pending",
+      "items": [
+        {
+          "itemId": "item-002",
+          "description": "Laptops",
+          "quantity": 10,
+          "unitPrice": 1500,
+          "amount": 15000
+        }
+      ],
+      "createdAt": "2024-01-15T00:00:00Z"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique purchase order identifier |
+  | poNumber | string | Human-readable PO number |
+  | vendorId | string | ID of the vendor |
+  | vendorName | string | Name of the vendor |
+  | orderDate | string | Date order was placed (YYYY-MM-DD) |
+  | expectedDeliveryDate | string | Expected delivery date (YYYY-MM-DD) |
+  | subtotal | number | Subtotal before tax |
+  | taxAmount | number | Tax amount |
+  | totalAmount | number | Total amount including tax |
+  | status | string | PO status (draft, pending, approved, received, cancelled) |
+  | items | array | Line items on the purchase order |
+  | createdAt | string | PO creation timestamp (ISO 8601) |
+
+  ## Use Cases
+
+  - **Frontend Development**: Build and test procurement UI components
+  - **API Testing**: Validate API client implementations with consistent mock data
+  - **Demos**: Showcase purchase order management features
+  - **Prototyping**: Develop proof-of-concept applications quickly
+  - **Training**: Provide safe, realistic data for training purposes
+
+  ## Notes
+
+  - Data is static and does not persist changes
+  - Returns the same dataset on every request
+  - Ideal for development and staging environments
+  - Should not be used in production environments
+url: "{{baseUrl}}/api/demo/purchase-orders"
+method: GET
+order: 9000

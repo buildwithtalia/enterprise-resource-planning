@@ -1,0 +1,163 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves all budget records in the system. This endpoint provides a comprehensive view of all budget allocations across departments, fiscal years, and categories. Essential for financial oversight, budget comparison, and organizational financial planning.
+
+  ## Authentication
+
+  **Required Role:** `finance_manager`, `admin`, `department_manager`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | fiscalYear | number | No | Filter by fiscal year (e.g., 2024) |
+  | department | string | No | Filter by department name |
+  | category | string | No | Filter by budget category |
+  | status | string | No | Filter by status (active, closed, exceeded) |
+  | limit | number | No | Maximum number of records to return (default: 50) |
+  | offset | number | No | Number of records to skip for pagination (default: 0) |
+
+  ### Example Requests
+
+  **Get all budgets:**
+  ```
+  GET {{baseUrl}}/api/finance/budgets
+  ```
+
+  **Get budgets for fiscal year 2024:**
+  ```
+  GET {{baseUrl}}/api/finance/budgets?fiscalYear=2024
+  ```
+
+  **Get Engineering department budgets:**
+  ```
+  GET {{baseUrl}}/api/finance/budgets?department=Engineering
+  ```
+
+  **Get active budgets only:**
+  ```
+  GET {{baseUrl}}/api/finance/budgets?status=active
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of budget records:
+
+  ```json
+  {
+    "total": 25,
+    "limit": 50,
+    "offset": 0,
+    "budgets": [
+      {
+        "id": "budget-001",
+        "department": "Engineering",
+        "fiscalYear": 2024,
+        "amount": 500000,
+        "category": "Operations",
+        "startDate": "2024-01-01",
+        "endDate": "2024-12-31",
+        "status": "active",
+        "spent": 125000,
+        "remaining": 375000,
+        "utilizationPercentage": 25,
+        "createdAt": "2024-01-01T10:00:00Z"
+      },
+      {
+        "id": "budget-002",
+        "department": "Marketing",
+        "fiscalYear": 2024,
+        "amount": 300000,
+        "category": "Marketing",
+        "startDate": "2024-01-01",
+        "endDate": "2024-12-31",
+        "status": "active",
+        "spent": 180000,
+        "remaining": 120000,
+        "utilizationPercentage": 60,
+        "createdAt": "2024-01-01T10:00:00Z"
+      },
+      {
+        "id": "budget-003",
+        "department": "Sales",
+        "fiscalYear": 2024,
+        "amount": 400000,
+        "category": "Personnel",
+        "startDate": "2024-01-01",
+        "endDate": "2024-12-31",
+        "status": "active",
+        "spent": 410000,
+        "remaining": -10000,
+        "utilizationPercentage": 102.5,
+        "createdAt": "2024-01-01T10:00:00Z"
+      }
+    ]
+  }
+  ```
+
+  ### Empty Result (200 OK)
+
+  If no budgets match the criteria:
+
+  ```json
+  {
+    "total": 0,
+    "limit": 50,
+    "offset": 0,
+    "budgets": []
+  }
+  ```
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions to view budgets"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique budget identifier |
+  | department | string | Department name |
+  | fiscalYear | number | Fiscal year |
+  | amount | number | Total allocated budget |
+  | category | string | Budget category |
+  | startDate | string | Budget period start date |
+  | endDate | string | Budget period end date |
+  | status | string | Budget status (active, closed, exceeded) |
+  | spent | number | Amount spent to date |
+  | remaining | number | Remaining budget (can be negative if exceeded) |
+  | utilizationPercentage | number | Percentage of budget utilized |
+  | createdAt | string | Budget creation timestamp |
+
+  ## Use Cases
+
+  - **Financial Overview**: Get a complete view of all organizational budgets
+  - **Budget Monitoring**: Track budget utilization across departments
+  - **Comparative Analysis**: Compare budgets across departments or years
+  - **Budget Planning**: Review existing budgets when planning new allocations
+  - **Reporting**: Generate budget reports for management
+url: "{{baseUrl}}/api/finance/budgets"
+method: GET
+order: 2000

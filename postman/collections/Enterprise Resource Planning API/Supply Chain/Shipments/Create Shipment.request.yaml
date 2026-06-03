@@ -1,0 +1,182 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Creates a new shipment record for tracking goods in transit from origin to destination. This endpoint initializes shipment tracking with carrier information, tracking numbers, and item details. Essential for managing outbound logistics and maintaining visibility throughout the delivery process.
+
+  ## Authentication
+
+  **Required Role:** `warehouse_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Body Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | orderId | string | Yes | Associated order identifier (e.g., order-123) |
+  | carrier | string | Yes | Shipping carrier name (e.g., FedEx, UPS, DHL) |
+  | trackingNumber | string | Yes | Carrier-provided tracking number |
+  | origin | string | Yes | Shipment origin address |
+  | destination | string | Yes | Shipment destination address |
+  | estimatedDeliveryDate | string | Yes | Expected delivery date (YYYY-MM-DD) |
+  | items | array | Yes | Array of items being shipped |
+  | items[].itemId | string | Yes | Item identifier |
+  | items[].quantity | number | Yes | Quantity of item being shipped |
+
+  ### Example Request
+
+  ```json
+  {
+    "orderId": "order-123",
+    "carrier": "FedEx",
+    "trackingNumber": "1234567890",
+    "origin": "Warehouse A, City, State",
+    "destination": "Customer Address, City, State",
+    "estimatedDeliveryDate": "2024-01-20",
+    "items": [
+      {
+        "itemId": "item-456",
+        "quantity": 5
+      }
+    ]
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (201 Created)
+
+  Returns the created shipment details:
+
+  ```json
+  {
+    "shipmentId": "ship-789",
+    "orderId": "order-123",
+    "carrier": "FedEx",
+    "trackingNumber": "1234567890",
+    "status": "pending",
+    "origin": "Warehouse A, City, State",
+    "destination": "Customer Address, City, State",
+    "estimatedDeliveryDate": "2024-01-20",
+    "items": [
+      {
+        "itemId": "item-456",
+        "itemName": "Widget Pro",
+        "quantity": 5,
+        "weight": 2.5,
+        "dimensions": "10x8x6 inches"
+      }
+    ],
+    "totalWeight": 12.5,
+    "shippingCost": 45.00,
+    "createdAt": "2024-01-15T10:30:00Z",
+    "createdBy": "user-123",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "location": "Warehouse A"
+      }
+    ]
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid shipment data
+  ```json
+  {
+    "error": "Invalid shipment data",
+    "details": [
+      "trackingNumber is required",
+      "estimatedDeliveryDate must be a future date"
+    ]
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires warehouse_manager or admin role."
+  }
+  ```
+
+  **404 Not Found** - Order not found
+  ```json
+  {
+    "error": "Order not found",
+    "orderId": "order-123"
+  }
+  ```
+
+  **409 Conflict** - Duplicate tracking number
+  ```json
+  {
+    "error": "Tracking number already exists",
+    "trackingNumber": "1234567890"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | shipmentId | string | Unique shipment identifier |
+  | orderId | string | Associated order identifier |
+  | carrier | string | Shipping carrier name |
+  | trackingNumber | string | Carrier tracking number |
+  | status | string | Current shipment status (pending, dispatched, in_transit, delivered, cancelled) |
+  | origin | string | Shipment origin address |
+  | destination | string | Shipment destination address |
+  | estimatedDeliveryDate | string | Expected delivery date (YYYY-MM-DD) |
+  | items | array | List of items in shipment |
+  | totalWeight | number | Total shipment weight in pounds |
+  | shippingCost | number | Cost of shipping |
+  | createdAt | string | Shipment creation timestamp (ISO 8601) |
+  | createdBy | string | User who created the shipment |
+  | statusHistory | array | History of status changes |
+
+  ## Use Cases
+
+  - **Order Fulfillment**: Create shipment records when orders are ready to ship
+  - **Logistics Management**: Initialize tracking for outbound deliveries
+  - **Inventory Control**: Record items leaving warehouse inventory
+  - **Customer Communication**: Generate tracking information for customer notifications
+  - **Multi-item Orders**: Track shipments containing multiple items
+  - **Carrier Integration**: Link internal orders with carrier tracking systems
+  - **Delivery Planning**: Schedule and plan delivery routes
+  - **Audit Trail**: Maintain records of all shipments created
+url: "{{baseUrl}}/api/supply-chain/shipments"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "orderId": "order-123",
+      "carrier": "FedEx",
+      "trackingNumber": "1234567890",
+      "origin": "Warehouse A, City, State",
+      "destination": "Customer Address, City, State",
+      "estimatedDeliveryDate": "2024-01-20",
+      "items": [
+        {
+          "itemId": "item-456",
+          "quantity": 5
+        }
+      ]
+    }
+order: 1000

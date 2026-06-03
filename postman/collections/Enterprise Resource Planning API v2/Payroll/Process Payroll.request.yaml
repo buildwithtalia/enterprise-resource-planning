@@ -1,0 +1,17 @@
+$kind: http-request
+description: Processes payroll for a single employee for a specific pay period.
+url: "{{baseUrl}}/api/v2/payroll/records/{{payrollRecordId}}/process"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "employeeId": "emp_1234567890",
+      "payPeriodStart": "2024-01-01",
+      "payPeriodEnd": "2024-01-15",
+      "hoursWorked": 80,
+      "overtimeHours": 5
+    }
+order: 3000

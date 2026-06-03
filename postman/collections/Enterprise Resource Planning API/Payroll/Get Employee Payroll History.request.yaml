@@ -1,0 +1,156 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves the complete payroll history for a specific employee, showing all payroll records across all pay periods. This endpoint is useful for viewing an employee's payment history, analyzing compensation trends, and generating employee-specific payroll reports.
+
+  ## Authentication
+
+  **Required Role:** `payroll_manager`, `admin`, `finance_manager`, or `employee` (employees can only view their own history)
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | employeeId | string | Yes | The unique identifier of the employee |
+
+  ### Query Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | year | number | No | Filter by specific year (e.g., 2024) |
+  | status | string | No | Filter by payroll status (pending, approved, paid) |
+  | limit | number | No | Maximum number of records to return (default: 50) |
+  | offset | number | No | Number of records to skip for pagination (default: 0) |
+
+  ### Example Requests
+
+  **Get all payroll history for employee:**
+  ```
+  GET {{baseUrl}}/api/payroll/employee/emp-789/history
+  ```
+
+  **Get payroll history for 2024:**
+  ```
+  GET {{baseUrl}}/api/payroll/employee/emp-789/history?year=2024
+  ```
+
+  **Get only paid payroll records:**
+  ```
+  GET {{baseUrl}}/api/payroll/employee/emp-789/history?status=paid
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of payroll records for the employee:
+
+  ```json
+  {
+    "employeeId": "emp-789",
+    "employeeName": "John Doe",
+    "totalRecords": 12,
+    "totalGrossPay": 75000,
+    "totalNetPay": 48000,
+    "payrollHistory": [
+      {
+        "id": "pay-001",
+        "payPeriodStart": "2024-01-01",
+        "payPeriodEnd": "2024-01-31",
+        "grossPay": 6250,
+        "deductions": 1000,
+        "taxWithheld": 1250,
+        "netPay": 4000,
+        "status": "paid",
+        "paymentDate": "2024-02-01",
+        "createdAt": "2024-02-01T10:00:00Z"
+      },
+      {
+        "id": "pay-002",
+        "payPeriodStart": "2024-02-01",
+        "payPeriodEnd": "2024-02-29",
+        "grossPay": 6250,
+        "deductions": 1000,
+        "taxWithheld": 1250,
+        "netPay": 4000,
+        "status": "paid",
+        "paymentDate": "2024-03-01",
+        "createdAt": "2024-03-01T10:00:00Z"
+      }
+    ]
+  }
+  ```
+
+  ### Empty Result (200 OK)
+
+  If no payroll records exist for the employee:
+
+  ```json
+  {
+    "employeeId": "emp-789",
+    "employeeName": "John Doe",
+    "totalRecords": 0,
+    "totalGrossPay": 0,
+    "totalNetPay": 0,
+    "payrollHistory": []
+  }
+  ```
+
+  ### Error Responses
+
+  **404 Not Found** - Employee does not exist
+  ```json
+  {
+    "error": "Employee not found",
+    "employeeId": "emp-789"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. You can only view your own payroll history."
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | employeeId | string | ID of the employee |
+  | employeeName | string | Name of the employee |
+  | totalRecords | number | Total number of payroll records |
+  | totalGrossPay | number | Sum of all gross pay |
+  | totalNetPay | number | Sum of all net pay |
+  | payrollHistory | array | Array of payroll records |
+
+  ## Use Cases
+
+  - **Employee Self-Service**: Employees can view their payment history
+  - **Compensation Analysis**: Analyze employee compensation over time
+  - **Tax Reporting**: Generate annual tax documents (W-2, etc.)
+  - **Audit**: Review complete payroll history for compliance
+  - **Dispute Resolution**: Investigate historical payroll questions
+url: "{{baseUrl}}/api/payroll/employee/:employeeId/history"
+method: GET
+pathVariables:
+  employeeId: 123e4567-e89b-12d3-a456-426614174000
+auth:
+  type: bearer
+  credentials:
+    token: "{{authToken}}"
+order: 6000

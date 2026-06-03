@@ -1,0 +1,144 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves a complete list of all vendor records in the procurement system. This endpoint provides procurement managers and administrators with access to the entire vendor database, enabling vendor management, analysis, and selection for purchase orders.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `procurement_staff`, `admin`
+
+  Users must have procurement or administrative privileges to view vendor records.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Query Parameters
+
+  This endpoint does not require query parameters but may support optional filtering:
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | status | string | No | Filter by vendor status (active, inactive) |
+  | category | string | No | Filter by vendor category |
+  | rating | number | No | Filter by minimum rating (0-5) |
+
+  ### Example Request
+
+  ```http
+  GET {{baseUrl}}/api/procurement/vendors
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns an array of vendor objects:
+
+  ```json
+  [
+    {
+      "id": "vendor-123",
+      "name": "Office Supplies Inc",
+      "email": "sales@officesupplies.com",
+      "phone": "+1-555-0456",
+      "address": "456 Vendor St, City, State 12345",
+      "paymentTerms": "Net 30",
+      "category": "Office Supplies",
+      "rating": 4.5,
+      "status": "active",
+      "totalOrders": 45,
+      "totalSpend": 125000.00,
+      "createdAt": "2023-06-15T10:30:00Z",
+      "updatedAt": "2024-01-10T14:20:00Z"
+    },
+    {
+      "id": "vendor-456",
+      "name": "Tech Equipment Corp",
+      "email": "contact@techequip.com",
+      "phone": "+1-555-0789",
+      "address": "789 Tech Blvd, City, State 67890",
+      "paymentTerms": "Net 45",
+      "category": "Technology",
+      "rating": 4.8,
+      "status": "active",
+      "totalOrders": 32,
+      "totalSpend": 450000.00,
+      "createdAt": "2023-08-20T09:15:00Z",
+      "updatedAt": "2024-01-12T11:45:00Z"
+    }
+  ]
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique vendor identifier |
+  | name | string | Vendor company name |
+  | email | string | Vendor contact email |
+  | phone | string | Vendor contact phone |
+  | address | string | Vendor business address |
+  | paymentTerms | string | Payment terms agreement |
+  | category | string | Vendor category/industry |
+  | rating | number | Vendor performance rating (0-5) |
+  | status | string | Vendor status (active, inactive) |
+  | totalOrders | number | Total purchase orders placed |
+  | totalSpend | number | Total amount spent with vendor |
+  | createdAt | string | Creation timestamp (ISO 8601) |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to view vendors",
+    "requiredRole": "procurement_manager, procurement_staff, or admin"
+  }
+  ```
+
+  **500 Internal Server Error** - Server error
+  ```json
+  {
+    "error": "Internal Server Error",
+    "message": "An error occurred while retrieving vendors"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Vendor Selection**: Browse available vendors when creating purchase orders
+  - **Vendor Management**: Review and manage the complete vendor database
+  - **Performance Analysis**: Compare vendor ratings and performance metrics
+  - **Spend Analysis**: Analyze spending patterns across vendors
+  - **Vendor Discovery**: Find vendors by category or specialization
+  - **Reporting**: Generate vendor-related reports and analytics
+
+  ## Notes
+
+  - Returns all vendors regardless of status by default
+  - Results may be paginated for large vendor databases
+  - Vendor ratings are calculated based on historical performance
+  - Total spend and order counts are cumulative since vendor creation
+  - Consider implementing filtering to narrow results for large datasets
+url: "{{baseUrl}}/api/procurement/vendors"
+method: GET
+order: 2000

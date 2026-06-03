@@ -1,0 +1,151 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Retrieves the current financial balance and credit information for a specific customer. This endpoint provides a focused view of a customer's financial standing, including outstanding balance, available credit, and payment status. Essential for credit checks and billing decisions.
+
+  ## Authentication
+
+  **Required Role:** `billing_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique customer identifier (e.g., cust-123) |
+
+  ### Example Request
+
+  ```
+  GET {{baseUrl}}/api/billing/customers/cust-123/balance
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns customer balance information:
+
+  ```json
+  {
+    "customerId": "cust-123",
+    "customerName": "Acme Corporation",
+    "currentBalance": 12500,
+    "creditLimit": 50000,
+    "availableCredit": 37500,
+    "creditUtilization": 25,
+    "status": "good_standing",
+    "overdueAmount": 0,
+    "pendingInvoices": [
+      {
+        "invoiceId": "inv-456",
+        "invoiceNumber": "INV-2024-045",
+        "amount": 6500,
+        "dueDate": "2024-04-15",
+        "daysUntilDue": 10,
+        "status": "pending"
+      },
+      {
+        "invoiceId": "inv-789",
+        "invoiceNumber": "INV-2024-067",
+        "amount": 6000,
+        "dueDate": "2024-04-20",
+        "daysUntilDue": 15,
+        "status": "pending"
+      }
+    ],
+    "overdueInvoices": [],
+    "lastPaymentDate": "2024-03-20T14:30:00Z",
+    "lastPaymentAmount": 8500,
+    "paymentTerms": "Net 30",
+    "averagePaymentDays": 28,
+    "paymentHistory": {
+      "onTimePayments": 12,
+      "latePayments": 1,
+      "totalPayments": 13,
+      "onTimePercentage": 92.3
+    },
+    "creditStatus": {
+      "isOverLimit": false,
+      "hasOverdueInvoices": false,
+      "canReceiveNewInvoices": true,
+      "recommendedAction": "none"
+    },
+    "asOfDate": "2024-04-05T10:00:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid customer ID format
+  ```json
+  {
+    "error": "Invalid customer ID format"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires billing_manager or admin role."
+  }
+  ```
+
+  **404 Not Found** - Customer not found
+  ```json
+  {
+    "error": "Customer not found",
+    "customerId": "cust-123"
+  }
+  ```
+
+  ## Response Fields
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | customerId | string | Unique customer identifier |
+  | customerName | string | Customer's company or individual name |
+  | currentBalance | number | Total outstanding balance |
+  | creditLimit | number | Maximum credit limit allowed |
+  | availableCredit | number | Remaining available credit |
+  | creditUtilization | number | Percentage of credit limit used |
+  | status | string | Credit status (good_standing, at_risk, over_limit, suspended) |
+  | overdueAmount | number | Total amount of overdue invoices |
+  | pendingInvoices | array | List of pending (not yet due) invoices |
+  | overdueInvoices | array | List of overdue invoices |
+  | lastPaymentDate | string | Date of most recent payment (ISO 8601) |
+  | lastPaymentAmount | number | Amount of most recent payment |
+  | paymentTerms | string | Customer's payment terms |
+  | averagePaymentDays | number | Average days to payment |
+  | paymentHistory | object | Summary of payment history |
+  | creditStatus | object | Credit status and recommendations |
+  | asOfDate | string | Date/time of balance calculation (ISO 8601) |
+
+  ## Use Cases
+
+  - **Credit Checks**: Verify customer credit status before creating new invoices
+  - **Collections**: Identify customers with overdue balances
+  - **Credit Management**: Monitor credit utilization and limits
+  - **Risk Assessment**: Evaluate customer payment behavior and risk
+  - **Billing Decisions**: Determine if customer can receive additional invoices
+  - **Financial Reporting**: Generate customer balance reports
+  - **Account Monitoring**: Track customer financial health over time
+  - **Payment Follow-up**: Identify invoices requiring payment follow-up
+url: "{{baseUrl}}/api/billing/customers/:id/balance"
+method: GET
+pathVariables:
+  id: cust-123
+order: 4000

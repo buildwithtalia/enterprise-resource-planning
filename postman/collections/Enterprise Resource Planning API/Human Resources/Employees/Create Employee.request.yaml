@@ -1,0 +1,382 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Creates a new employee record in the HR system. This endpoint allows HR managers and administrators to onboard new employees by providing their personal information, job details, and department assignment.
+
+  ## Authentication
+
+  **Required Role:** `hr_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Type | Required | Description |
+  | --- | --- | --- | --- |
+  | Content-Type | string | Yes | Must be `application/json` |
+  | Authorization | string | Yes | Bearer token for authentication |
+
+  ### Body Parameters (JSON)
+
+  | Parameter | Type | Required | Description |
+  | --- | --- | --- | --- |
+  | firstName | string | Yes | Employee's first name |
+  | lastName | string | Yes | Employee's last name |
+  | email | string | Yes | Employee's email address (must be unique) |
+  | departmentId | string | Yes | ID of the department the employee belongs to |
+  | jobTitle | string | Yes | Employee's job title/position |
+  | salary | number | Yes | Annual salary amount (positive number) |
+  | hireDate | string | Yes | Date of hire in YYYY-MM-DD format |
+  | phoneNumber | string | Yes | Employee's contact phone number |
+
+  ### Example Request Body
+
+  ``` json
+  {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "departmentId": "dept-001",
+    "jobTitle": "Software Engineer",
+    "salary": 75000,
+    "hireDate": "2024-01-15",
+    "phoneNumber": "(555) 123-4567"
+  }
+
+   ```
+
+  ## Response
+
+  ### Success Response (201 Created)
+
+  ``` json
+  {
+    "id": "emp-789",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "departmentId": "dept-001",
+    "position": "Software Engineer",
+    "salary": 75000,
+    "hireDate": "2024-01-15",
+    "phoneNumber": "(555) 123-4567",
+    "status": "active",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  }
+
+   ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid input data
+
+  ``` json
+  {
+    "error": "Validation failed",
+    "details": [
+      "Email is required",
+      "Salary must be a positive number"
+    ]
+  }
+
+   ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+
+  ``` json
+  {
+    "error": "Authentication required"
+  }
+
+   ```
+
+  **403 Forbidden** - Insufficient permissions
+
+  ``` json
+  {
+    "error": "Insufficient permissions. Requires hr_manager or admin role."
+  }
+
+   ```
+
+  **409 Conflict** - Email already exists
+
+  ``` json
+  {
+    "error": "Employee with this email already exists"
+  }
+
+   ```
+url: "{{baseUrl}}/api/hr/employees"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "firstName": "{{firstName}}",
+      "lastName": "{{lastName}}",
+      "email": "{{email}}",
+      "departmentId": "{{departmentId}}",
+      "jobTitle": "{{jobTitle}}",
+      "salary": {{salary}},
+      "hireDate": "{{hireDate}}",
+      "phoneNumber": "{{phoneNumber}}"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{authToken}}"
+scripts:
+  - type: beforeRequest
+    code: |-
+      // Pre-request script for Create Employee
+      // Generates random employee data before each request
+
+      // List of common first names
+      const firstNames = [
+          "James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda",
+          "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica",
+          "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa",
+          "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley",
+          "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle"
+      ];
+
+      // List of common last names
+      const lastNames = [
+          "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis",
+          "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas",
+          "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White",
+          "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young",
+          "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores"
+      ];
+
+      // List of job titles
+      const jobTitles = [
+          "Software Engineer",
+          "Senior Software Engineer",
+          "Product Manager",
+          "Senior Product Manager",
+          "UX Designer",
+          "UI Designer",
+          "Data Analyst",
+          "Data Scientist",
+          "DevOps Engineer",
+          "QA Engineer",
+          "Marketing Manager",
+          "Sales Representative",
+          "Account Manager",
+          "HR Specialist",
+          "Financial Analyst",
+          "Business Analyst",
+          "Project Manager",
+          "Technical Writer",
+          "Customer Success Manager",
+          "Operations Manager"
+      ];
+
+      // Helper function to get random item from array
+      function getRandomItem(array) {
+          return array[Math.floor(Math.random() * array.length)];
+      }
+
+      // Helper function to generate random integer between min and max (inclusive)
+      function getRandomInt(min, max) {
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      // Helper function to generate random date within the last year
+      function getRandomDateLastYear() {
+          const today = new Date();
+          const oneYearAgo = new Date();
+          oneYearAgo.setFullYear(today.getFullYear() - 1);
+          
+          const randomTimestamp = oneYearAgo.getTime() + Math.random() * (today.getTime() - oneYearAgo.getTime());
+          const randomDate = new Date(randomTimestamp);
+          
+          // Format as YYYY-MM-DD
+          return randomDate.toISOString().split('T')[0];
+      }
+
+      // Helper function to generate random phone number
+      function generatePhoneNumber() {
+          const areaCode = getRandomInt(200, 999);
+          const firstPart = getRandomInt(200, 999);
+          const secondPart = getRandomInt(1000, 9999);
+          return `(${areaCode}) ${firstPart}-${secondPart}`;
+      }
+
+      // Generate random employee data (except departmentId which will be fetched from API)
+      const firstName = getRandomItem(firstNames);
+      const lastName = getRandomItem(lastNames);
+      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
+      const jobTitle = getRandomItem(jobTitles);
+      const salary = getRandomInt(50000, 150000);
+      const hireDate = getRandomDateLastYear();
+      const phoneNumber = generatePhoneNumber();
+
+      // Set all values as collection variables (except departmentId)
+      pm.collectionVariables.set("firstName", firstName);
+      pm.collectionVariables.set("lastName", lastName);
+      pm.collectionVariables.set("email", email);
+      pm.collectionVariables.set("jobTitle", jobTitle);
+      pm.collectionVariables.set("salary", salary);
+      pm.collectionVariables.set("hireDate", hireDate);
+      pm.collectionVariables.set("phoneNumber", phoneNumber);
+
+      // Fetch department ID from the Get All Departments endpoint
+      const baseUrl = pm.collectionVariables.get("baseUrl") || pm.environment.get("baseUrl");
+      const authToken = pm.collectionVariables.get("authToken") || pm.environment.get("authToken");
+
+      const departmentsRequest = {
+          url: `${baseUrl}/api/hr/departments`,
+          method: "GET",
+          header: {
+              "Authorization": `Bearer ${authToken}`
+          }
+      };
+
+      pm.sendRequest(departmentsRequest, function (err, response) {
+          if (err) {
+              console.error("Error fetching departments:", err);
+              // Fallback to random department ID if API call fails
+              const fallbackDepartmentId = `dept-${String(getRandomInt(1, 10)).padStart(3, '0')}`;
+              pm.collectionVariables.set("departmentId", fallbackDepartmentId);
+              console.log("Using fallback Department ID:", fallbackDepartmentId);
+          } else {
+              try {
+                  const departments = response.json();
+                  
+                  if (departments && Array.isArray(departments) && departments.length > 0) {
+                      // Select a random department from the response
+                      const randomDepartment = getRandomItem(departments);
+                      const departmentId = randomDepartment.id;
+                      
+                      pm.collectionVariables.set("departmentId", departmentId);
+                      console.log("Fetched Department ID from API:", departmentId);
+                      console.log("Department Name:", randomDepartment.name);
+                  } else {
+                      console.warn("No departments found in response");
+                      // Fallback to random department ID
+                      const fallbackDepartmentId = `dept-${String(getRandomInt(1, 10)).padStart(3, '0')}`;
+                      pm.collectionVariables.set("departmentId", fallbackDepartmentId);
+                      console.log("Using fallback Department ID:", fallbackDepartmentId);
+                  }
+              } catch (parseError) {
+                  console.error("Error parsing departments response:", parseError);
+                  // Fallback to random department ID
+                  const fallbackDepartmentId = `dept-${String(getRandomInt(1, 10)).padStart(3, '0')}`;
+                  pm.collectionVariables.set("departmentId", fallbackDepartmentId);
+                  console.log("Using fallback Department ID:", fallbackDepartmentId);
+              }
+          }
+          
+          // Log all generated data for debugging
+          console.log("Generated random employee data:");
+          console.log("Name: " + firstName + " " + lastName);
+          console.log("Email: " + email);
+          console.log("Department ID: " + pm.collectionVariables.get("departmentId"));
+          console.log("Job Title: " + jobTitle);
+          console.log("Salary: $" + salary);
+          console.log("Hire Date: " + hireDate);
+          console.log("Phone Number: " + phoneNumber);
+      });
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      // Test 1: Validate successful employee creation
+      pm.test("Status code is 201 Created", function () {
+          pm.response.to.have.status(201);
+      });
+
+      // Test 2: Response has JSON content type
+      pm.test("Response is JSON", function () {
+          pm.response.to.have.header("Content-Type");
+          pm.expect(pm.response.headers.get("Content-Type")).to.include("application/json");
+      });
+
+      // Test 3: Verify response has JSON body
+      pm.test("Response has JSON body", function () {
+          pm.response.to.have.jsonBody();
+      });
+
+      // Parse response body for further tests
+      let responseData;
+      try {
+          responseData = pm.response.json();
+      } catch (e) {
+          console.error("Failed to parse response JSON:", e);
+      }
+
+      // Test 4: Response contains employee ID
+      pm.test("Response contains employee ID", function () {
+          pm.expect(responseData).to.have.property("id");
+          pm.expect(responseData.id).to.be.a("string").and.not.empty;
+      });
+
+      // Test 5: Verify all required fields are in response
+      pm.test("Response contains all employee fields", function () {
+          pm.expect(responseData).to.be.an('object');
+          pm.expect(responseData).to.have.property("firstName");
+          pm.expect(responseData).to.have.property("lastName");
+          pm.expect(responseData).to.have.property("email");
+          pm.expect(responseData).to.have.property("departmentId");
+          pm.expect(responseData).to.have.property("position");
+          pm.expect(responseData).to.have.property("salary");
+          pm.expect(responseData).to.have.property("hireDate");
+          pm.expect(responseData).to.have.property("status");
+      });
+
+      // Test 6: Verify data types
+      pm.test("Response fields have correct types", function () {
+          pm.expect(responseData.firstName).to.be.a("string");
+          pm.expect(responseData.lastName).to.be.a("string");
+          pm.expect(responseData.email).to.be.a("string");
+          pm.expect(responseData.position).to.be.a("string");
+          pm.expect(responseData.salary).to.be.a("number");
+          pm.expect(responseData.hireDate).to.be.a("string");
+          pm.expect(responseData.status).to.be.a("string");
+      });
+
+      // Test 7: Validate email format
+      pm.test("Email has valid format", function () {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          pm.expect(responseData.email).to.match(emailRegex);
+      });
+
+      // Test 8: Validate salary is positive
+      pm.test("Salary is a positive number", function () {
+          pm.expect(responseData.salary).to.be.above(0);
+      });
+
+      // Test 9: Check for authentication errors
+      pm.test("No authentication errors", function () {
+          pm.expect(pm.response.code).to.not.be.oneOf([401, 403]);
+      });
+
+      // Test 10: Verify status field has valid value
+      pm.test("Status field has valid value", function () {
+          const validStatuses = ["active", "inactive", "on_leave", "terminated"];
+          pm.expect(validStatuses).to.include(responseData.status.toLowerCase());
+      });
+
+      // Save employee ID for potential use in other requests
+      if (pm.response.code === 201 && responseData && responseData.id) {
+          pm.collectionVariables.set("lastCreatedEmployeeId", responseData.id);
+          console.log("Created employee ID saved to collection variable: " + responseData.id);
+      }
+
+      // Extract employeeId from response and save to collection variable
+      if (responseData && responseData.id) {
+          pm.collectionVariables.set("employeeId", responseData.id);
+          console.log("Employee ID saved to collection variable 'employeeId': " + responseData.id);
+      }
+    language: text/javascript
+order: 1000

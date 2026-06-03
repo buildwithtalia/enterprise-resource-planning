@@ -1,0 +1,167 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Approves a purchase order, advancing it from pending approval status to approved status. This endpoint is a critical step in the procurement workflow, authorizing the purchase order to be placed with the vendor. Approval validates that the order meets budget requirements, vendor selection is appropriate, and pricing is acceptable.
+
+  ## Authentication
+
+  **Required:** Yes
+
+  **Roles:** `procurement_manager`, `admin`
+
+  Users must have procurement management or administrative privileges to approve purchase orders.
+
+  ## Request Parameters
+
+  ### Headers
+
+  | Header | Value | Required | Description |
+  |--------|-------|----------|-------------|
+  | Content-Type | application/json | No | Optional for request body |
+  | Authorization | Bearer {token} | Yes | JWT authentication token |
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | Unique purchase order identifier (e.g., po-123) |
+
+  ### Body Parameters (Optional)
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | notes | string | No | Approval notes or comments |
+  | conditions | string | No | Any conditions or requirements for the order |
+
+  ### Example Request
+
+  ```http
+  POST {{baseUrl}}/api/procurement/purchase-orders/po-123/approve
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  {
+    "notes": "Approved for immediate placement. Urgent delivery required.",
+    "conditions": "Confirm delivery date before placing order"
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the updated purchase order with approved status:
+
+  ```json
+  {
+    "id": "po-123",
+    "poNumber": "PO-2024-0123",
+    "vendorId": "vendor-123",
+    "vendorName": "Office Supplies Inc",
+    "status": "approved",
+    "previousStatus": "pending_approval",
+    "total": 5400,
+    "approvedBy": "user-789",
+    "approvedByName": "Jane Doe",
+    "approvedAt": "2024-01-15T14:30:00Z",
+    "approvalNotes": "Approved for immediate placement. Urgent delivery required.",
+    "conditions": "Confirm delivery date before placing order",
+    "nextAction": "place",
+    "message": "Purchase order approved successfully",
+    "updatedAt": "2024-01-15T14:30:00Z"
+  }
+  ```
+
+  **Response Fields:**
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | id | string | Unique purchase order identifier |
+  | poNumber | string | Human-readable PO number |
+  | vendorId | string | Vendor identifier |
+  | vendorName | string | Vendor company name |
+  | status | string | Updated status (approved) |
+  | previousStatus | string | Previous status before approval |
+  | total | number | Total order amount |
+  | approvedBy | string | User ID who approved the order |
+  | approvedByName | string | Name of approving user |
+  | approvedAt | string | Approval timestamp (ISO 8601) |
+  | approvalNotes | string | Notes provided during approval |
+  | conditions | string | Any conditions attached to approval |
+  | nextAction | string | Next available action (place) |
+  | message | string | Success message |
+  | updatedAt | string | Last update timestamp (ISO 8601) |
+
+  ### Error Responses
+
+  **401 Unauthorized** - Missing or invalid authentication
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Authentication token is required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Forbidden",
+    "message": "User does not have permission to approve purchase orders",
+    "requiredRole": "procurement_manager or admin"
+  }
+  ```
+
+  **404 Not Found** - Purchase order does not exist
+  ```json
+  {
+    "error": "Not Found",
+    "message": "Purchase order with ID 'po-123' not found"
+  }
+  ```
+
+  **409 Conflict** - Invalid status transition
+  ```json
+  {
+    "error": "Conflict",
+    "message": "Purchase order cannot be approved in current status",
+    "currentStatus": "draft",
+    "requiredStatus": "pending_approval",
+    "suggestion": "Submit the purchase order for approval first"
+  }
+  ```
+
+  **422 Unprocessable Entity** - Business rule violation
+  ```json
+  {
+    "error": "Business Rule Violation",
+    "message": "Purchase order exceeds budget allocation",
+    "orderTotal": 5400,
+    "availableBudget": 3000,
+    "department": "Operations"
+  }
+  ```
+
+  ## Use Cases
+
+  - **Budget Authorization**: Approve orders within budget limits
+  - **Vendor Validation**: Confirm vendor selection is appropriate
+  - **Price Verification**: Validate pricing before commitment
+  - **Urgent Orders**: Fast-track critical procurement needs
+  - **Conditional Approval**: Approve with specific conditions or requirements
+  - **Workflow Progression**: Move orders through approval pipeline
+
+  ## Notes
+
+  - Purchase order must be in 'pending_approval' status to be approved
+  - Approval is recorded in the status history with timestamp and user
+  - Approved orders can be placed with the vendor
+  - Approval may trigger notifications to relevant stakeholders
+  - Some organizations may require multi-level approvals for large amounts
+  - Approved orders can still be cancelled if needed before placement
+  - Budget validation may be performed automatically during approval
+url: "{{baseUrl}}/api/procurement/purchase-orders/:id/approve"
+method: POST
+pathVariables:
+  id: po-123
+order: 4000

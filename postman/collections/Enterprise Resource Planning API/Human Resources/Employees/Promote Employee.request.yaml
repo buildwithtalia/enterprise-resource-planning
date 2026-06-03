@@ -1,0 +1,149 @@
+$kind: http-request
+description: |-
+  ## Purpose
+
+  Promotes an employee to a new position with an updated job title and salary increase. This endpoint is specifically designed for employee promotions and automatically records the promotion in the employee's history. It updates both the position and salary in a single atomic operation.
+
+  ## Authentication
+
+  **Required Role:** `hr_manager` or `admin`
+
+  **Authentication Type:** Bearer Token
+
+  **Header:** `Authorization: Bearer {{authToken}}`
+
+  ## Request Parameters
+
+  ### Path Parameters
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | string | Yes | The unique identifier of the employee to promote |
+
+  ### Headers
+
+  | Header | Type | Required | Description |
+  |--------|------|----------|-------------|
+  | Content-Type | string | Yes | Must be `application/json` |
+  | Authorization | string | Yes | Bearer token for authentication |
+
+  ### Body Parameters (JSON)
+
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | title | string | Yes | The new job title/position for the promoted employee |
+  | salaryIncrease | number | Yes | The amount to increase the salary by (positive number) |
+  | effectiveDate | string | No | Date when the promotion takes effect (YYYY-MM-DD format). Defaults to current date if not provided |
+  | notes | string | No | Additional notes about the promotion |
+
+  ### Example Request Body
+
+  ```json
+  {
+    "title": "Senior Software Engineer",
+    "salaryIncrease": 15000,
+    "effectiveDate": "2024-07-01",
+    "notes": "Promoted for exceptional performance and leadership"
+  }
+  ```
+
+  ### Example Request
+
+  ```
+  PATCH {{baseUrl}}/api/hr/employees/emp-789/promote
+  Content-Type: application/json
+
+  {
+    "title": "Senior Software Engineer",
+    "salaryIncrease": 15000
+  }
+  ```
+
+  ## Response
+
+  ### Success Response (200 OK)
+
+  Returns the updated employee object with the new position and salary:
+
+  ```json
+  {
+    "id": "emp-789",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "departmentId": "dept-001",
+    "position": "Senior Software Engineer",
+    "salary": 90000,
+    "previousSalary": 75000,
+    "hireDate": "2024-01-15",
+    "phoneNumber": "(555) 123-4567",
+    "status": "active",
+    "promotionDate": "2024-07-01",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-07-01T09:15:00Z"
+  }
+  ```
+
+  ### Error Responses
+
+  **400 Bad Request** - Invalid input data
+  ```json
+  {
+    "error": "Validation failed",
+    "details": [
+      "Title is required",
+      "Salary increase must be a positive number"
+    ]
+  }
+  ```
+
+  **404 Not Found** - Employee does not exist
+  ```json
+  {
+    "error": "Employee not found",
+    "employeeId": "emp-789"
+  }
+  ```
+
+  **401 Unauthorized** - Missing or invalid authentication token
+  ```json
+  {
+    "error": "Authentication required"
+  }
+  ```
+
+  **403 Forbidden** - Insufficient permissions
+  ```json
+  {
+    "error": "Insufficient permissions. Requires hr_manager or admin role."
+  }
+  ```
+
+  **422 Unprocessable Entity** - Business logic validation failed
+  ```json
+  {
+    "error": "Cannot promote terminated employee"
+  }
+  ```
+
+  ## Notes
+
+  - The new salary will be calculated as: `current salary + salaryIncrease`
+  - The promotion is recorded in the employee's history for audit purposes
+  - The `updatedAt` timestamp is automatically updated
+  - Cannot promote employees with status "terminated"
+  - For general updates without promotion tracking, use the "Update Employee" endpoint instead
+url: "{{baseUrl}}/api/hr/employees/:id/promote"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "{{lastCreatedEmployeeId}}"
+body:
+  type: text
+  content: |-
+    {
+      "title": "Senior Software Engineer",
+      "salaryIncrease": 10000
+    }
+order: 5000

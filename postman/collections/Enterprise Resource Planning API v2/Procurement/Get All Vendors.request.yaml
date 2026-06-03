@@ -1,0 +1,12 @@
+$kind: http-request
+description: Retrieves a paginated list of all vendors in the procurement system.
+url: "{{baseUrl}}/api/v2/procurement/vendors?page=1&limit=20"
+method: GET
+queryParams:
+  - key: page
+    value: "1"
+    description: Page number for pagination (1-indexed)
+  - key: limit
+    value: "20"
+    description: Number of items per page
+order: 1000
