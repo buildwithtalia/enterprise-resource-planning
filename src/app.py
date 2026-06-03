@@ -5,10 +5,13 @@ Shared middleware, shared database, shared dependencies
 """
 
 from flask import Flask, jsonify, request
+from sqlalchemy import text
 from datetime import datetime
 import logging
 import os
 from typing import Dict, Any
+
+from db import db, init_db
 
 # Import mock data service
 try:
@@ -83,13 +86,14 @@ def create_app() -> Flask:
         Flask: Configured Flask application instance
     """
     app = Flask(__name__)
-    
+    init_db(app)
+
     # Global middleware (shared across all modules)
     @app.before_request
     def before_request():
         """Execute before each request - equivalent to Express middleware"""
         request_logger_middleware()
-    
+
     # Health check endpoint
     @app.route('/health', methods=['GET'])
     def health_check():
@@ -99,6 +103,14 @@ def create_app() -> Flask:
             'service': 'ERP Monolith',
             'timestamp': datetime.utcnow().isoformat() + 'Z'
         })
+
+    @app.route('/health/db', methods=['GET'])
+    def health_check_db():
+        try:
+            db.session.execute(text('SELECT 1'))
+            return jsonify({'status': 'healthy', 'database': 'connected'})
+        except Exception as e:
+            return jsonify({'status': 'unhealthy', 'database': 'disconnected', 'error': str(e)}), 503
     
     # API info endpoint
     @app.route('/api', methods=['GET'])
