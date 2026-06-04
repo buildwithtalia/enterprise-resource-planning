@@ -234,11 +234,9 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [success, data, total, timestamp]
                 properties:
                   success:
                     type: boolean
-                    example: true
                   data:
                     type: array
                     items:
@@ -1015,36 +1013,28 @@ components:
       type: object
       properties:
         id:
+          type: number
+        employee_id:
           type: string
-        firstName:
+        first_name:
           type: string
-        lastName:
+        last_name:
           type: string
         email:
           type: string
           format: email
-        departmentId:
+        department:
           type: string
-        # Both `position` and `jobTitle` are returned for compatibility
         position:
-          type: string
-        jobTitle:
           type: string
         salary:
           type: number
-        hireDate:
+        hire_date:
           type: string
           format: date
         status:
           type: string
           enum: [active, inactive, on_leave, terminated]
-        department:
-          type: object
-          properties:
-            id:
-              type: string
-            name:
-              type: string
 
     EmployeeInput:
       type: object
@@ -1300,17 +1290,16 @@ components:
       type: object
       required:
         - customerId
+        - invoiceDate
         - dueDate
         - items
         - subtotal
+        - tax
+        - total
       properties:
         customerId:
           type: string
-        # `invoiceDate` is the canonical field name; `issueDate` is accepted for backward compatibility
         invoiceDate:
-          type: string
-          format: date
-        issueDate:
           type: string
           format: date
         dueDate:
@@ -1331,15 +1320,9 @@ components:
                 type: number
         subtotal:
           type: number
-        # `tax` is the canonical field name; `taxAmount` is accepted for backward compatibility
         tax:
           type: number
-        taxAmount:
-          type: number
-        # `total` is the canonical field name; `totalAmount` is accepted for backward compatibility
         total:
-          type: number
-        totalAmount:
           type: number
 
     Vendor:
@@ -1477,10 +1460,7 @@ components:
     Shipment:
       type: object
       properties:
-        # Both `shipmentId` and `id` are returned for compatibility
         shipmentId:
-          type: string
-        id:
           type: string
         orderId:
           type: string
@@ -1495,17 +1475,10 @@ components:
           type: string
         destination:
           type: string
-        # `estimatedDeliveryDate` is the canonical field; `estimatedDelivery` also returned
         estimatedDeliveryDate:
           type: string
           format: date
-        estimatedDelivery:
-          type: string
-          format: date
         actualDeliveryDate:
-          type: string
-          format: date
-        shipDate:
           type: string
           format: date
         items:
@@ -1567,10 +1540,7 @@ components:
           type: string
         category:
           type: string
-        # `quantity` and `quantityOnHand` are the same value; both are returned for compatibility
         quantity:
-          type: number
-        quantityOnHand:
           type: number
         reservedQuantity:
           type: number

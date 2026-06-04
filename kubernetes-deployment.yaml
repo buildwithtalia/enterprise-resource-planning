@@ -47,14 +47,6 @@ spec:
             configMapKeyRef:
               name: erp-flask-config
               key: LOG_LEVEL
-        # Neon connection string — store in a Kubernetes Secret:
-        #   kubectl create secret generic neon-db-secret \
-        #     --from-literal=DATABASE_URL='postgresql://user:pass@ep-xxx.neon.tech/erp_database?sslmode=require'
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: neon-db-secret
-              key: DATABASE_URL
         resources:
           requests:
             memory: "256Mi"
