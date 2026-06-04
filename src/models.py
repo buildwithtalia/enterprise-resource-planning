@@ -6,8 +6,6 @@ not enforce business rules.
 """
 from __future__ import annotations
 
-from datetime import datetime
-
 from db import db
 
 
@@ -15,13 +13,10 @@ class Department(db.Model):
     __tablename__ = "departments"
     id = db.Column(db.String, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    code = db.Column(db.String)
     description = db.Column(db.String)
     manager_id = db.Column(db.String)
     budget = db.Column(db.Numeric(15, 2))
     location = db.Column(db.String)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class Employee(db.Model):
@@ -103,8 +98,6 @@ class Vendor(db.Model):
     phone = db.Column(db.String)
     address = db.Column(db.String)
     payment_terms = db.Column(db.String, default="Net 30")
-    # category is required by the API contract
-    category = db.Column(db.String)
     status = db.Column(db.String, default="active")
 
 
