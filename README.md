@@ -20,12 +20,12 @@ All HTTP requests flow through the same middleware pipeline defined in `src/app.
 - **Error Handling**: Global `@app.errorhandler` for 404s and unhandled exceptions
 
 #### 3. Direct Cross-Module Coupling
-Modules directly import and call each other's route handlers within the same application context, with no network boundary between them.
+Modules directly import and call each other's services within the same application context, with no network boundary between them.
 
 ## Business Modules
 
 | Module | Path | Purpose |
-|--------|------|---------|
+|--------|------|---------| 
 | **Human Resources** | `/api/hr` | Employee lifecycle, department management |
 | **Payroll** | `/api/payroll` | Salary processing, tax calculations |
 | **Accounting** | `/api/accounting` | General ledger, journal entries |
@@ -89,7 +89,7 @@ See [`postman/specifications/V1_TO_V2_MIGRATION_GUIDE.md`](postman/specification
 
 ## API Endpoints
 
-All modules are served from a single application on **http://localhost:3001**.
+All modules are served from a single application on **http://localhost:3004**.
 
 ### System
 | Method | Path | Description |
@@ -210,7 +210,7 @@ All modules are served from a single application on **http://localhost:3001**.
 ## Quick Start
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.11+
 
 ### Setup
 
@@ -224,21 +224,34 @@ All modules are served from a single application on **http://localhost:3001**.
    cp .env.example .env
    ```
 
-3. Start the server:
+3. Configure the database connection in `.env`:
+   ```env
+   # Neon serverless Postgres (recommended)
+   DATABASE_URL=postgresql://<user>:<password>@<endpoint>.neon.tech/<dbname>?sslmode=require
+   ```
+
+4. Start the server:
    ```bash
    python src/app.py
    ```
 
-   The API will run on **http://localhost:3001**
+   The API will run on **http://localhost:3004**
 
-4. Verify it's running:
+5. Verify it's running:
    ```bash
-   curl http://localhost:3001/health
+   curl http://localhost:3004/health
    ```
 
-### Optional: Database Configuration
+### Database Migrations
 
-The app runs in API-only mode without a database. To enable full database functionality:
+After configuring `DATABASE_URL`, apply the schema:
+
+```bash
+cd src
+flask db upgrade
+```
+
+### Optional: Local PostgreSQL
 
 ```bash
 # macOS
@@ -255,27 +268,36 @@ CREATE DATABASE erp_monolith;
 CREATE USER erp_user WITH PASSWORD 'erp_password';
 GRANT ALL PRIVILEGES ON DATABASE erp_monolith TO erp_user;
 SQL
-
-# Update .env with DB credentials and restart
-python src/app.py
 ```
+
+Then set `DATABASE_URL=postgresql://erp_user:erp_password@localhost:5432/erp_monolith` in `.env`.
 
 ### Docker
 
 ```bash
 docker build -t erp-monolith .
-docker run -p 3001:3001 erp-monolith
+docker run -p 3004:3004 --env DATABASE_URL=<your-db-url> erp-monolith
 ```
 
-A `kubernetes-deployment.yaml` is also provided for Kubernetes deployments.
+Or with Docker Compose (recommended — includes health checks and network isolation):
+
+```bash
+cp .env.example .env   # then set DATABASE_URL
+docker compose up -d
+```
+
+See [`DOCKER_DEPLOYMENT.md`](DOCKER_DEPLOYMENT.md) for full Docker instructions.
 
 ## Technology Stack
 
 | Layer | Technology |
 |-------|-----------|
-| **Runtime** | Python 3.8+ |
+| **Runtime** | Python 3.11 |
 | **Framework** | Flask 3.0 |
-| **Database** | PostgreSQL (optional) |
+| **ORM** | Flask-SQLAlchemy 3.1 |
+| **Migrations** | Flask-Migrate 4.0 |
+| **Database** | PostgreSQL (Neon serverless or self-hosted) |
+| **DB Driver** | psycopg2-binary |
 | **Auth** | JWT |
 
 ## Project Structure
@@ -284,17 +306,16 @@ A `kubernetes-deployment.yaml` is also provided for Kubernetes deployments.
 enterprise-resource-planning/
 ├── src/
 │   ├── app.py                  # Single Flask application — all routes & modules
-│   ├── modules/                # Optional modular route files
-│   │   ├── human_resources.py
-│   │   ├── payroll.py
-│   │   ├── accounting.py
-│   │   ├── finance.py
-│   │   ├── billing.py
-│   │   ├── procurement.py
-│   │   ├── supply_chain.py
-│   │   └── inventory.py
-│   └── services/
-│       └── mock_data.py        # In-memory demo data
+│   ├── db.py                   # SQLAlchemy db instance and init helper
+│   ├── models.py               # All SQLAlchemy models (one file for Flask-Migrate)
+│   ├── seed.py                 # Database seed script
+│   ├── modules/                # Module-specific route helpers
+│   │   ├── human_resources/
+│   │   ├── payroll/
+│   │   ├── accounting/
+│   │   └── finance/
+│   └── migrations/             # Alembic migration scripts
+│       └── versions/
 ├── postman/
 │   ├── collections/            # Postman collection files (v1 & v2)
 │   ├── environments/           # Postman environment (ERP_Development)
@@ -302,8 +323,9 @@ enterprise-resource-planning/
 │   └── specifications/         # OpenAPI specs (v1 & v2) + migration guide
 ├── frontend/                   # React frontend (optional)
 ├── Dockerfile
+├── docker-compose.yml
 ├── kubernetes-deployment.yaml
-├── requirements.txt            # Python dependencies
+├── requirements.txt
 └── .env.example
 ```
 
@@ -314,7 +336,7 @@ Two Postman collections are included under `postman/collections/`:
 - **Enterprise Resource Planning API** — covers the v1 API
 - **Enterprise Resource Planning API v2** — covers the v2 API
 
-Import either collection along with `postman/environments/ERP_Development.postman_environment.json` to get started quickly. The OpenAPI specifications in `postman/specifications/` can be used to generate or validate client code.
+Import either collection along with `postman/environments/ERP Development.environment.yaml` to get started quickly. The OpenAPI specifications in `postman/specifications/` can be used to generate or validate client code.
 
 ## Monolithic Design Highlights
 
