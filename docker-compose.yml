@@ -16,8 +16,7 @@ services:
   gateway:
     <<: *service-defaults
     build:
-      context: .
-      dockerfile: services/gateway/Dockerfile
+      context: ../erp-gateway
     container_name: erp-gateway
     ports:
       - "3010:3010"
@@ -60,8 +59,7 @@ services:
   hr-service:
     <<: *service-defaults
     build:
-      context: .
-      dockerfile: services/hr/Dockerfile
+      context: ../erp-hr
     container_name: erp-hr
     ports:
       - "3011:3011"
@@ -79,8 +77,7 @@ services:
   payroll-service:
     <<: *service-defaults
     build:
-      context: .
-      dockerfile: services/payroll/Dockerfile
+      context: ../erp-payroll
     container_name: erp-payroll
     ports:
       - "3012:3012"
@@ -105,8 +102,7 @@ services:
   accounting-service:
     <<: *service-defaults
     build:
-      context: .
-      dockerfile: services/accounting/Dockerfile
+      context: ../erp-accounting
     container_name: erp-accounting
     ports:
       - "3013:3013"
@@ -124,8 +120,7 @@ services:
   finance-service:
     <<: *service-defaults
     build:
-      context: .
-      dockerfile: services/finance/Dockerfile
+      context: ../erp-finance
     container_name: erp-finance
     ports:
       - "3014:3014"
@@ -147,8 +142,7 @@ services:
   billing-service:
     <<: *service-defaults
     build:
-      context: .
-      dockerfile: services/billing/Dockerfile
+      context: ../erp-billing
     container_name: erp-billing
     ports:
       - "3015:3015"
@@ -170,8 +164,7 @@ services:
   procurement-service:
     <<: *service-defaults
     build:
-      context: .
-      dockerfile: services/procurement/Dockerfile
+      context: ../erp-procurement
     container_name: erp-procurement
     ports:
       - "3016:3016"
@@ -193,8 +186,7 @@ services:
   supply-chain-service:
     <<: *service-defaults
     build:
-      context: .
-      dockerfile: services/supply-chain/Dockerfile
+      context: ../erp-supply-chain
     container_name: erp-supply-chain
     ports:
       - "3017:3017"
@@ -212,8 +204,7 @@ services:
   inventory-service:
     <<: *service-defaults
     build:
-      context: .
-      dockerfile: services/inventory/Dockerfile
+      context: ../erp-inventory
     container_name: erp-inventory
     ports:
       - "3018:3018"
