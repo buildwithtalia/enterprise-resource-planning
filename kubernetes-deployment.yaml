@@ -1,116 +1,113 @@
+# ERP Microservices — Kubernetes manifests
+# One Deployment + Service (ClusterIP) per microservice.
+# The API Gateway is exposed via a LoadBalancer Service on port 80.
+#
+# Env vars for inter-service communication use Kubernetes DNS:
+#   http://<service-name>.<namespace>.svc.cluster.local:<port>
+
 ---
-# ConfigMap for application configuration
+# ── Namespace ─────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erp
+
+---
+# ── ConfigMap ────────────────────────────────────────────────────────────────
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: erp-flask-config
-  labels:
-    app: erp-flask
+  name: erp-config
+  namespace: erp
 data:
-  FLASK_ENV: "production"
-  LOG_LEVEL: "INFO"
+  LOG_LEVEL: "info"
+  HR_SERVICE_URL: "http://hr-service:3011"
+  PAYROLL_SERVICE_URL: "http://payroll-service:3012"
+  ACCOUNTING_SERVICE_URL: "http://accounting-service:3013"
+  FINANCE_SERVICE_URL: "http://finance-service:3014"
+  BILLING_SERVICE_URL: "http://billing-service:3015"
+  PROCUREMENT_SERVICE_URL: "http://procurement-service:3016"
+  SUPPLY_CHAIN_SERVICE_URL: "http://supply-chain-service:3017"
+  INVENTORY_SERVICE_URL: "http://inventory-service:3018"
 
 ---
-# Deployment
+# ════════════════════════════════════════════════════════════════
+# API GATEWAY  (port 3010 → external 80)
+# ════════════════════════════════════════════════════════════════
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: erp-flask-deployment
+  name: gateway
+  namespace: erp
   labels:
-    app: erp-flask
+    app: gateway
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      app: erp-flask
+      app: gateway
   template:
     metadata:
       labels:
-        app: erp-flask
+        app: gateway
     spec:
       containers:
-      - name: erp-flask
-        image: taliakohan/erp-flask:latest
+      - name: gateway
+        image: erp/gateway:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 3001
-          name: http
-          protocol: TCP
+        - containerPort: 3010
+        envFrom:
+        - configMapRef:
+            name: erp-config
         env:
-        - name: FLASK_ENV
-          valueFrom:
-            configMapKeyRef:
-              name: erp-flask-config
-              key: FLASK_ENV
-        - name: LOG_LEVEL
-          valueFrom:
-            configMapKeyRef:
-              name: erp-flask-config
-              key: LOG_LEVEL
+        - name: PORT
+          value: "3010"
         resources:
           requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
             memory: "256Mi"
             cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
         livenessProbe:
           httpGet:
             path: /health
-            port: 3001
-          initialDelaySeconds: 30
+            port: 3010
+          initialDelaySeconds: 20
           periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /health
-            port: 3001
+            port: 3010
           initialDelaySeconds: 10
           periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 3
-        startupProbe:
-          httpGet:
-            path: /health
-            port: 3001
-          initialDelaySeconds: 0
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 30
-
 ---
-# Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: erp-flask-service
-  labels:
-    app: erp-flask
+  name: gateway
+  namespace: erp
 spec:
   type: LoadBalancer
   selector:
-    app: erp-flask
+    app: gateway
   ports:
-  - name: http
-    port: 80
-    targetPort: 3001
-    protocol: TCP
-  sessionAffinity: None
-
+  - port: 80
+    targetPort: 3010
 ---
-# Horizontal Pod Autoscaler (optional)
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: erp-flask-hpa
+  name: gateway-hpa
+  namespace: erp
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: erp-flask-deployment
-  minReplicas: 3
-  maxReplicas: 10
+    name: gateway
+  minReplicas: 2
+  maxReplicas: 6
   metrics:
   - type: Resource
     resource:
@@ -118,9 +115,514 @@ spec:
       target:
         type: Utilization
         averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+
+---
+# ════════════════════════════════════════════════════════════════
+# HR SERVICE  (port 3011)
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hr-service
+  namespace: erp
+  labels:
+    app: hr-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hr-service
+  template:
+    metadata:
+      labels:
+        app: hr-service
+    spec:
+      containers:
+      - name: hr-service
+        image: erp/hr-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3011
+        env:
+        - name: PORT
+          value: "3011"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3011
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3011
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hr-service
+  namespace: erp
+spec:
+  selector:
+    app: hr-service
+  ports:
+  - port: 3011
+    targetPort: 3011
+
+---
+# ════════════════════════════════════════════════════════════════
+# PAYROLL SERVICE  (port 3012)
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payroll-service
+  namespace: erp
+  labels:
+    app: payroll-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payroll-service
+  template:
+    metadata:
+      labels:
+        app: payroll-service
+    spec:
+      containers:
+      - name: payroll-service
+        image: erp/payroll-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3012
+        envFrom:
+        - configMapRef:
+            name: erp-config
+        env:
+        - name: PORT
+          value: "3012"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3012
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3012
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payroll-service
+  namespace: erp
+spec:
+  selector:
+    app: payroll-service
+  ports:
+  - port: 3012
+    targetPort: 3012
+
+---
+# ════════════════════════════════════════════════════════════════
+# ACCOUNTING SERVICE  (port 3013)
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accounting-service
+  namespace: erp
+  labels:
+    app: accounting-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: accounting-service
+  template:
+    metadata:
+      labels:
+        app: accounting-service
+    spec:
+      containers:
+      - name: accounting-service
+        image: erp/accounting-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3013
+        env:
+        - name: PORT
+          value: "3013"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3013
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3013
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: accounting-service
+  namespace: erp
+spec:
+  selector:
+    app: accounting-service
+  ports:
+  - port: 3013
+    targetPort: 3013
+
+---
+# ════════════════════════════════════════════════════════════════
+# FINANCE SERVICE  (port 3014)
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-service
+  namespace: erp
+  labels:
+    app: finance-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: finance-service
+  template:
+    metadata:
+      labels:
+        app: finance-service
+    spec:
+      containers:
+      - name: finance-service
+        image: erp/finance-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3014
+        envFrom:
+        - configMapRef:
+            name: erp-config
+        env:
+        - name: PORT
+          value: "3014"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3014
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3014
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-service
+  namespace: erp
+spec:
+  selector:
+    app: finance-service
+  ports:
+  - port: 3014
+    targetPort: 3014
+
+---
+# ════════════════════════════════════════════════════════════════
+# BILLING SERVICE  (port 3015)
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-service
+  namespace: erp
+  labels:
+    app: billing-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: billing-service
+  template:
+    metadata:
+      labels:
+        app: billing-service
+    spec:
+      containers:
+      - name: billing-service
+        image: erp/billing-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3015
+        envFrom:
+        - configMapRef:
+            name: erp-config
+        env:
+        - name: PORT
+          value: "3015"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3015
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3015
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-service
+  namespace: erp
+spec:
+  selector:
+    app: billing-service
+  ports:
+  - port: 3015
+    targetPort: 3015
+
+---
+# ════════════════════════════════════════════════════════════════
+# PROCUREMENT SERVICE  (port 3016)
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: procurement-service
+  namespace: erp
+  labels:
+    app: procurement-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: procurement-service
+  template:
+    metadata:
+      labels:
+        app: procurement-service
+    spec:
+      containers:
+      - name: procurement-service
+        image: erp/procurement-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3016
+        envFrom:
+        - configMapRef:
+            name: erp-config
+        env:
+        - name: PORT
+          value: "3016"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3016
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3016
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: procurement-service
+  namespace: erp
+spec:
+  selector:
+    app: procurement-service
+  ports:
+  - port: 3016
+    targetPort: 3016
+
+---
+# ════════════════════════════════════════════════════════════════
+# SUPPLY-CHAIN SERVICE  (port 3017)
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: supply-chain-service
+  namespace: erp
+  labels:
+    app: supply-chain-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: supply-chain-service
+  template:
+    metadata:
+      labels:
+        app: supply-chain-service
+    spec:
+      containers:
+      - name: supply-chain-service
+        image: erp/supply-chain-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3017
+        env:
+        - name: PORT
+          value: "3017"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3017
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3017
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: supply-chain-service
+  namespace: erp
+spec:
+  selector:
+    app: supply-chain-service
+  ports:
+  - port: 3017
+    targetPort: 3017
+
+---
+# ════════════════════════════════════════════════════════════════
+# INVENTORY SERVICE  (port 3018)
+# ════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: erp
+  labels:
+    app: inventory-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+      - name: inventory-service
+        image: erp/inventory-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3018
+        envFrom:
+        - configMapRef:
+            name: erp-config
+        env:
+        - name: PORT
+          value: "3018"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3018
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3018
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: erp
+spec:
+  selector:
+    app: inventory-service
+  ports:
+  - port: 3018
+    targetPort: 3018
