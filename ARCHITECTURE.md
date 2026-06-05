@@ -1,264 +1,200 @@
-# Monolithic ERP Architecture
+# ERP Microservices Architecture
 
 ## Overview
 
-This is a **monolithic enterprise resource planning (ERP) system** demonstrating classic monolithic architecture patterns with tight coupling, shared dependencies, and a single deployable unit.
+This ERP system has been refactored from a **monolithic Flask application** into a
+**microservices architecture** — eight independent domain services behind a single
+API Gateway.
 
-## Architecture Characteristics
+---
 
-### Single Deployable Unit
-- All modules bundled into one application
-- Single `npm start` command deploys entire system
-- One codebase, one build, one deployment
-- All code runs in a single Node.js process
-
-### Shared Database
-- All modules use the same PostgreSQL database
-- Single connection pool shared across modules
-- All entities defined in `/src/database/entities/`
-- No data isolation between modules
-
-### Shared Middleware
-- Common authentication (`/src/middleware/auth.ts`)
-- Common logging (`/src/middleware/logger.ts`)
-- Common error handling (`/src/middleware/errorHandler.ts`)
-- All HTTP requests flow through same middleware stack
-
-### Cross-Module Coupling
-Modules directly import and instantiate services from other modules:
-
-```typescript
-// Example from PayrollService
-import { HRService } from '../human-resources/hr.service';
-import { AccountingService } from '../accounting/accounting.service';
-
-export class PayrollService {
-  private hrService = new HRService();
-  private accountingService = new AccountingService();
-  // Direct dependencies on other modules
-}
-```
-
-## Module Dependencies
-
-### Dependency Graph
+## Service Map
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Monolithic ERP System                   │
-│                  (Single Deployable Unit)                   │
-└─────────────────────────────────────────────────────────────┘
+Clients
+   │
+   ▼
+┌─────────────────────────┐
+│      API Gateway        │  :3010  (public entry point)
+│  /api/hr   → hr-svc     │
+│  /api/v2/* → same svcs  │
+└──────────┬──────────────┘
+           │ HTTP (internal)
+  ┌────────┼──────────────────────────────┐
+  │        │                              │
+  ▼        ▼                              ▼
+[HR]    [Payroll] ──────────────► [Accounting]
+:3011   :3012  calls HR + Acct    :3013
+                                     ▲  ▲  ▲
+                                     │  │  │
+                              [Finance][Billing][Procurement]
+                              :3014   :3015   :3016
+                                                 ▲
+                                                 │ auto-reorder PO
+                                           [Inventory]
+                                            :3018
 
-    ┌─────────────┐
-    │ Human       │
-    │ Resources   │◄───────────────────────┐
-    └──────┬──────┘                        │
-           │                               │
-           │ getEmployeeById()             │
-           ▼                               │
-    ┌─────────────┐                        │
-    │  Payroll    │                        │
-    └──────┬──────┘                        │
-           │                               │
-           │ recordPayrollExpense()        │
-           ▼                               │
-    ┌─────────────┐                        │
-    │ Accounting  │◄───────┬───────┬───────┘
-    └──────▲──────┘        │       │
-           │               │       │
-           │               │       │ recordPurchase()
-           │               │       │
-    ┌──────┴──────┐  ┌─────┴────┐  ┌──────────────┐
-    │   Finance   │  │ Billing  │  │ Procurement  │◄────┐
-    └─────────────┘  └──────────┘  └──────────────┘     │
-                                                         │
-                                                         │ createReorderPO()
-                                                         │
-                                                   ┌─────┴────────┐
-                                                   │  Inventory   │
-                                                   └──────────────┘
-
-    ┌─────────────┐
-    │ Supply Chain│ (Independent)
-    └─────────────┘
+[Supply Chain] :3017  (independent — no upstream service calls)
 ```
 
-### Module Relationships
+### Service Dependency Table
 
-| Module | Calls | Called By | Purpose |
-|--------|-------|-----------|---------|
-| **Human Resources** | - | Payroll | Employee management, department structure |
-| **Payroll** | HR, Accounting | - | Salary processing, tax calculations |
-| **Accounting** | - | Payroll, Billing, Procurement, Finance | General ledger, journal entries |
-| **Finance** | Accounting | - | Budgeting, financial planning, reporting |
-| **Billing** | Accounting | - | Customer invoicing, payment tracking |
-| **Procurement** | Accounting | Inventory | Purchase orders, vendor management |
-| **Supply Chain** | - | - | Shipments, logistics, warehousing |
-| **Inventory** | Procurement | - | Stock management, automatic reordering |
+| Service       | Port | Calls              | Called by                   |
+|---------------|------|--------------------|-----------------------------|
+| API Gateway   | 3010 | all 8 services     | Clients                     |
+| HR            | 3011 | —                  | Gateway, Payroll            |
+| Payroll       | 3012 | HR, Accounting     | Gateway                     |
+| Accounting    | 3013 | —                  | Gateway, Payroll, Billing, Finance, Procurement |
+| Finance       | 3014 | Accounting         | Gateway                     |
+| Billing       | 3015 | Accounting         | Gateway                     |
+| Procurement   | 3016 | Accounting         | Gateway, Inventory          |
+| Supply Chain  | 3017 | —                  | Gateway                     |
+| Inventory     | 3018 | Procurement        | Gateway                     |
 
-## Cross-Coupling Examples
+---
 
-### Example 1: Payroll → HR → Accounting
-```typescript
-// In PayrollService.processPayroll()
-1. Call HRService.getEmployeeById() to get employee data
-2. Calculate payroll based on employee salary
-3. Call AccountingService.recordPayrollExpense() to create journal entries
-```
-
-**File References:**
-- `src/modules/payroll/payroll.service.ts:46` - HR service call
-- `src/modules/payroll/payroll.service.ts:106` - Accounting service call
-
-### Example 2: Inventory → Procurement
-```typescript
-// In InventoryService.checkAndReorder()
-1. Detect stock level below reorder point
-2. Call ProcurementService.createReorderPurchaseOrder()
-3. Automatically create purchase order without human intervention
-```
-
-**File References:**
-- `src/modules/inventory/inventory.service.ts:186` - Procurement service call
-
-### Example 3: Billing → Accounting
-```typescript
-// In BillingService.sendInvoice()
-1. Mark invoice as sent
-2. Call AccountingService.recordRevenue() to create journal entries
-3. Link accounting transaction back to invoice
-```
-
-**File References:**
-- `src/modules/billing/billing.service.ts:161` - Accounting service call
-
-## Shared Dependencies
-
-### Database Layer
-All modules share:
-- `AppDataSource` - Single database connection
-- All entity definitions
-- TypeORM configuration
-
-```typescript
-// Every service uses the same connection
-import { AppDataSource } from '../../database/connection';
-
-private employeeRepo = AppDataSource.getRepository(Employee);
-```
-
-### Middleware Layer
-All HTTP requests pass through:
-1. `express.json()` - Body parsing
-2. `requestLogger` - Request logging
-3. `authenticate` - JWT authentication
-4. Route-specific authorization
-5. `errorHandler` - Global error handling
-
-**File Reference:** `src/app.ts:25-28`
-
-## Advantages of This Monolithic Design
-
-1. **Simple Deployment** - Single build, single deploy
-2. **Easy Development** - Can run entire system locally
-3. **Direct Function Calls** - No network overhead between modules
-4. **Shared Code** - Reuse utilities, middleware, types
-5. **ACID Transactions** - Database transactions span modules
-6. **Simplified Debugging** - Single stack trace across modules
-
-## Disadvantages of This Monolithic Design
-
-1. **Tight Coupling** - Changes in one module affect others
-2. **Scaling Limitations** - Can't scale individual modules
-3. **Technology Lock-in** - All modules use same tech stack
-4. **Large Codebase** - Difficult to navigate as system grows
-5. **Deploy All or Nothing** - Small change requires full deployment
-6. **Team Coordination** - Multiple teams work in same codebase
-7. **Single Point of Failure** - One module crash brings down everything
-
-## Project Structure
+## Repository Layout
 
 ```
 enterprise-resource-planning/
-├── src/
-│   ├── database/
-│   │   ├── connection.ts          # Shared database connection
-│   │   └── entities/              # Shared data models
-│   ├── middleware/                 # Shared middleware
-│   │   ├── auth.ts
-│   │   ├── logger.ts
-│   │   └── errorHandler.ts
-│   ├── modules/                    # All business modules
-│   │   ├── human-resources/
-│   │   ├── payroll/
-│   │   ├── accounting/
-│   │   ├── finance/
-│   │   ├── billing/
-│   │   ├── procurement/
-│   │   ├── supply-chain/
-│   │   └── inventory/
-│   ├── app.ts                      # Application setup
-│   └── server.ts                   # Server bootstrap
-├── package.json                    # Single dependency file
-└── tsconfig.json                   # Single TypeScript config
+├── shared/                    # Shared utilities (responses, health)
+│   ├── __init__.py
+│   ├── responses.py           # Standardised JSON envelope helpers
+│   └── health.py              # Reusable health-check blueprint
+│
+├── services/
+│   ├── gateway/               # API Gateway
+│   │   ├── Dockerfile
+│   │   ├── requirements.txt
+│   │   └── src/app.py
+│   ├── hr/                    # Human Resources service
+│   ├── payroll/               # Payroll service
+│   ├── accounting/            # Accounting service
+│   ├── finance/               # Finance service
+│   ├── billing/               # Billing service
+│   ├── procurement/           # Procurement service
+│   ├── supply-chain/          # Supply-Chain service
+│   └── inventory/             # Inventory service
+│
+├── src/                       # Legacy monolith (kept for reference)
+│
+├── docker-compose.yml         # All 9 services (gateway + 8 domain)
+├── kubernetes-deployment.yaml # K8s Deployments, Services, HPA
+└── postman/                   # API collections & specs
 ```
 
-## Running the Monolith
+---
+
+## Cross-Service Communication
+
+All inter-service calls are synchronous HTTP with graceful degradation:
+- A `requests.ConnectionError` or timeout does **not** crash the calling service.
+- The downstream call is fire-and-forget for side-effects (e.g., accounting journal entries).
+- Future evolution path: replace fire-and-forget HTTP calls with an async message broker
+  (e.g., RabbitMQ / Kafka) for better resilience.
+
+### Example: Process Payroll
+
+```
+Client → POST /api/payroll/process
+         │
+         ▼ (Gateway proxies to Payroll)
+Payroll service:
+  1. Calculates gross/net pay
+  2. Stores payroll record locally
+  3. POST /api/accounting/journal-entries  ← cross-service (fire-and-forget)
+  4. Returns 201 Created
+```
+
+### Example: Adjust Stock (triggers reorder)
+
+```
+Client → POST /api/inventory/stock/adjust
+         │
+         ▼ (Gateway proxies to Inventory)
+Inventory service:
+  1. Updates quantityOnHand
+  2. If quantity ≤ reorderPoint:
+       POST /api/procurement/purchase-orders  ← cross-service (fire-and-forget)
+  3. Returns adjusted stock record
+```
+
+---
+
+## API Gateway
+
+- **Single entry point** — all public traffic hits `:3010`.
+- **Path-based routing** — `/api/{service}/*` → corresponding microservice.
+- **v2 compatibility** — `/api/v2/{service}/*` is stripped and forwarded identically.
+- **Aggregate health** — `GET /health` polls each downstream `/health` endpoint and
+  returns `200` (all healthy) or `207` (partial degradation).
+- **Error surfacing** — `503 SERVICE_UNAVAILABLE` / `504 SERVICE_TIMEOUT` returned
+  when a downstream is unreachable.
+
+---
+
+## Running Locally
+
+### Docker Compose (recommended)
 
 ```bash
-# Install all dependencies
-npm install
-
-# Set up environment
-cp .env.example .env
-
-# Run in development (entire system)
-npm run dev
-
-# Build entire application
-npm run build
-
-# Run in production (entire system)
-npm start
+docker compose up --build
 ```
 
-## API Endpoints
+All services start in dependency order. The gateway waits until every downstream
+service passes its healthcheck.
 
-All modules exposed through single API:
+| Endpoint                          | Service          |
+|-----------------------------------|------------------|
+| `http://localhost:3010/api`       | Service catalogue |
+| `http://localhost:3010/health`    | Aggregate health  |
+| `http://localhost:3010/api/hr/*`  | HR (via gateway)  |
+| `http://localhost:3011`           | HR (direct)       |
+| `http://localhost:3012`           | Payroll (direct)  |
+| …                                 | …                 |
 
-- `http://localhost:3001/api/hr` - Human Resources
-- `http://localhost:3001/api/payroll` - Payroll
-- `http://localhost:3001/api/accounting` - Accounting
-- `http://localhost:3001/api/finance` - Finance
-- `http://localhost:3001/api/billing` - Billing
-- `http://localhost:3001/api/procurement` - Procurement
-- `http://localhost:3001/api/supply-chain` - Supply Chain
-- `http://localhost:3001/api/inventory` - Inventory
+### Individual service (development)
 
-**API Documentation:** `http://localhost:3001/api`
+```bash
+cd services/hr
+pip install -r requirements.txt
+PYTHONPATH=$(pwd)/../.. python src/app.py
+```
 
-## Database Schema
+---
 
-All modules share single database with tables:
+## Kubernetes
 
-- `employees` - HR module
-- `departments` - HR module
-- `payroll_records` - Payroll module
-- `accounting_transactions` - Accounting module (used by many modules)
-- `budgets` - Finance module
-- `invoices` - Billing module
-- `customers` - Billing module
-- `purchase_orders` - Procurement module
-- `vendors` - Procurement module
-- `shipments` - Supply Chain module
-- `inventory_items` - Inventory module
+```bash
+kubectl apply -f kubernetes-deployment.yaml
+```
 
-## Conclusion
+Resources created in the `erp` namespace:
+- `Namespace` erp
+- `ConfigMap` erp-config (service URLs)
+- 9 × `Deployment` (gateway + 8 domain services)
+- 9 × `Service` (gateway as LoadBalancer, rest ClusterIP)
+- 1 × `HorizontalPodAutoscaler` (gateway, 2–6 replicas)
 
-This monolithic ERP demonstrates classic enterprise architecture with:
-- ✅ Single deployable unit
-- ✅ Shared database and middleware
-- ✅ Direct cross-module coupling
-- ✅ Tight integration between modules
+---
 
-Perfect for understanding monolithic patterns before moving to microservices!
+## Key Microservices Design Principles Applied
+
+| Principle                  | Implementation                                                  |
+|----------------------------|-----------------------------------------------------------------|
+| Single Responsibility      | One domain per service; no shared business logic                |
+| Loose Coupling             | HTTP APIs only; no shared in-process imports between services   |
+| Independent Deployability  | Each service has its own `Dockerfile` and `requirements.txt`    |
+| Graceful Degradation       | Cross-service calls wrapped in try/except; service keeps working|
+| Shared Nothing             | Each service owns its own data (in-memory → replace with own DB)|
+| API Gateway Pattern        | Single external entry point; internal services are not exposed  |
+| Health Checks              | Every service exposes `GET /health`; gateway aggregates them    |
+
+---
+
+## Migration from Monolith
+
+The original monolith (`src/app.py`) is preserved for reference. The new
+microservices expose **the same URL paths and response shapes** so existing
+Postman collections and OpenAPI specs continue to work unchanged — just point
+`baseUrl` to `http://localhost:3010`.

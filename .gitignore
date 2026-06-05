@@ -24,3 +24,4 @@ Thumbs.db
 # Database
 *.sqlite
 *.db
+__pycache__/
