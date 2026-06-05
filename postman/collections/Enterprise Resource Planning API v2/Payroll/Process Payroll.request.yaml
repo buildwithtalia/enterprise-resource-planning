@@ -1,0 +1,17 @@
+$kind: http-request
+description: Process payroll for a single employee for a specified pay period. Returns 201 on success.
+url: '{{baseUrl}}/api/v2/payroll/process'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "employeeId": "emp-001",
+      "payPeriodStart": "2024-01-01",
+      "payPeriodEnd": "2024-01-31",
+      "deductions": 500
+    }
+order: 3000

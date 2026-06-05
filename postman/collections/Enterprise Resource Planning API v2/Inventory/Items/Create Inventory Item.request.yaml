@@ -1,0 +1,21 @@
+$kind: http-request
+description: Create a new inventory item. Returns 201 on success.
+url: '{{baseUrl}}/api/v2/inventory/items'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "sku": "LAPTOP-001",
+      "name": "Dell Latitude 5520",
+      "description": "15.6 inch business laptop",
+      "category": "Electronics",
+      "quantityOnHand": 50,
+      "unitPrice": 1200.00,
+      "reorderPoint": 10,
+      "reorderQuantity": 25
+    }
+order: 4000

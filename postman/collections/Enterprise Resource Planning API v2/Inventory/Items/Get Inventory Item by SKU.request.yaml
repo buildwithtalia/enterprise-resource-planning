@@ -1,0 +1,8 @@
+$kind: http-request
+description: Get an inventory item by its SKU code.
+url: '{{baseUrl}}/api/v2/inventory/items/sku/:sku'
+method: GET
+pathVariables:
+  - key: sku
+    value: SKU-001
+order: 3000

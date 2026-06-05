@@ -14,3 +14,4 @@ localResources:
 cloudResources:
   collections:
     ../postman/collections/Enterprise Resource Planning API: 44848164-6751eadb-0b2b-4465-836c-1ec8f1915539
+    ../postman/collections/Enterprise Resource Planning API v2: 44848164-bebaae1b-5516-4a72-8f3b-1a6f4c7c162c

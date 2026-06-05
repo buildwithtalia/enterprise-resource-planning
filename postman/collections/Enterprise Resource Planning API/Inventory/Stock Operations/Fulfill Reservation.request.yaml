@@ -1,15 +1,16 @@
 $kind: http-request
 description: Fulfill a reservation by removing stock. Requires 'warehouse_manager' or 'admin' role.
-url: "{{baseUrl}}/api/inventory/items/:id/fulfill"
+url: '{{baseUrl}}/api/inventory/stock/fulfill'
 method: POST
 headers:
-  Content-Type: application/json
-pathVariables:
-  id: item-123
+  - key: Content-Type
+    value: application/json
 body:
-  type: text
+  type: json
   content: |-
     {
+      "reservationId": "res-123",
+      "itemId": "item-123",
       "quantity": 10
     }
 order: 4000

@@ -1,0 +1,18 @@
+$kind: http-request
+description: Approve a pending payroll record, marking it ready for disbursement.
+url: '{{baseUrl}}/api/v2/payroll/:id/approve'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+pathVariables:
+  - key: id
+    value: pay-001
+body:
+  type: json
+  content: |-
+    {
+      "approvedBy": "manager-001",
+      "notes": "Approved for payment"
+    }
+order: 5000

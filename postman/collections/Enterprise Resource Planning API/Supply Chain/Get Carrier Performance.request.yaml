@@ -147,8 +147,6 @@ description: |-
   - Top routes highlight most common shipping lanes
   - Performance trend compares current period to previous period
   - Data is updated nightly or after significant events
-url: "{{baseUrl}}/api/supply-chain/carriers/:carrier/performance"
+url: '{{baseUrl}}/api/supply-chain/carriers/performance'
 method: GET
-pathVariables:
-  carrier: FedEx
 order: 2000

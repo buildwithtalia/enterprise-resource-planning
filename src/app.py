@@ -330,13 +330,17 @@ def create_app() -> Flask:
     
     @app.route('/api/hr/employees/<employee_id>/promote', methods=['PATCH'])
     def promote_employee(employee_id):
-        """Promote an employee"""
+        """Promote an employee. Accepts title/salaryIncrease per spec."""
         data = request.get_json()
+        # Accept spec field names (title/salaryIncrease) with fallback to legacy names
+        new_position = data.get('title') or data.get('newPosition')
+        salary_increase = data.get('salaryIncrease') or data.get('newSalary')
         return jsonify({
             'id': employee_id,
-            'newPosition': data.get('newPosition'),
-            'newSalary': data.get('newSalary'),
+            'newPosition': new_position,
+            'salaryIncrease': salary_increase,
             'effectiveDate': data.get('effectiveDate'),
+            'notes': data.get('notes'),
             'message': 'Employee promoted successfully'
         })
     
@@ -1316,14 +1320,18 @@ def create_app() -> Flask:
     
     @app.route('/api/v2/hr/employees/<employee_id>/promote', methods=['PATCH'])
     def v2_promote_employee(employee_id):
-        """V2: Promote an employee"""
+        """V2: Promote an employee. Accepts title/salaryIncrease per spec."""
         try:
             data = request.get_json()
+            # Accept spec field names (title/salaryIncrease) with fallback to legacy names
+            new_position = data.get('title') or data.get('newPosition')
+            salary_increase = data.get('salaryIncrease') or data.get('newSalary')
             result = {
                 'id': employee_id,
-                'newPosition': data.get('newPosition'),
-                'newSalary': data.get('newSalary'),
+                'newPosition': new_position,
+                'salaryIncrease': salary_increase,
                 'effectiveDate': data.get('effectiveDate'),
+                'notes': data.get('notes'),
                 'message': 'Employee promoted successfully'
             }
             return v2_success_response(result)

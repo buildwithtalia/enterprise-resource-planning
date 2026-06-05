@@ -1,6 +1,6 @@
 $kind: http-request
 description: Record a payment for an invoice. Requires 'billing_manager' or 'admin' role.
-url: "{{baseUrl}}/api/billing/invoices/:id/payment"
+url: '{{baseUrl}}/api/billing/invoices/:id/payments'
 method: POST
 headers:
   Content-Type: application/json

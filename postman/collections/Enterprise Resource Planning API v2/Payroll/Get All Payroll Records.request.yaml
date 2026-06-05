@@ -1,0 +1,20 @@
+$kind: http-request
+description: Get all payroll records with pagination. Filters by status or employeeId when provided.
+url: '{{baseUrl}}/api/v2/payroll'
+method: GET
+queryParams:
+  - key: page
+    value: '1'
+    description: Page number (1-indexed)
+  - key: limit
+    value: '10'
+    description: Items per page
+  - key: status
+    value: ''
+    description: 'Filter: pending, approved, paid'
+    disabled: true
+  - key: employeeId
+    value: ''
+    description: Filter by employee ID
+    disabled: true
+order: 1000

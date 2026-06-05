@@ -1,0 +1,16 @@
+$kind: http-request
+description: Process payroll for multiple employees. Returns 202 Accepted (async processing).
+url: '{{baseUrl}}/api/v2/payroll/process-batch'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "employeeIds": ["emp-001", "emp-002", "emp-003"],
+      "payPeriodStart": "2024-01-01",
+      "payPeriodEnd": "2024-01-31"
+    }
+order: 4000

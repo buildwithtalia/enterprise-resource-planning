@@ -1,6 +1,6 @@
 $kind: http-request
-description: Release previously reserved stock. Requires 'warehouse_manager' or 'admin' role.
-url: '{{baseUrl}}/api/inventory/stock/release'
+description: Release a previously reserved stock reservation.
+url: '{{baseUrl}}/api/v2/inventory/stock/release'
 method: POST
 headers:
   - key: Content-Type
@@ -10,7 +10,7 @@ body:
   content: |-
     {
       "reservationId": "res-123",
-      "itemId": "item-123",
+      "itemId": "item-001",
       "quantity": 10
     }
 order: 3000

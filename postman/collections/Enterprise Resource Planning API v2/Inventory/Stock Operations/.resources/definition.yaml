@@ -1,0 +1,3 @@
+$kind: collection
+name: Stock Operations
+description: Stock adjustment, reservation, fulfillment, and receiving operations.

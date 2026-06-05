@@ -236,9 +236,9 @@ description: |-
   - **Performance Evaluation**: Assess department financial management
   - **Comparative Analysis**: Compare department performance across years
   - **Resource Allocation**: Identify opportunities for budget optimization
-url: "{{baseUrl}}/api/finance/department/:department/fiscal-year/:fiscalYear"
+url: '{{baseUrl}}/api/finance/departments/:id/budget-summary'
 method: GET
 pathVariables:
-  department: Engineering
-  fiscalYear: "2024"
+  - key: id
+    value: dept-001
 order: 2000

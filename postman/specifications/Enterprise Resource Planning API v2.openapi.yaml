@@ -454,7 +454,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /payroll/records:
+  /payroll:
     get:
       tags:
         - Payroll
@@ -498,7 +498,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /payroll/records/{id}:
+  /payroll/{id}:
     get:
       tags:
         - Payroll
@@ -564,7 +564,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /payroll/batch-process:
+  /payroll/process-batch:
     post:
       tags:
         - Payroll
@@ -598,7 +598,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /payroll/records/{id}/approve:
+  /payroll/{id}/approve:
     post:
       tags:
         - Payroll
@@ -2187,11 +2187,9 @@ components:
           enum: [pending, dispatched, inTransit, delivered, cancelled]
           example: "inTransit"
         origin:
-          type: string
-          example: "Chicago, IL"
+          $ref: '#/components/schemas/ShipmentAddress'
         destination:
-          type: string
-          example: "New York, NY"
+          $ref: '#/components/schemas/ShipmentAddress'
         estimatedDeliveryDate:
           type: string
           format: date
@@ -2239,6 +2237,22 @@ components:
           format: double
           example: 10
 
+    ShipmentAddress:
+      type: object
+      properties:
+        address:
+          type: string
+          example: "123 Warehouse St"
+        city:
+          type: string
+          example: "Chicago"
+        state:
+          type: string
+          example: "IL"
+        zipCode:
+          type: string
+          example: "60601"
+
     ShipmentInput:
       type: object
       required:
@@ -2248,7 +2262,6 @@ components:
         - origin
         - destination
         - estimatedDeliveryDate
-        - items
       properties:
         orderId:
           type: string
@@ -2259,19 +2272,20 @@ components:
         trackingNumber:
           type: string
           example: "1Z999AA10123456784"
+        shipDate:
+          type: string
+          format: date
+          example: "2024-01-15"
         origin:
-          type: string
-          example: "Chicago, IL"
+          $ref: '#/components/schemas/ShipmentAddress'
         destination:
-          type: string
-          example: "New York, NY"
+          $ref: '#/components/schemas/ShipmentAddress'
         estimatedDeliveryDate:
           type: string
           format: date
           example: "2024-01-30"
         items:
           type: array
-          minItems: 1
           items:
             $ref: '#/components/schemas/ShipmentItem'
         totalWeight:

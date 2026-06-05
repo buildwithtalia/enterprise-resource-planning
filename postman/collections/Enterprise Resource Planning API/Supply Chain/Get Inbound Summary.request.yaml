@@ -1,5 +1,5 @@
 $kind: http-request
 description: Get summary of inbound shipments.
-url: "{{baseUrl}}/api/supply-chain/summary/inbound"
+url: '{{baseUrl}}/api/supply-chain/inbound/summary'
 method: GET
 order: 3000

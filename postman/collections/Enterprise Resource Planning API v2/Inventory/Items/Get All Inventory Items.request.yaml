@@ -1,0 +1,16 @@
+$kind: http-request
+description: Get all inventory items with pagination and optional filters.
+url: '{{baseUrl}}/api/v2/inventory/items'
+method: GET
+queryParams:
+  - key: page
+    value: '1'
+    description: Page number (1-indexed)
+  - key: limit
+    value: '10'
+    description: Items per page
+  - key: category
+    value: ''
+    description: Filter by category
+    disabled: true
+order: 1000
