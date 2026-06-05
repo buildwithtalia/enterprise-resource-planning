@@ -1,6 +1,6 @@
 $kind: http-request
-description: Reserve stock for an order. Requires 'warehouse_manager' or 'admin' role.
-url: '{{baseUrl}}/api/inventory/stock/reserve'
+description: Reserve stock for a specific order.
+url: '{{baseUrl}}/api/v2/inventory/stock/reserve'
 method: POST
 headers:
   - key: Content-Type
@@ -9,7 +9,7 @@ body:
   type: json
   content: |-
     {
-      "itemId": "item-123",
+      "itemId": "item-001",
       "quantity": 10,
       "orderId": "order-456"
     }

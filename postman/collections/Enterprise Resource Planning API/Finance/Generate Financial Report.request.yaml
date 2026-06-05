@@ -346,6 +346,6 @@ description: |-
   - **Audit Preparation**: Comprehensive financial documentation for audits
   - **Performance Review**: Evaluate organizational financial performance
   - **Trend Analysis**: Identify spending patterns and trends across the organization
-url: "{{baseUrl}}/api/finance/reports/financial"
+url: '{{baseUrl}}/api/finance/reports'
 method: GET
 order: 3000

@@ -1,0 +1,8 @@
+$kind: http-request
+description: Get a specific payroll record by its ID.
+url: '{{baseUrl}}/api/v2/payroll/:id'
+method: GET
+pathVariables:
+  - key: id
+    value: pay-001
+order: 2000

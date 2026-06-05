@@ -165,7 +165,7 @@ description: |-
   - All payroll records are created with "pending" status and require approval
   - Processing may take several seconds for large organizations
   - Failed records do not prevent successful processing of other employees
-url: "{{baseUrl}}/api/payroll/batch-process"
+url: '{{baseUrl}}/api/payroll/process-batch'
 method: POST
 headers:
   Content-Type: application/json

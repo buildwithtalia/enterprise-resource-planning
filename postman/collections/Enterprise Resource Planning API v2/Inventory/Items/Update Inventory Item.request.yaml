@@ -1,0 +1,19 @@
+$kind: http-request
+description: Update an existing inventory item by ID.
+url: '{{baseUrl}}/api/v2/inventory/items/:id'
+method: PUT
+headers:
+  - key: Content-Type
+    value: application/json
+pathVariables:
+  - key: id
+    value: item-001
+body:
+  type: json
+  content: |-
+    {
+      "name": "Dell Latitude 5520 (Updated)",
+      "unitPrice": 1150.00,
+      "reorderPoint": 15
+    }
+order: 5000

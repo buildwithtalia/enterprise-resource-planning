@@ -1,0 +1,16 @@
+$kind: http-request
+description: Receive new stock into inventory from a purchase order.
+url: '{{baseUrl}}/api/v2/inventory/stock/receive'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "itemId": "item-001",
+      "quantity": 50,
+      "purchaseOrderId": "po-789"
+    }
+order: 5000

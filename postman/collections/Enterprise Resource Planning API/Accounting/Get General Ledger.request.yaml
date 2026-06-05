@@ -110,8 +110,6 @@ description: |-
   - **Reconciliation**: Reconcile account with external records
   - **Audit Trail**: Provide complete transaction history for audits
   - **Financial Reporting**: Generate account-specific reports
-url: "{{baseUrl}}/api/accounting/ledger/:accountCode"
+url: '{{baseUrl}}/api/accounting/general-ledger'
 method: GET
-pathVariables:
-  accountCode: "1000"
 order: 4000

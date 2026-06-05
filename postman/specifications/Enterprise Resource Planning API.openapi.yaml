@@ -237,12 +237,14 @@ paths:
                 properties:
                   success:
                     type: boolean
+                    example: true
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/Employee'
                   total:
                     type: number
+                    example: 3
                   timestamp:
                     type: string
                     format: date-time
@@ -272,7 +274,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Employee'
+                  message:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
         '400':
           description: Invalid input data
           content:
@@ -444,9 +457,20 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Department'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Department'
+                  total:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
         '401':
           $ref: '#/components/responses/UnauthorizedError'
     post:
@@ -534,7 +558,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /api/payroll/batch-process:
+  /api/payroll/process-batch:
     post:
       tags:
         - Payroll
@@ -1011,11 +1035,14 @@ components:
 
     Employee:
       type: object
+      description: Employee object returned by the HR module. Uses snake_case field names.
       properties:
         id:
           type: number
+          description: Internal numeric ID
         employee_id:
           type: string
+          description: Human-readable employee code (e.g. EMP001)
         first_name:
           type: string
         last_name:
@@ -1025,6 +1052,7 @@ components:
           format: email
         department:
           type: string
+          description: Department name (string reference, not ID)
         position:
           type: string
         salary:
@@ -1038,33 +1066,39 @@ components:
 
     EmployeeInput:
       type: object
+      description: Input for creating a new employee. The HR module uses snake_case field names.
       required:
-        - firstName
-        - lastName
+        - first_name
+        - last_name
         - email
-        - departmentId
         - position
         - salary
-        - hireDate
+        - hire_date
       properties:
-        firstName:
+        employee_id:
           type: string
-        lastName:
+          description: Optional human-readable employee code. Auto-generated if omitted.
+        first_name:
+          type: string
+        last_name:
           type: string
         email:
           type: string
           format: email
-        departmentId:
+        department:
           type: string
+          description: Department name
         position:
           type: string
         salary:
           type: number
-        hireDate:
+        hire_date:
           type: string
           format: date
-        phoneNumber:
+        status:
           type: string
+          enum: [active, inactive, on_leave, terminated]
+          default: active
 
     EmployeeUpdate:
       type: object
@@ -1090,48 +1124,31 @@ components:
 
     Department:
       type: object
+      description: Department object returned by the HR module. Uses snake_case field names.
       properties:
         id:
-          type: string
+          type: number
+          description: Internal numeric ID
         name:
           type: string
-        code:
-          type: string
-        managerId:
-          type: string
-        budget:
-          type: number
         description:
           type: string
-        location:
-          type: string
-        employeeCount:
+        manager_id:
           type: number
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
+        employee_count:
+          type: number
 
     DepartmentInput:
       type: object
       required:
         - name
-        - code
       properties:
         name:
           type: string
-        code:
-          type: string
-        managerId:
-          type: string
-        budget:
-          type: number
         description:
           type: string
-        location:
-          type: string
+        manager_id:
+          type: number
 
     Payroll:
       type: object

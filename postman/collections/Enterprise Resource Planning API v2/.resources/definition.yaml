@@ -1,0 +1,19 @@
+$kind: collection
+name: Enterprise Resource Planning API v2
+description: |-
+  # Enterprise Resource Planning API v2.0.0
+
+  All endpoints use the `/api/v2/` prefix with standardized response envelopes,
+  camelCase naming, and pagination on list endpoints.
+
+  Authentication: Bearer token required on all endpoints except health check.
+variables:
+  - key: baseUrl
+    value: 'http://localhost:3004'
+  - key: authToken
+    value: ''
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{authToken}}'
