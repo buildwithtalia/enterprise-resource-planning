@@ -360,7 +360,7 @@ items:
       - id: 32a87f03-6c0e-4a0c-8379-60698394f2d4
         name: Promote Employee
         url: '{{baseUrl}}/api/v2/hr/employees/:id/promote'
-        method: POST
+        method: PATCH
         headers:
           - key: Content-Type
             value: application/json
@@ -371,10 +371,10 @@ items:
           type: text
           content: |-
             {
-              "newPosition": "Engineering Manager",
-              "newSalary": 120000.00,
+              "title": "Engineering Manager",
+              "salaryIncrease": 10000.00,
               "effectiveDate": "2024-02-01",
-              "reason": "Outstanding performance and leadership"
+              "notes": "Outstanding performance and leadership"
             }
         type: http
       - id: 7b02815a-bacd-4ac8-ae13-7ab60f93e1d0
@@ -440,7 +440,7 @@ items:
     items:
       - id: af2c6f9f-0e3d-4235-8630-92d6f4101682
         name: Get All Payroll Records
-        url: '{{baseUrl}}/api/v2/payroll/records?page=1&limit=20'
+        url: '{{baseUrl}}/api/v2/payroll?page=1&limit=20'
         method: GET
         queryParams:
           - key: page
@@ -460,7 +460,7 @@ items:
         type: http
       - id: 3ab73a2e-c001-424b-90cc-24de9f30c7e1
         name: Get Payroll Record by ID
-        url: '{{baseUrl}}/api/v2/payroll/records/:id'
+        url: '{{baseUrl}}/api/v2/payroll/:id'
         method: GET
         pathVariables:
           - key: id
@@ -468,7 +468,7 @@ items:
         type: http
       - id: 03a796d8-d4e1-451d-baf3-754addc91e05
         name: Process Payroll
-        url: '{{baseUrl}}/api/v2/payroll/records/{{payrollRecordId}}/process'
+        url: '{{baseUrl}}/api/v2/payroll/process'
         method: POST
         headers:
           - key: Content-Type
@@ -486,7 +486,7 @@ items:
         type: http
       - id: 3c20f663-f786-40e9-9718-1790bd5c7bf6
         name: Process Batch Payroll
-        url: '{{baseUrl}}/api/v2/payroll/batch-process'
+        url: '{{baseUrl}}/api/v2/payroll/process-batch'
         method: POST
         headers:
           - key: Content-Type
@@ -502,7 +502,7 @@ items:
         type: http
       - id: 188953a5-db25-4463-a717-267cfee012c3
         name: Approve Payroll
-        url: '{{baseUrl}}/api/v2/payroll/records/:id/approve'
+        url: '{{baseUrl}}/api/v2/payroll/:id/approve'
         method: POST
         headers:
           - key: Content-Type
@@ -1295,7 +1295,7 @@ items:
     items:
       - id: fa1217db-45ab-4ce8-84db-d2262d7407e4
         name: Get All Inventory Items
-        url: 'http://localhost/api/v2/inventory/items'
+        url: '{{baseUrl}}/api/v2/inventory/items'
         method: GET
         queryParams:
           - key: category
@@ -1320,7 +1320,7 @@ items:
               "category": "Electronics",
               "quantity": 50,
               "unitPrice": 1200.00,
-              "reorderLevel": 10,
+              "reorderPoint": 10,
               "location": "Warehouse A, Shelf 12"
             }
         type: http
@@ -1353,7 +1353,7 @@ items:
         type: http
       - id: 75b6ee0b-9072-4fcb-ae21-b54bdf13eb0e
         name: Adjust Inventory Stock
-        url: '{{baseUrl}}/api/v2/inventory/items/:id/adjust'
+        url: '{{baseUrl}}/api/v2/inventory/stock/adjust'
         method: POST
         headers:
           - key: Content-Type

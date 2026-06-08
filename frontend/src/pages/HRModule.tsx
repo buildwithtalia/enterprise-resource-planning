@@ -18,7 +18,7 @@ interface Employee {
   lastName: string
   email: string
   phoneNumber: string
-  jobTitle: string
+  position: string
   salary: number
   hireDate: string
   terminationDate?: string
@@ -56,7 +56,7 @@ export default function HRModule() {
     lastName: '',
     email: '',
     phoneNumber: '',
-    jobTitle: '',
+    position: '',
     salary: '',
     hireDate: '',
     departmentId: '',
@@ -129,7 +129,7 @@ export default function HRModule() {
         lastName: '',
         email: '',
         phoneNumber: '',
-        jobTitle: '',
+        position: '',
         salary: '',
         hireDate: '',
         departmentId: '',
@@ -203,7 +203,7 @@ export default function HRModule() {
       lastName: employee.lastName,
       email: employee.email,
       phoneNumber: employee.phoneNumber,
-      jobTitle: employee.jobTitle,
+      position: employee.position,
       salary: employee.salary.toString(),
       hireDate: employee.hireDate.split('T')[0],
       departmentId: employee.department?.id || '',
@@ -217,11 +217,13 @@ export default function HRModule() {
 
     try {
       setLoading(true)
-      const updatedEmployee = await promoteEmployee(selectedEmployee.id, {
+      const result = await promoteEmployee(selectedEmployee.id, {
         title: promoteForm.title,
         salaryIncrease: parseFloat(promoteForm.salaryIncrease),
       })
-      setSuccess(`Employee promoted successfully! New title: ${updatedEmployee.jobTitle}, New salary: $${updatedEmployee.salary.toLocaleString()}`)
+      const newPosition = result.newPosition || promoteForm.title
+      const newSalary = selectedEmployee.salary + parseFloat(promoteForm.salaryIncrease || '0')
+      setSuccess(`Employee promoted successfully! New title: ${newPosition}, New salary: $${newSalary.toLocaleString()}`)
       setShowPromoteEmployee(false)
       setSelectedEmployee(null)
       setPromoteForm({
@@ -240,7 +242,7 @@ export default function HRModule() {
   const handleOpenPromoteModal = (employee: Employee) => {
     setSelectedEmployee(employee)
     setPromoteForm({
-      title: employee.jobTitle,
+      title: employee.position,
       salaryIncrease: '',
     })
     setShowPromoteEmployee(true)
@@ -442,14 +444,14 @@ export default function HRModule() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Job Title *
+                        Position *
                       </label>
                       <input
                         type="text"
                         required
-                        value={employeeForm.jobTitle}
+                        value={employeeForm.position}
                         onChange={(e) =>
-                          setEmployeeForm({ ...employeeForm, jobTitle: e.target.value })
+                          setEmployeeForm({ ...employeeForm, position: e.target.value })
                         }
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -581,13 +583,13 @@ export default function HRModule() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Job Title
+                        Position
                       </label>
                       <input
                         type="text"
-                        value={employeeForm.jobTitle}
+                        value={employeeForm.position}
                         onChange={(e) =>
-                          setEmployeeForm({ ...employeeForm, jobTitle: e.target.value })
+                          setEmployeeForm({ ...employeeForm, position: e.target.value })
                         }
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -678,7 +680,7 @@ export default function HRModule() {
                       <strong>Employee:</strong> {selectedEmployee.firstName} {selectedEmployee.lastName}
                     </p>
                     <p className="text-sm text-blue-800">
-                      <strong>Current Title:</strong> {selectedEmployee.jobTitle}
+                      <strong>Current Title:</strong> {selectedEmployee.position}
                     </p>
                     <p className="text-sm text-blue-800">
                       <strong>Current Salary:</strong> ${selectedEmployee.salary.toLocaleString()}
@@ -688,7 +690,7 @@ export default function HRModule() {
                   <form onSubmit={handlePromoteEmployee} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Job Title *
+                        New Position *
                       </label>
                       <input
                         type="text"
@@ -770,7 +772,7 @@ export default function HRModule() {
                         Email
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Job Title
+                        Position
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Department
@@ -795,7 +797,7 @@ export default function HRModule() {
                           <div className="text-sm text-gray-600">{employee.email}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{employee.jobTitle}</div>
+                          <div className="text-sm text-gray-900">{employee.position}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
@@ -889,8 +891,8 @@ export default function HRModule() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Job Title</label>
-                      <p className="text-base text-gray-900">{selectedEmployee.jobTitle}</p>
+                      <label className="text-sm font-medium text-gray-500">Position</label>
+                      <p className="text-base text-gray-900">{selectedEmployee.position}</p>
                     </div>
 
                     <div>
