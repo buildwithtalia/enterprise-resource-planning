@@ -17,7 +17,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
           </button>
 
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">ERP Monolith</h1>
+            <h1 className="text-2xl font-bold text-gray-900">ERP</h1>
             <p className="text-sm text-gray-500">Enterprise Resource Planning System</p>
           </div>
         </div>
@@ -29,7 +29,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
           </div>
 
           <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-            Monolithic Architecture
+            Microservices Architecture
           </div>
         </div>
       </div>
