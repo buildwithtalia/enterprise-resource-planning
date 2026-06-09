@@ -29,6 +29,174 @@ sentry_sdk.init(
 )
 
 from db import db, init_db
+import models  # noqa: F401  Register SQLAlchemy models with `db`
+from models import (
+    Budget,
+    Customer,
+    Department,
+    Employee,
+    InventoryItem,
+    Invoice,
+    PayrollRecord,
+    PurchaseOrder,
+    Shipment,
+    Transaction,
+    Vendor,
+)
+
+
+def _f(value):
+    """Cast Decimal/None to float for JSON."""
+    return float(value) if value is not None else 0
+
+
+def _date(value):
+    return value.isoformat() if value is not None else None
+
+
+def serialize_department(d):
+    return {
+        "id": d.id,
+        "name": d.name,
+        "description": d.description,
+        "managerId": d.manager_id,
+        "budget": _f(d.budget),
+        "budgetAllocated": _f(d.budget),
+        "location": d.location,
+    }
+
+
+def serialize_employee(e):
+    dept = db.session.get(Department, e.department_id) if e.department_id else None
+    return {
+        "id": e.id,
+        "firstName": e.first_name,
+        "lastName": e.last_name,
+        "email": e.email,
+        "departmentId": e.department_id,
+        "position": e.position,
+        "jobTitle": e.position,
+        "salary": _f(e.salary),
+        "hireDate": _date(e.hire_date),
+        "status": e.status,
+        "department": {"id": dept.id, "name": dept.name} if dept else None,
+    }
+
+
+def serialize_payroll(p):
+    return {
+        "id": p.id,
+        "employeeId": p.employee_id,
+        "payPeriodStart": _date(p.pay_period_start),
+        "payPeriodEnd": _date(p.pay_period_end),
+        "grossPay": _f(p.gross_pay),
+        "deductions": _f(p.deductions),
+        "taxWithheld": _f(p.tax_withheld),
+        "netPay": _f(p.net_pay),
+        "status": p.status,
+    }
+
+
+def serialize_transaction(t):
+    return {
+        "id": t.id,
+        "date": _date(t.date),
+        "description": t.description,
+        "amount": _f(t.amount),
+        "type": t.type,
+    }
+
+
+def serialize_budget(b):
+    return {
+        "id": b.id,
+        "departmentId": b.department_id,
+        "fiscalYear": b.fiscal_year,
+        "quarter": b.quarter,
+        "allocatedAmount": _f(b.allocated_amount),
+        "spentAmount": _f(b.spent_amount),
+        "remainingAmount": _f(b.allocated_amount) - _f(b.spent_amount),
+        "status": b.status,
+    }
+
+
+def serialize_customer(c):
+    return {
+        "id": c.id,
+        "name": c.name,
+        "email": c.email,
+        "phone": c.phone,
+        "address": c.address,
+        "creditLimit": _f(c.credit_limit),
+        "currentBalance": _f(c.current_balance),
+        "status": c.status,
+    }
+
+
+def serialize_invoice(i):
+    return {
+        "id": i.id,
+        "invoiceNumber": i.invoice_number,
+        "customerId": i.customer_id,
+        "issueDate": _date(i.issue_date),
+        "dueDate": _date(i.due_date),
+        "subtotal": _f(i.subtotal),
+        "taxAmount": _f(i.tax_amount),
+        "totalAmount": _f(i.total_amount),
+        "status": i.status,
+    }
+
+
+def serialize_vendor(v):
+    return {
+        "id": v.id,
+        "name": v.name,
+        "email": v.email,
+        "phone": v.phone,
+        "address": v.address,
+        "paymentTerms": v.payment_terms,
+        "status": v.status,
+    }
+
+
+def serialize_purchase_order(p):
+    return {
+        "id": p.id,
+        "poNumber": p.po_number,
+        "vendorId": p.vendor_id,
+        "orderDate": _date(p.order_date),
+        "expectedDeliveryDate": _date(p.expected_delivery_date),
+        "totalAmount": _f(p.total_amount),
+        "status": p.status,
+    }
+
+
+def serialize_inventory_item(i):
+    return {
+        "id": i.id,
+        "sku": i.sku,
+        "name": i.name,
+        "description": i.description,
+        "category": i.category,
+        "unitPrice": _f(i.unit_price),
+        "quantityOnHand": i.quantity_on_hand or 0,
+        "reorderPoint": i.reorder_point or 0,
+        "reorderQuantity": i.reorder_quantity or 0,
+    }
+
+
+def serialize_shipment(s):
+    return {
+        "id": s.id,
+        "trackingNumber": s.tracking_number,
+        "orderId": s.order_id,
+        "carrier": s.carrier,
+        "origin": s.origin,
+        "destination": s.destination,
+        "shipDate": _date(s.ship_date),
+        "estimatedDelivery": _date(s.estimated_delivery),
+        "status": s.status,
+    }
 
 # Import mock data service
 try:
@@ -202,7 +370,7 @@ def create_app() -> Flask:
             ],
             'characteristics': {
                 'deploymentUnit': 'Single monolithic application',
-                'database': 'Shared PostgreSQL database',
+                'database': 'Shared Neon (serverless PostgreSQL) database',
                 'coupling': 'Tight coupling between modules (direct service calls)',
                 'middleware': 'Shared authentication, logging, and error handling'
             }
@@ -211,92 +379,91 @@ def create_app() -> Flask:
     # Mock/Demo Data Endpoints (for when database is not configured)
     @app.route('/api/mock-stats', methods=['GET'])
     def mock_stats():
-        """Get mock statistics data"""
-        if mock_data and hasattr(mock_data, 'get_mock_stats'):
-            return jsonify(mock_data.get_mock_stats())
+        """Stats computed from the database."""
+        from sqlalchemy import func
+
+        debits = db.session.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(Transaction.type == 'debit').scalar()
+        credits = db.session.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(Transaction.type == 'credit').scalar()
+        low_stock = db.session.query(func.count(InventoryItem.id)).filter(InventoryItem.quantity_on_hand < InventoryItem.reorder_point).scalar()
+
         return jsonify({
-            'message': 'Mock data service not available',
-            'employees': 0,
-            'departments': 0,
-            'transactions': 0
+            'hr': {
+                'activeEmployees': Employee.query.filter_by(status='active').count(),
+                'totalDepartments': Department.query.count(),
+            },
+            'payroll': {
+                'paid': PayrollRecord.query.filter_by(status='paid').count(),
+                'pending': PayrollRecord.query.filter_by(status='pending').count(),
+            },
+            'accounting': {
+                'totalTransactions': Transaction.query.count(),
+                'totalDebits': _f(debits),
+                'totalCredits': _f(credits),
+            },
+            'finance': {
+                'activeBudgets': Budget.query.filter_by(status='active').count(),
+            },
+            'billing': {
+                'totalCustomers': Customer.query.count(),
+                'totalInvoices': Invoice.query.count(),
+            },
+            'procurement': {
+                'totalVendors': Vendor.query.count(),
+                'totalPurchaseOrders': PurchaseOrder.query.count(),
+            },
+            'supplyChain': {
+                'inTransit': Shipment.query.filter_by(status='in_transit').count(),
+                'delivered': Shipment.query.filter_by(status='delivered').count(),
+            },
+            'inventory': {
+                'totalItems': InventoryItem.query.count(),
+                'lowStock': low_stock or 0,
+            },
         })
     
     @app.route('/api/demo/employees', methods=['GET'])
     def demo_employees():
-        """Get demo employee data"""
-        if mock_data and hasattr(mock_data, 'mock_employees'):
-            return jsonify(mock_data.mock_employees)
-        return jsonify([])
-    
+        return jsonify([serialize_employee(e) for e in Employee.query.all()])
+
     @app.route('/api/demo/departments', methods=['GET'])
     def demo_departments():
-        """Get demo department data"""
-        if mock_data and hasattr(mock_data, 'mock_departments'):
-            return jsonify(mock_data.mock_departments)
-        return jsonify([])
-    
+        return jsonify([serialize_department(d) for d in Department.query.all()])
+
     @app.route('/api/demo/payroll', methods=['GET'])
     def demo_payroll():
-        """Get demo payroll records"""
-        if mock_data and hasattr(mock_data, 'mock_payroll_records'):
-            return jsonify(mock_data.mock_payroll_records)
-        return jsonify([])
-    
+        return jsonify([serialize_payroll(p) for p in PayrollRecord.query.all()])
+
     @app.route('/api/demo/transactions', methods=['GET'])
     def demo_transactions():
-        """Get demo transaction data"""
-        if mock_data and hasattr(mock_data, 'mock_transactions'):
-            return jsonify(mock_data.mock_transactions)
-        return jsonify([])
-    
+        return jsonify([serialize_transaction(t) for t in Transaction.query.all()])
+
     @app.route('/api/demo/budgets', methods=['GET'])
     def demo_budgets():
-        """Get demo budget data"""
-        if mock_data and hasattr(mock_data, 'mock_budgets'):
-            return jsonify(mock_data.mock_budgets)
-        return jsonify([])
-    
+        return jsonify([serialize_budget(b) for b in Budget.query.all()])
+
     @app.route('/api/demo/customers', methods=['GET'])
     def demo_customers():
-        """Get demo customer data"""
-        if mock_data and hasattr(mock_data, 'mock_customers'):
-            return jsonify(mock_data.mock_customers)
-        return jsonify([])
-    
+        return jsonify([serialize_customer(c) for c in Customer.query.all()])
+
     @app.route('/api/demo/invoices', methods=['GET'])
     def demo_invoices():
-        """Get demo invoice data"""
-        if mock_data and hasattr(mock_data, 'mock_invoices'):
-            return jsonify(mock_data.mock_invoices)
-        return jsonify([])
-    
+        return jsonify([serialize_invoice(i) for i in Invoice.query.all()])
+
     @app.route('/api/demo/vendors', methods=['GET'])
     def demo_vendors():
-        """Get demo vendor data"""
-        if mock_data and hasattr(mock_data, 'mock_vendors'):
-            return jsonify(mock_data.mock_vendors)
-        return jsonify([])
-    
+        return jsonify([serialize_vendor(v) for v in Vendor.query.all()])
+
     @app.route('/api/demo/purchase-orders', methods=['GET'])
     def demo_purchase_orders():
-        """Get demo purchase order data"""
-        if mock_data and hasattr(mock_data, 'mock_purchase_orders'):
-            return jsonify(mock_data.mock_purchase_orders)
-        return jsonify([])
-    
+        return jsonify([serialize_purchase_order(p) for p in PurchaseOrder.query.all()])
+
     @app.route('/api/demo/inventory', methods=['GET'])
     def demo_inventory():
-        """Get demo inventory items"""
-        if mock_data and hasattr(mock_data, 'mock_inventory_items'):
-            return jsonify(mock_data.mock_inventory_items)
-        return jsonify([])
-    
+        return jsonify([serialize_inventory_item(i) for i in InventoryItem.query.all()])
+
     @app.route('/api/demo/shipments', methods=['GET'])
     def demo_shipments():
-        """Get demo shipment data"""
-        if mock_data and hasattr(mock_data, 'mock_shipments'):
-            return jsonify(mock_data.mock_shipments)
-        return jsonify([])
+        return jsonify([serialize_shipment(s) for s in Shipment.query.all()])
     
     # ========================================
     # HUMAN RESOURCES ROUTES
@@ -321,19 +488,14 @@ def create_app() -> Flask:
     
     @app.route('/api/hr/employees', methods=['GET'])
     def get_all_employees():
-        """Get all employees"""
-        if mock_data and hasattr(mock_data, 'mock_employees'):
-            return jsonify(mock_data.mock_employees)
-        return jsonify([])
-    
+        return jsonify([serialize_employee(e) for e in Employee.query.all()])
+
     @app.route('/api/hr/employees/<employee_id>', methods=['GET'])
     def get_employee_by_id(employee_id):
-        """Get employee by ID"""
-        if mock_data and hasattr(mock_data, 'mock_employees'):
-            for emp in mock_data.mock_employees:
-                if emp.get('id') == employee_id:
-                    return jsonify(emp)
-        return jsonify({'error': 'Employee not found'}), 404
+        e = db.session.get(Employee, employee_id)
+        if e is None:
+            return jsonify({'error': 'Employee not found'}), 404
+        return jsonify(serialize_employee(e))
     
     @app.route('/api/hr/employees/<employee_id>', methods=['PUT'])
     def update_employee(employee_id):
@@ -394,19 +556,14 @@ def create_app() -> Flask:
     
     @app.route('/api/hr/departments', methods=['GET'])
     def get_all_departments():
-        """Get all departments"""
-        if mock_data and hasattr(mock_data, 'mock_departments'):
-            return jsonify(mock_data.mock_departments)
-        return jsonify([])
-    
+        return jsonify([serialize_department(d) for d in Department.query.all()])
+
     @app.route('/api/hr/departments/<department_id>', methods=['GET'])
     def get_department_by_id(department_id):
-        """Get department by ID"""
-        if mock_data and hasattr(mock_data, 'mock_departments'):
-            for dept in mock_data.mock_departments:
-                if dept.get('id') == department_id:
-                    return jsonify(dept)
-        return jsonify({'error': 'Department not found'}), 404
+        d = db.session.get(Department, department_id)
+        if d is None:
+            return jsonify({'error': 'Department not found'}), 404
+        return jsonify(serialize_department(d))
     
     @app.route('/api/hr/statistics', methods=['GET'])
     def get_hr_statistics():
@@ -478,10 +635,7 @@ def create_app() -> Flask:
     
     @app.route('/api/payroll', methods=['GET'])
     def get_all_payroll():
-        """Get all payroll records"""
-        if mock_data and hasattr(mock_data, 'mock_payroll_records'):
-            return jsonify(mock_data.mock_payroll_records)
-        return jsonify([])
+        return jsonify([serialize_payroll(p) for p in PayrollRecord.query.all()])
     
     @app.route('/api/payroll/<payroll_id>', methods=['GET'])
     def get_payroll_by_id(payroll_id):
@@ -527,10 +681,7 @@ def create_app() -> Flask:
     
     @app.route('/api/accounting/transactions', methods=['GET'])
     def get_all_transactions():
-        """Get all accounting transactions"""
-        if mock_data and hasattr(mock_data, 'mock_transactions'):
-            return jsonify(mock_data.mock_transactions)
-        return jsonify([])
+        return jsonify([serialize_transaction(t) for t in Transaction.query.all()])
     
     @app.route('/api/accounting/transactions/<transaction_id>', methods=['GET'])
     def get_transaction_by_id(transaction_id):
@@ -585,10 +736,7 @@ def create_app() -> Flask:
     
     @app.route('/api/finance/budgets', methods=['GET'])
     def get_all_budgets():
-        """Get all budgets"""
-        if mock_data and hasattr(mock_data, 'mock_budgets'):
-            return jsonify(mock_data.mock_budgets)
-        return jsonify([])
+        return jsonify([serialize_budget(b) for b in Budget.query.all()])
     
     @app.route('/api/finance/budgets/<budget_id>', methods=['GET'])
     def get_budget_by_id(budget_id):
@@ -669,10 +817,7 @@ def create_app() -> Flask:
     
     @app.route('/api/billing/customers', methods=['GET'])
     def get_all_customers():
-        """Get all customers"""
-        if mock_data and hasattr(mock_data, 'mock_customers'):
-            return jsonify(mock_data.mock_customers)
-        return jsonify([])
+        return jsonify([serialize_customer(c) for c in Customer.query.all()])
     
     @app.route('/api/billing/customers/<customer_id>', methods=['GET'])
     def get_customer_by_id(customer_id):
@@ -720,10 +865,7 @@ def create_app() -> Flask:
     
     @app.route('/api/billing/invoices', methods=['GET'])
     def get_all_invoices():
-        """Get all invoices"""
-        if mock_data and hasattr(mock_data, 'mock_invoices'):
-            return jsonify(mock_data.mock_invoices)
-        return jsonify([])
+        return jsonify([serialize_invoice(i) for i in Invoice.query.all()])
     
     @app.route('/api/billing/invoices/<invoice_id>', methods=['GET'])
     def get_invoice_by_id(invoice_id):
@@ -799,10 +941,7 @@ def create_app() -> Flask:
     
     @app.route('/api/procurement/vendors', methods=['GET'])
     def get_all_vendors():
-        """Get all vendors"""
-        if mock_data and hasattr(mock_data, 'mock_vendors'):
-            return jsonify(mock_data.mock_vendors)
-        return jsonify([])
+        return jsonify([serialize_vendor(v) for v in Vendor.query.all()])
     
     @app.route('/api/procurement/vendors/<vendor_id>', methods=['GET'])
     def get_vendor_by_id(vendor_id):
@@ -843,10 +982,7 @@ def create_app() -> Flask:
     
     @app.route('/api/procurement/purchase-orders', methods=['GET'])
     def get_all_purchase_orders():
-        """Get all purchase orders"""
-        if mock_data and hasattr(mock_data, 'mock_purchase_orders'):
-            return jsonify(mock_data.mock_purchase_orders)
-        return jsonify([])
+        return jsonify([serialize_purchase_order(p) for p in PurchaseOrder.query.all()])
     
     @app.route('/api/procurement/purchase-orders/<po_id>', methods=['GET'])
     def get_purchase_order_by_id(po_id):
@@ -922,10 +1058,7 @@ def create_app() -> Flask:
     
     @app.route('/api/supply-chain/shipments', methods=['GET'])
     def get_all_shipments():
-        """Get all shipments"""
-        if mock_data and hasattr(mock_data, 'mock_shipments'):
-            return jsonify(mock_data.mock_shipments)
-        return jsonify([])
+        return jsonify([serialize_shipment(s) for s in Shipment.query.all()])
     
     @app.route('/api/supply-chain/shipments/<shipment_id>', methods=['GET'])
     def get_shipment_by_id(shipment_id):
@@ -1053,10 +1186,7 @@ def create_app() -> Flask:
     
     @app.route('/api/inventory/items', methods=['GET'])
     def get_all_inventory_items():
-        """Get all inventory items"""
-        if mock_data and hasattr(mock_data, 'mock_inventory_items'):
-            return jsonify(mock_data.mock_inventory_items)
-        return jsonify([])
+        return jsonify([serialize_inventory_item(i) for i in InventoryItem.query.all()])
     
     @app.route('/api/inventory/items/<item_id>', methods=['GET'])
     def get_inventory_item_by_id(item_id):
