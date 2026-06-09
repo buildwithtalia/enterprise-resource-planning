@@ -1104,7 +1104,7 @@ def create_app() -> Flask:
     @app.route('/api/procurement/purchase-orders', methods=['POST'])
     def create_purchase_order():
         """Create a new purchase order and persist to DB."""
-        data = request.get_json()
+        data = request.get_json() or {}
         from datetime import date as date_type
         def _parse_date(s):
             if not s:
@@ -1113,19 +1113,36 @@ def create_app() -> Flask:
                 return date_type.fromisoformat(s)
             except ValueError:
                 return None
+
+        vendor_id = (data.get('vendorId') or '').strip()
+        if not vendor_id:
+            return jsonify({'error': 'vendorId is required'}), 400
+        if db.session.get(Vendor, vendor_id) is None:
+            return jsonify({'error': f'Vendor {vendor_id} not found'}), 400
+
+        order_date = _parse_date(data.get('orderDate'))
+        if order_date is None:
+            return jsonify({'error': 'orderDate is required (YYYY-MM-DD)'}), 400
+
         # Accept `total` (spec) or `totalAmount` (legacy)
         total = float(data.get('total') or data.get('totalAmount') or 0)
+
         po = PurchaseOrder(
             id='po-' + str(int(datetime.utcnow().timestamp() * 1000)),
             po_number='PO-' + str(int(datetime.utcnow().timestamp())),
-            vendor_id=data.get('vendorId'),
-            order_date=_parse_date(data.get('orderDate')),
+            vendor_id=vendor_id,
+            order_date=order_date,
             expected_delivery_date=_parse_date(data.get('expectedDeliveryDate')),
             total_amount=total,
             status='draft',
         )
-        db.session.add(po)
-        db.session.commit()
+        try:
+            db.session.add(po)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': 'Failed to create purchase order', 'message': str(e)}), 400
+
         result = serialize_purchase_order(po)
         result['items'] = data.get('items', [])
         return jsonify(result), 201
