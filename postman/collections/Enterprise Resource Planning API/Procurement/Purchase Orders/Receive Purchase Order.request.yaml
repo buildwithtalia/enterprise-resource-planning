@@ -1,4 +1,5 @@
 $kind: http-request
+name: Receive Purchase Order
 description: |-
   ## Purpose
 
@@ -235,8 +236,6 @@ description: |-
   - Damaged items should be documented with photos if possible
   - Partial receipts may keep order in 'partial' status until complete
   - Receipt date affects vendor on-time delivery metrics
-url: "{{baseUrl}}/api/procurement/purchase-orders/:id/receive"
+url: "{{baseUrl}}/api/procurement/purchase-orders//receive"
 method: POST
-pathVariables:
-  id: po-123
 order: 6000

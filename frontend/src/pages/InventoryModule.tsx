@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import * as Sentry from '@sentry/react'
 import ModulePage from '../components/ModulePage'
 import {
   getInventoryItems,
@@ -11,6 +12,17 @@ import {
   getInventoryValuation,
   getInventoryCategories,
 } from '../services/api'
+
+function extractApiErrorMessage(e: any, fallback: string): string {
+  const data = e?.response?.data
+  return (
+    data?.error?.message ||
+    data?.message ||
+    (typeof data?.error === 'string' ? data.error : undefined) ||
+    e?.message ||
+    fallback
+  )
+}
 
 interface InventoryItem {
   id: string
@@ -183,20 +195,35 @@ export default function InventoryModule() {
   const handleReceive = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selected) return
+    const itemId = selected.id
+    const poId = receiveForm.purchaseOrderId || undefined
     try {
       setLoading(true)
       await receiveStock({
-        itemId: selected.id,
+        itemId,
         quantity: parseInt(receiveForm.quantity, 10),
-        purchaseOrderId: receiveForm.purchaseOrderId || undefined,
+        purchaseOrderId: poId,
       })
       flash('Stock received.')
       setShowReceive(false)
       setSelected(null)
       setReceiveForm({ quantity: '', purchaseOrderId: '' })
       loadAll()
-    } catch (err: any) { setError(err.response?.data?.message || 'Failed to receive stock') }
-    finally { setLoading(false) }
+    } catch (err: any) {
+      const status = err?.response?.status
+      const detail = extractApiErrorMessage(err, 'Failed to receive stock')
+      // A 502 here means the upstream procurement service rejected the call —
+      // surface that explicitly so the user can tell it isn't a local error.
+      const downstreamHint =
+        status === 502 ? ' (procurement service rejected the request)' : ''
+      setError(`Receive stock failed${status ? ` (HTTP ${status})` : ''}${downstreamHint}: ${detail}`)
+      Sentry.captureException(err, {
+        tags: { module: 'inventory', action: 'ReceiveStock' },
+        extra: { itemId, purchaseOrderId: poId, httpStatus: status, responseBody: err?.response?.data },
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const filtered = categoryFilter ? items.filter((i) => i.category === categoryFilter) : items

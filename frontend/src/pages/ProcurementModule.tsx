@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import * as Sentry from '@sentry/react'
 import ModulePage from '../components/ModulePage'
 import {
   getVendors,
@@ -13,6 +14,17 @@ import {
   receivePurchaseOrder,
   cancelPurchaseOrder,
 } from '../services/api'
+
+function extractApiErrorMessage(e: any, fallback: string): string {
+  const data = e?.response?.data
+  return (
+    data?.error?.message ||
+    data?.message ||
+    data?.error ||
+    e?.message ||
+    fallback
+  )
+}
 
 interface Vendor {
   id: string
@@ -128,10 +140,28 @@ export default function ProcurementModule() {
     catch (e: any) { setError(e.response?.data?.message || 'Failed to load PO') }
   }
 
-  const doPOAction = async (id: string, fn: (id: string) => Promise<any>, msg: string) => {
-    try { setLoading(true); await fn(id); flash(msg); loadPOs() }
-    catch (e: any) { setError(e.response?.data?.message || 'Action failed') }
-    finally { setLoading(false) }
+  const doPOAction = async (
+    id: string,
+    fn: (id: string) => Promise<any>,
+    msg: string,
+    actionLabel: string,
+  ) => {
+    try {
+      setLoading(true)
+      await fn(id)
+      flash(msg)
+      loadPOs()
+    } catch (e: any) {
+      const status = e?.response?.status
+      const detail = extractApiErrorMessage(e, 'Action failed')
+      setError(`${actionLabel} failed${status ? ` (HTTP ${status})` : ''}: ${detail}`)
+      Sentry.captureException(e, {
+        tags: { module: 'procurement', action: actionLabel },
+        extra: { poId: id, httpStatus: status, responseBody: e?.response?.data },
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const filteredPOs = statusFilter ? pos.filter((p) => p.status === statusFilter) : pos
@@ -379,16 +409,16 @@ export default function ProcurementModule() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                           <button onClick={() => handleViewPO(p.id)} className="text-blue-600 hover:text-blue-900">View</button>
                           {(p.status === 'draft' || p.status === 'pending_approval') && (
-                            <button onClick={() => doPOAction(p.id, approvePurchaseOrder, 'PO approved.')} className="text-green-600 hover:text-green-900">Approve</button>
+                            <button onClick={() => doPOAction(p.id, approvePurchaseOrder, 'PO approved.', 'Approve')} className="text-green-600 hover:text-green-900">Approve</button>
                           )}
                           {p.status === 'approved' && (
-                            <button onClick={() => doPOAction(p.id, placePurchaseOrder, 'PO placed.')} className="text-indigo-600 hover:text-indigo-900">Place</button>
+                            <button onClick={() => doPOAction(p.id, placePurchaseOrder, 'PO placed.', 'Place')} className="text-indigo-600 hover:text-indigo-900">Place</button>
                           )}
                           {p.status === 'placed' && (
-                            <button onClick={() => doPOAction(p.id, receivePurchaseOrder, 'PO received.')} className="text-green-600 hover:text-green-900">Receive</button>
+                            <button onClick={() => doPOAction(p.id, receivePurchaseOrder, 'PO received.', 'Receive')} className="text-green-600 hover:text-green-900">Receive</button>
                           )}
                           {p.status !== 'received' && p.status !== 'cancelled' && (
-                            <button onClick={() => { if (confirm('Cancel this PO?')) doPOAction(p.id, cancelPurchaseOrder, 'PO cancelled.') }} className="text-red-600 hover:text-red-900">Cancel</button>
+                            <button onClick={() => { if (confirm('Cancel this PO?')) doPOAction(p.id, cancelPurchaseOrder, 'PO cancelled.', 'Cancel') }} className="text-red-600 hover:text-red-900">Cancel</button>
                           )}
                         </td>
                       </tr>

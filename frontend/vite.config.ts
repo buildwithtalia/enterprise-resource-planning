@@ -7,6 +7,12 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      // Procurement traffic goes to the split-out erp-procurement microservice
+      // on port 3016. Must come before '/api' so the more specific prefix wins.
+      '/api/procurement': {
+        target: 'http://localhost:3016',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://localhost:3004',
         changeOrigin: true,
@@ -14,7 +20,7 @@ export default defineConfig({
       '/health': {
         target: 'http://localhost:3004',
         changeOrigin: true,
-      }
-    }
-  }
+      },
+    },
+  },
 })

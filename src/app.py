@@ -1479,14 +1479,67 @@ def create_app() -> Flask:
     
     @app.route('/api/inventory/stock/receive', methods=['POST'])
     def receive_stock():
-        """Receive stock from purchase order"""
-        data = request.get_json()
+        """Receive stock against a purchase order.
+
+        Cross-service coupling: if a purchaseOrderId is supplied, this calls
+        the procurement service's /receive endpoint to mark the PO received.
+        The success of the inventory write depends on that downstream call —
+        if procurement returns non-2xx, this endpoint surfaces the failure
+        instead of silently accepting goods that procurement disowns.
+        """
+        import requests as http
+        data = request.get_json() or {}
+        item_id = data.get('itemId')
+        quantity = data.get('quantity')
+        po_id = data.get('purchaseOrderId')
+
+        if not item_id or quantity is None:
+            return jsonify({'error': 'itemId and quantity are required'}), 400
+
+        if po_id:
+            procurement_url = os.environ.get(
+                'PROCUREMENT_SERVICE_URL',
+                'http://erp-procurement:3016',
+            )
+            try:
+                resp = http.post(
+                    f'{procurement_url}/api/procurement/purchase-orders/{po_id}/receive',
+                    timeout=5,
+                )
+            except Exception as e:
+                return jsonify({
+                    'error': 'Procurement service unreachable',
+                    'message': str(e),
+                }), 502
+            if resp.status_code >= 400:
+                try:
+                    body = resp.json()
+                except Exception:
+                    body = {'message': resp.text}
+                return jsonify({
+                    'error': 'Procurement rejected the receive',
+                    'procurementStatus': resp.status_code,
+                    'procurementBody': body,
+                }), 502
+
+        item = db.session.get(InventoryItem, item_id) if item_id else None
+        if item is None:
+            return jsonify({'error': f'Inventory item {item_id} not found'}), 404
+
+        try:
+            item.quantity_on_hand = (item.quantity_on_hand or 0) + int(quantity)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': 'Failed to update inventory', 'message': str(e)}), 400
+
         return jsonify({
-            'itemId': data.get('itemId'),
-            'quantity': data.get('quantity'),
-            'purchaseOrderId': data.get('purchaseOrderId'),
+            'itemId': item_id,
+            'quantity': quantity,
+            'newQuantityOnHand': item.quantity_on_hand,
+            'purchaseOrderId': po_id,
             'receivedAt': datetime.utcnow().isoformat() + 'Z',
-            'message': 'Stock received successfully'
+            'message': 'Stock received successfully',
         })
     
     @app.route('/api/inventory/low-stock', methods=['GET'])

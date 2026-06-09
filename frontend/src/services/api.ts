@@ -486,11 +486,30 @@ function normalisePO(p: any) {
   }
 }
 
+// Some procurement traffic is served by the erp-procurement microservice,
+// which wraps lists as {success, data:{items, pagination}} (one level deeper
+// than the monolith). This helper drills through whichever envelope shape
+// the upstream chose.
+function unwrapList(payload: any, namedKeys: string[] = []): any[] {
+  if (Array.isArray(payload)) return payload
+  if (payload && typeof payload === 'object') {
+    if (Array.isArray(payload.data)) return payload.data
+    if (Array.isArray(payload.items)) return payload.items
+    if (payload.data && typeof payload.data === 'object') {
+      if (Array.isArray(payload.data.items)) return payload.data.items
+      if (Array.isArray(payload.data.data)) return payload.data.data
+    }
+    for (const k of namedKeys) {
+      if (Array.isArray(payload[k])) return payload[k]
+      if (payload.data && Array.isArray(payload.data[k])) return payload.data[k]
+    }
+  }
+  return []
+}
+
 export const getVendors = async () => {
   const response = await api.get('/api/procurement/vendors')
-  const raw = response.data?.vendors ?? response.data?.data ?? response.data
-  const list = Array.isArray(raw) ? raw : []
-  return list.map(normaliseVendor)
+  return unwrapList(response.data, ['vendors']).map(normaliseVendor)
 }
 
 export const getVendor = async (id: string) => {
@@ -512,9 +531,7 @@ export const getVendorPerformance = async (id: string) => {
 
 export const getPurchaseOrders = async () => {
   const response = await api.get('/api/procurement/purchase-orders')
-  const raw = response.data?.data ?? response.data?.purchaseOrders ?? response.data
-  const list = Array.isArray(raw) ? raw : []
-  return list.map(normalisePO)
+  return unwrapList(response.data, ['purchaseOrders']).map(normalisePO)
 }
 
 export const getPurchaseOrder = async (id: string) => {
