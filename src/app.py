@@ -1518,11 +1518,21 @@ def create_app() -> Flask:
                 body = resp.json()
             except Exception:
                 body = {'message': resp.text}
+            # Surface a human-readable reason instead of a generic
+            # "Procurement rejected" so the UI banner is actionable.
+            upstream_msg = (
+                (body.get('error') or {}).get('message')
+                if isinstance(body.get('error'), dict)
+                else body.get('error') or body.get('message')
+            ) or 'Procurement rejected the receive'
+            # Pass client errors through as client errors (4xx) so the user
+            # knows the input was bad; treat upstream server errors as 502.
+            propagated_status = resp.status_code if 400 <= resp.status_code < 500 else 502
             return jsonify({
-                'error': 'Procurement rejected the receive',
+                'error': upstream_msg,
                 'procurementStatus': resp.status_code,
                 'procurementBody': body,
-            }), 502
+            }), propagated_status
 
         item = db.session.get(InventoryItem, item_id) if item_id else None
         if item is None:
