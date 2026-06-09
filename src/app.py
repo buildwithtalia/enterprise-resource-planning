@@ -1493,34 +1493,35 @@ def create_app() -> Flask:
         quantity = data.get('quantity')
         po_id = data.get('purchaseOrderId')
 
-        if not item_id or quantity is None:
-            return jsonify({'error': 'itemId and quantity are required'}), 400
+        if not item_id or quantity is None or not po_id:
+            return jsonify({
+                'error': 'itemId, quantity, and purchaseOrderId are required',
+            }), 400
 
-        if po_id:
-            procurement_url = os.environ.get(
-                'PROCUREMENT_SERVICE_URL',
-                'http://erp-procurement:3016',
+        procurement_url = os.environ.get(
+            'PROCUREMENT_SERVICE_URL',
+            'http://erp-procurement:3016',
+        )
+        try:
+            resp = http.post(
+                f'{procurement_url}/api/procurement/purchase-orders/{po_id}/receive',
+                timeout=5,
             )
+        except Exception as e:
+            return jsonify({
+                'error': 'Procurement service unreachable',
+                'message': str(e),
+            }), 502
+        if resp.status_code >= 400:
             try:
-                resp = http.post(
-                    f'{procurement_url}/api/procurement/purchase-orders/{po_id}/receive',
-                    timeout=5,
-                )
-            except Exception as e:
-                return jsonify({
-                    'error': 'Procurement service unreachable',
-                    'message': str(e),
-                }), 502
-            if resp.status_code >= 400:
-                try:
-                    body = resp.json()
-                except Exception:
-                    body = {'message': resp.text}
-                return jsonify({
-                    'error': 'Procurement rejected the receive',
-                    'procurementStatus': resp.status_code,
-                    'procurementBody': body,
-                }), 502
+                body = resp.json()
+            except Exception:
+                body = {'message': resp.text}
+            return jsonify({
+                'error': 'Procurement rejected the receive',
+                'procurementStatus': resp.status_code,
+                'procurementBody': body,
+            }), 502
 
         item = db.session.get(InventoryItem, item_id) if item_id else None
         if item is None:
