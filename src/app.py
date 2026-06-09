@@ -11,6 +11,23 @@ import logging
 import os
 from typing import Dict, Any
 
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
+# Initialize Sentry before importing local modules so error capture covers
+# import-time failures. The DSN here is the default; SENTRY_DSN env var
+# overrides it (e.g. when running in Docker / per-environment).
+sentry_sdk.init(
+    dsn=os.environ.get(
+        "SENTRY_DSN",
+        "https://8e235c3ee781e56cd87e8b39357a21ec@o4511536666116096.ingest.us.sentry.io/4511536671883264",
+    ),
+    integrations=[FlaskIntegration()],
+    traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "1.0")),
+    send_default_pii=False,
+    environment=os.environ.get("FLASK_ENV", "development"),
+)
+
 from db import db, init_db
 
 # Import mock data service
@@ -103,6 +120,11 @@ def create_app() -> Flask:
             'service': 'ERP Monolith',
             'timestamp': datetime.utcnow().isoformat() + 'Z'
         })
+
+    @app.route('/debug-sentry', methods=['GET'])
+    def debug_sentry():
+        """Raise an exception so Sentry can capture it. Used to verify wiring."""
+        raise RuntimeError("Sentry debug trigger from /debug-sentry")
 
     @app.route('/health/db', methods=['GET'])
     def health_check_db():
