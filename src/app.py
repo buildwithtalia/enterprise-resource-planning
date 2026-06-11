@@ -89,9 +89,11 @@ def serialize_employee(e):
 
 
 def serialize_payroll(p):
+    emp = db.session.get(Employee, p.employee_id) if p.employee_id else None
     return {
         "id": p.id,
         "employeeId": p.employee_id,
+        "employeeName": f"{emp.first_name} {emp.last_name}" if emp else None,
         "payPeriodStart": _date(p.pay_period_start),
         "payPeriodEnd": _date(p.pay_period_end),
         "grossPay": _f(p.gross_pay),
@@ -139,15 +141,22 @@ def serialize_customer(c):
 
 
 def serialize_invoice(i):
+    cust = db.session.get(Customer, i.customer_id) if i.customer_id else None
+    total = _f(i.total_amount)
+    # Payments are not persisted yet, so paidAmount is always 0 and the
+    # full total remains due.
     return {
         "id": i.id,
         "invoiceNumber": i.invoice_number,
         "customerId": i.customer_id,
+        "customerName": cust.name if cust else None,
         "issueDate": _date(i.issue_date),
         "dueDate": _date(i.due_date),
         "subtotal": _f(i.subtotal),
         "taxAmount": _f(i.tax_amount),
-        "totalAmount": _f(i.total_amount),
+        "totalAmount": total,
+        "paidAmount": 0,
+        "balanceDue": total,
         "status": i.status,
     }
 
@@ -193,6 +202,20 @@ def serialize_inventory_item(i):
         "availableQuantity": qty,
         "reorderPoint": i.reorder_point or 0,
         "reorderQuantity": i.reorder_quantity or 0,
+        # Status is derived: the model does not persist a status column
+        "status": "out_of_stock" if qty <= 0 else "active",
+    }
+
+
+def v1_pagination(total_items):
+    """Pagination metadata for v1 list endpoints (single-page, unpaginated)."""
+    return {
+        "currentPage": 1,
+        "totalPages": 1,
+        "totalItems": total_items,
+        "itemsPerPage": total_items,
+        "hasNextPage": False,
+        "hasPreviousPage": False,
     }
 
 
@@ -212,13 +235,6 @@ def serialize_shipment(s):
         "estimatedDelivery": _date(s.estimated_delivery),
         "status": s.status,
     }
-
-# Import mock data service
-try:
-    from services import mock_data
-except ImportError:
-    # Fallback if mock_data module doesn't exist yet
-    mock_data = None
 
 # Import all module routes - MONOLITHIC STRUCTURE
 try:
@@ -261,9 +277,6 @@ try:
 except ImportError:
     inventory_routes = None
 
-
-# In-memory storage for created shipments
-created_shipments = []
 
 # Configure logging for request logger middleware
 logging.basicConfig(
@@ -691,9 +704,20 @@ def create_app() -> Flask:
         return jsonify(serialize_payroll(record)), 201
     
     def _do_process_batch_payroll():
-        """Shared logic for both batch-process URL variants."""
+        """Shared logic for both batch-process URL variants.
+
+        Contract input: payPeriodStart, payPeriodEnd, optional departmentId and
+        excludeEmployees — payroll runs for all active employees. `employeeIds`
+        is also accepted as a legacy way to target specific employees.
+        """
         data = request.get_json()
-        employee_ids = data.get('employeeIds', [])
+        employee_ids = data.get('employeeIds')
+        if employee_ids is None:
+            query = Employee.query.filter_by(status='active')
+            if data.get('departmentId'):
+                query = query.filter_by(department_id=data['departmentId'])
+            exclude = set(data.get('excludeEmployees', []))
+            employee_ids = [e.id for e in query.all() if e.id not in exclude]
         pay_period_start = data.get('payPeriodStart')
         pay_period_end = data.get('payPeriodEnd')
         from datetime import date as date_type
@@ -934,7 +958,7 @@ def create_app() -> Flask:
         if status_filter:
             query = query.filter_by(status=status_filter)
         customers = [serialize_customer(c) for c in query.all()]
-        return jsonify({'customers': customers, 'pagination': None})
+        return jsonify({'customers': customers, 'pagination': v1_pagination(len(customers))})
 
     @app.route('/api/billing/customers/<customer_id>', methods=['GET'])
     def get_customer_by_id(customer_id):
@@ -996,13 +1020,20 @@ def create_app() -> Flask:
         db.session.add(inv)
         db.session.commit()
         result = serialize_invoice(inv)
-        result['balanceDue'] = total_amount
         result['items'] = data.get('items', [])
         return jsonify(result), 201
     
     @app.route('/api/billing/invoices', methods=['GET'])
     def get_all_invoices():
-        return jsonify([serialize_invoice(i) for i in Invoice.query.all()])
+        # Optional status/customerId filters per the contract
+        query = Invoice.query
+        status_filter = request.args.get('status')
+        if status_filter:
+            query = query.filter_by(status=status_filter)
+        customer_filter = request.args.get('customerId')
+        if customer_filter:
+            query = query.filter_by(customer_id=customer_filter)
+        return jsonify([serialize_invoice(i) for i in query.all()])
     
     @app.route('/api/billing/invoices/<invoice_id>', methods=['GET'])
     def get_invoice_by_id(invoice_id):
@@ -1155,7 +1186,7 @@ def create_app() -> Flask:
         if status_filter:
             query = query.filter_by(status=status_filter)
         pos = [serialize_purchase_order(p) for p in query.all()]
-        return jsonify({'data': pos, 'pagination': None})
+        return jsonify({'data': pos, 'pagination': v1_pagination(len(pos))})
 
     @app.route('/api/procurement/purchase-orders/<po_id>', methods=['GET'])
     def get_purchase_order_by_id(po_id):
@@ -1222,19 +1253,36 @@ def create_app() -> Flask:
     # Shipment Management
     @app.route('/api/supply-chain/shipments', methods=['POST'])
     def create_shipment():
-        """Create a new shipment"""
+        """Create a new shipment and persist to DB.
+
+        Contract requires a client-supplied trackingNumber and uses
+        `estimatedDeliveryDate`; `estimatedDelivery` is accepted as legacy.
+        """
         data = request.get_json()
-        return jsonify({
-            'id': 'ship-' + str(datetime.utcnow().timestamp()),
-            'trackingNumber': 'TRK-' + str(int(datetime.utcnow().timestamp())),
-            'orderId': data.get('orderId'),
-            'carrier': data.get('carrier'),
-            'origin': data.get('origin'),
-            'destination': data.get('destination'),
-            'shipDate': data.get('shipDate'),
-            'estimatedDelivery': data.get('estimatedDelivery'),
-            'status': 'pending'
-        }), 201
+        from datetime import date as date_type
+
+        def _parse_date(s):
+            if not s:
+                return None
+            try:
+                return date_type.fromisoformat(s)
+            except ValueError:
+                return None
+
+        shipment = Shipment(
+            id='ship-' + str(int(datetime.utcnow().timestamp() * 1000)),
+            tracking_number=data.get('trackingNumber') or 'TRK-' + str(int(datetime.utcnow().timestamp())),
+            order_id=data.get('orderId'),
+            carrier=data.get('carrier'),
+            origin=data.get('origin'),
+            destination=data.get('destination'),
+            ship_date=_parse_date(data.get('shipDate')),
+            estimated_delivery=_parse_date(data.get('estimatedDeliveryDate') or data.get('estimatedDelivery')),
+            status='pending',
+        )
+        db.session.add(shipment)
+        db.session.commit()
+        return jsonify(serialize_shipment(shipment)), 201
     
     @app.route('/api/supply-chain/shipments', methods=['GET'])
     def get_all_shipments():
@@ -1247,7 +1295,7 @@ def create_app() -> Flask:
         if carrier_filter:
             query = query.filter_by(carrier=carrier_filter)
         shipments = [serialize_shipment(s) for s in query.all()]
-        return jsonify({'shipments': shipments, 'pagination': None})
+        return jsonify({'shipments': shipments, 'pagination': v1_pagination(len(shipments))})
     
     @app.route('/api/supply-chain/shipments/<shipment_id>', methods=['GET'])
     def get_shipment_by_id(shipment_id):
@@ -1383,7 +1431,19 @@ def create_app() -> Flask:
     
     @app.route('/api/inventory/items', methods=['GET'])
     def get_all_inventory_items():
-        return jsonify([serialize_inventory_item(i) for i in InventoryItem.query.all()])
+        # Optional category/status/lowStock filters per the contract
+        query = InventoryItem.query
+        category_filter = request.args.get('category')
+        if category_filter:
+            query = query.filter_by(category=category_filter)
+        if request.args.get('lowStock', '').lower() == 'true':
+            query = query.filter(InventoryItem.quantity_on_hand < InventoryItem.reorder_point)
+        items = [serialize_inventory_item(i) for i in query.all()]
+        status_filter = request.args.get('status')
+        if status_filter:
+            # Status is derived in the serializer, so filter post-serialization
+            items = [i for i in items if i['status'] == status_filter]
+        return jsonify(items)
     
     @app.route('/api/inventory/items/<item_id>', methods=['GET'])
     def get_inventory_item_by_id(item_id):
@@ -1623,51 +1683,123 @@ def create_app() -> Flask:
             error_response['error']['details'] = details
         return jsonify(error_response), status_code
 
-    def convert_to_camel_case(data):
-        """Convert snake_case keys to camelCase"""
-        if isinstance(data, dict):
-            result = {}
-            for key, value in data.items():
-                # Convert snake_case to camelCase
-                camel_key = key
-                if '_' in key:
-                    parts = key.split('_')
-                    camel_key = parts[0] + ''.join(word.capitalize() for word in parts[1:])
-                result[camel_key] = convert_to_camel_case(value) if isinstance(value, (dict, list)) else value
-            return result
-        elif isinstance(data, list):
-            return [convert_to_camel_case(item) for item in data]
-        else:
-            return data
+    def v2_page_args():
+        """Read pagination query params per the v2 contract (default limit 20, max 100)."""
+        try:
+            page = int(request.args.get('page', 1))
+        except (TypeError, ValueError):
+            page = 1
+        try:
+            limit = int(request.args.get('limit', 20))
+        except (TypeError, ValueError):
+            limit = 20
+        return max(page, 1), min(max(limit, 1), 100)
 
-    def paginate_list(items, page, limit):
-        """Paginate a list and return data with pagination metadata"""
+    def v2_list_response(items, page, limit):
+        """V2 list envelope: `data` is the item array with `pagination` as a sibling."""
         total_items = len(items)
         total_pages = (total_items + limit - 1) // limit if limit > 0 else 1
-        start_index = (page - 1) * limit
-        end_index = start_index + limit
-
-        paginated_items = items[start_index:end_index]
-
-        return {
-            'items': paginated_items,
+        start = (page - 1) * limit
+        return jsonify({
+            'success': True,
+            'data': items[start:start + limit],
             'pagination': {
                 'page': page,
                 'limit': limit,
                 'totalPages': total_pages,
                 'totalItems': total_items,
                 'hasNextPage': page < total_pages,
-                'hasPreviousPage': page > 1
-            }
+                'hasPreviousPage': page > 1,
+            },
+            'timestamp': datetime.utcnow().isoformat() + 'Z',
+        })
+
+    # The DB stores snake_case status values (shared with v1); the v2 contract
+    # exposes camelCase enums.
+    _V2_STATUS_TO_CAMEL = {
+        'on_leave': 'onLeave',
+        'in_transit': 'inTransit',
+        'out_of_stock': 'outOfStock',
+        'pending_approval': 'pendingApproval',
+    }
+    _V2_STATUS_TO_SNAKE = {v: k for k, v in _V2_STATUS_TO_CAMEL.items()}
+
+    def _v2_status(value):
+        return _V2_STATUS_TO_CAMEL.get(value, value)
+
+    def _v2_status_to_db(value):
+        return _V2_STATUS_TO_SNAKE.get(value, value)
+
+    def _addr_to_db(value):
+        """Shipment origin/destination: contract uses address objects, DB a string."""
+        if isinstance(value, dict):
+            import json
+            return json.dumps(value)
+        return value
+
+    def _addr_from_db(value):
+        if value and isinstance(value, str) and value.startswith('{'):
+            import json
+            try:
+                return json.loads(value)
+            except ValueError:
+                return value
+        return value
+
+    def serialize_employee_v2(e):
+        dept = db.session.get(Department, e.department_id) if e.department_id else None
+        return {
+            'id': e.id,
+            'employeeId': e.id,
+            'firstName': e.first_name,
+            'lastName': e.last_name,
+            'email': e.email,
+            'department': dept.name if dept else None,
+            'departmentId': e.department_id,
+            'position': e.position,
+            'salary': _f(e.salary),
+            'hireDate': _date(e.hire_date),
+            'status': _v2_status(e.status),
         }
+
+    def serialize_po_v2(p):
+        return {
+            'id': p.id,
+            'poNumber': p.po_number,
+            'vendorId': p.vendor_id,
+            'orderDate': _date(p.order_date),
+            'expectedDeliveryDate': _date(p.expected_delivery_date),
+            'total': _f(p.total_amount),
+            'status': _v2_status(p.status),
+        }
+
+    def serialize_shipment_v2(s):
+        return {
+            'shipmentId': s.id,
+            'id': s.id,
+            'orderId': s.order_id,
+            'trackingNumber': s.tracking_number,
+            'carrier': s.carrier,
+            'status': _v2_status(s.status),
+            'origin': _addr_from_db(s.origin),
+            'destination': _addr_from_db(s.destination),
+            'shipDate': _date(s.ship_date),
+            'estimatedDeliveryDate': _date(s.estimated_delivery),
+        }
+
+    def serialize_inventory_item_v2(i):
+        item = serialize_inventory_item(i)
+        item['status'] = _v2_status(item['status'])
+        return item
 
     # ========================================
     # V2 API ROUTES - BREAKING CHANGES
     # ========================================
     # All v2 routes use /api/v2/ prefix
     # - Consistent response envelope: {success, data, timestamp}
-    # - camelCase property names instead of snake_case
-    # - Pagination on all list endpoints
+    # - List responses: data is the array, pagination is a sibling key
+    # - camelCase property names (including status enums) instead of snake_case
+    # - Pagination on all list endpoints (default limit 20, max 100)
     # - New error response structure
     # - DELETE endpoint for employees (204 No Content)
     # - Batch operations return 202 Accepted
@@ -1676,306 +1808,371 @@ def create_app() -> Flask:
     # ========================================
     # V2 HUMAN RESOURCES ROUTES
     # ========================================
-    
+
     @app.route('/api/v2/hr/employees', methods=['POST'])
     def v2_create_employee():
         """V2: Create a new employee"""
         try:
             data = request.get_json()
-            employee = {
-                'id': 'emp-' + str(datetime.utcnow().timestamp()),
-                'firstName': data.get('firstName'),
-                'lastName': data.get('lastName'),
-                'email': data.get('email'),
-                'departmentId': data.get('departmentId'),
-                'position': data.get('position'),
-                'salary': data.get('salary'),
-                'hireDate': data.get('hireDate'),
-                'status': 'active'
-            }
-            return v2_success_response(employee, 201)
+            from datetime import date as date_type
+            hire_date = None
+            if data.get('hireDate'):
+                try:
+                    hire_date = date_type.fromisoformat(data['hireDate'])
+                except ValueError:
+                    pass
+            emp = Employee(
+                id='emp-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                first_name=data.get('firstName', ''),
+                last_name=data.get('lastName', ''),
+                email=data.get('email', ''),
+                department_id=data.get('departmentId'),
+                position=data.get('position'),
+                salary=data.get('salary'),
+                hire_date=hire_date,
+                status='active',
+            )
+            db.session.add(emp)
+            db.session.commit()
+            return v2_success_response(serialize_employee_v2(emp), 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('EMPLOYEE_CREATE_ERROR', 'Failed to create employee', str(e), 400)
-    
+
     @app.route('/api/v2/hr/employees', methods=['GET'])
     def v2_get_all_employees():
-        """V2: Get all employees with pagination"""
+        """V2: Get all employees with pagination and status/departmentId filters"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            employees = []
-            if mock_data and hasattr(mock_data, 'mock_employees'):
-                employees = [convert_to_camel_case(emp) for emp in mock_data.mock_employees]
-            
-            paginated = paginate_list(employees, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            query = Employee.query
+            status_filter = request.args.get('status')
+            if status_filter:
+                query = query.filter_by(status=_v2_status_to_db(status_filter))
+            department_filter = request.args.get('departmentId')
+            if department_filter:
+                query = query.filter_by(department_id=department_filter)
+            employees = [serialize_employee_v2(e) for e in query.all()]
+            return v2_list_response(employees, page, limit)
         except Exception as e:
             return v2_error_response('EMPLOYEES_FETCH_ERROR', 'Failed to fetch employees', str(e), 500)
-    
+
     @app.route('/api/v2/hr/employees/<employee_id>', methods=['GET'])
     def v2_get_employee_by_id(employee_id):
         """V2: Get employee by ID"""
         try:
-            if mock_data and hasattr(mock_data, 'mock_employees'):
-                for emp in mock_data.mock_employees:
-                    if emp.get('id') == employee_id:
-                        return v2_success_response(convert_to_camel_case(emp))
-            return v2_error_response('EMPLOYEE_NOT_FOUND', f'Employee with ID {employee_id} not found', None, 404)
+            e = db.session.get(Employee, employee_id)
+            if e is None:
+                return v2_error_response('EMPLOYEE_NOT_FOUND', f'Employee with ID {employee_id} not found', None, 404)
+            return v2_success_response(serialize_employee_v2(e))
         except Exception as e:
             return v2_error_response('EMPLOYEE_FETCH_ERROR', 'Failed to fetch employee', str(e), 500)
-    
+
     @app.route('/api/v2/hr/employees/<employee_id>', methods=['PUT'])
     def v2_update_employee(employee_id):
         """V2: Update employee information"""
         try:
+            e = db.session.get(Employee, employee_id)
+            if e is None:
+                return v2_error_response('EMPLOYEE_NOT_FOUND', f'Employee with ID {employee_id} not found', None, 404)
             data = request.get_json()
-            employee = {
-                'id': employee_id,
-                'firstName': data.get('firstName'),
-                'lastName': data.get('lastName'),
-                'email': data.get('email'),
-                'departmentId': data.get('departmentId'),
-                'position': data.get('position'),
-                'salary': data.get('salary'),
-                'status': data.get('status', 'active')
-            }
-            return v2_success_response(employee)
+            if 'firstName' in data:
+                e.first_name = data['firstName']
+            if 'lastName' in data:
+                e.last_name = data['lastName']
+            if 'email' in data:
+                e.email = data['email']
+            if 'departmentId' in data:
+                e.department_id = data['departmentId']
+            if 'position' in data:
+                e.position = data['position']
+            if 'salary' in data:
+                e.salary = data['salary']
+            if 'status' in data:
+                e.status = _v2_status_to_db(data['status'])
+            db.session.commit()
+            return v2_success_response(serialize_employee_v2(e))
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('EMPLOYEE_UPDATE_ERROR', 'Failed to update employee', str(e), 400)
-    
+
     @app.route('/api/v2/hr/employees/<employee_id>', methods=['DELETE'])
     def v2_delete_employee(employee_id):
         """V2: Delete an employee (returns 204 No Content)"""
+        e = db.session.get(Employee, employee_id)
+        if e is None:
+            return v2_error_response('EMPLOYEE_NOT_FOUND', f'Employee with ID {employee_id} not found', None, 404)
         try:
-            # In a real implementation, this would delete from database
+            db.session.delete(e)
+            db.session.commit()
             return '', 204
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('EMPLOYEE_DELETE_ERROR', 'Failed to delete employee', str(e), 500)
-    
-    @app.route('/api/v2/hr/employees/<employee_id>/promote', methods=['PATCH'])
+
+    # Contract method is POST; PATCH is kept temporarily for pre-GA v2 clients.
+    @app.route('/api/v2/hr/employees/<employee_id>/promote', methods=['POST', 'PATCH'])
     def v2_promote_employee(employee_id):
-        """V2: Promote an employee. Accepts title/salaryIncrease per spec."""
+        """V2: Promote an employee (title + salaryIncrease per contract)."""
         try:
+            e = db.session.get(Employee, employee_id)
+            if e is None:
+                return v2_error_response('EMPLOYEE_NOT_FOUND', f'Employee with ID {employee_id} not found', None, 404)
             data = request.get_json()
-            # Accept spec field names (title/salaryIncrease) with fallback to legacy names
-            new_position = data.get('title') or data.get('newPosition')
-            salary_increase = data.get('salaryIncrease') or data.get('newSalary')
-            result = {
-                'id': employee_id,
-                'newPosition': new_position,
-                'salaryIncrease': salary_increase,
-                'effectiveDate': data.get('effectiveDate'),
-                'notes': data.get('notes'),
-                'message': 'Employee promoted successfully'
-            }
-            return v2_success_response(result)
+            title = data.get('title')
+            salary_increase = data.get('salaryIncrease')
+            if not title or salary_increase is None:
+                return v2_error_response('INVALID_REQUEST', 'title and salaryIncrease are required', None, 400)
+            e.position = title
+            e.salary = float(e.salary or 0) + float(salary_increase)
+            db.session.commit()
+            return v2_success_response(serialize_employee_v2(e))
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('EMPLOYEE_PROMOTE_ERROR', 'Failed to promote employee', str(e), 400)
-    
+
     @app.route('/api/v2/hr/employees/<employee_id>/terminate', methods=['POST'])
     def v2_terminate_employee(employee_id):
         """V2: Terminate an employee"""
         try:
+            e = db.session.get(Employee, employee_id)
+            if e is None:
+                return v2_error_response('EMPLOYEE_NOT_FOUND', f'Employee with ID {employee_id} not found', None, 404)
             data = request.get_json()
-            result = {
-                'id': employee_id,
-                'terminationDate': data.get('terminationDate'),
-                'reason': data.get('reason'),
-                'status': 'terminated',
-                'message': 'Employee terminated successfully'
-            }
-            return v2_success_response(result)
+            if not data.get('terminationDate'):
+                return v2_error_response('INVALID_REQUEST', 'terminationDate is required', None, 400)
+            e.status = 'terminated'
+            db.session.commit()
+            return v2_success_response(serialize_employee_v2(e))
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('EMPLOYEE_TERMINATE_ERROR', 'Failed to terminate employee', str(e), 400)
-    
+
     @app.route('/api/v2/hr/departments', methods=['POST'])
     def v2_create_department():
         """V2: Create a new department"""
         try:
             data = request.get_json()
-            department = {
-                'id': 'dept-' + str(datetime.utcnow().timestamp()),
-                'name': data.get('name'),
-                'description': data.get('description'),
-                'managerId': data.get('managerId'),
-                'budget': data.get('budget'),
-                'location': data.get('location')
-            }
-            return v2_success_response(department, 201)
+            if not data.get('name') or not data.get('code'):
+                return v2_error_response('INVALID_REQUEST', 'name and code are required', None, 400)
+            dept = Department(
+                id='dept-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                name=data['name'],
+                code=data['code'],
+                description=data.get('description'),
+                manager_id=data.get('managerId'),
+                budget=data.get('budget'),
+                location=data.get('location'),
+            )
+            db.session.add(dept)
+            db.session.commit()
+            return v2_success_response(serialize_department(dept), 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('DEPARTMENT_CREATE_ERROR', 'Failed to create department', str(e), 400)
-    
+
     @app.route('/api/v2/hr/departments', methods=['GET'])
     def v2_get_all_departments():
         """V2: Get all departments with pagination"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            departments = []
-            if mock_data and hasattr(mock_data, 'mock_departments'):
-                departments = [convert_to_camel_case(dept) for dept in mock_data.mock_departments]
-            
-            paginated = paginate_list(departments, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            departments = [serialize_department(d) for d in Department.query.all()]
+            return v2_list_response(departments, page, limit)
         except Exception as e:
             return v2_error_response('DEPARTMENTS_FETCH_ERROR', 'Failed to fetch departments', str(e), 500)
-    
+
     @app.route('/api/v2/hr/departments/<department_id>', methods=['GET'])
     def v2_get_department_by_id(department_id):
         """V2: Get department by ID"""
         try:
-            if mock_data and hasattr(mock_data, 'mock_departments'):
-                for dept in mock_data.mock_departments:
-                    if dept.get('id') == department_id:
-                        return v2_success_response(convert_to_camel_case(dept))
-            return v2_error_response('DEPARTMENT_NOT_FOUND', f'Department with ID {department_id} not found', None, 404)
+            d = db.session.get(Department, department_id)
+            if d is None:
+                return v2_error_response('DEPARTMENT_NOT_FOUND', f'Department with ID {department_id} not found', None, 404)
+            return v2_success_response(serialize_department(d))
         except Exception as e:
             return v2_error_response('DEPARTMENT_FETCH_ERROR', 'Failed to fetch department', str(e), 500)
-    
+
     @app.route('/api/v2/hr/statistics', methods=['GET'])
     def v2_get_hr_statistics():
         """V2: Get HR statistics"""
         try:
+            from sqlalchemy import func
+            total = Employee.query.count()
+            active = Employee.query.filter_by(status='active').count()
+            avg_salary = db.session.query(func.avg(Employee.salary)).scalar()
             stats = {
-                'totalEmployees': 150,
-                'activeEmployees': 142,
-                'totalDepartments': 8,
-                'averageSalary': 65000,
-                'newHiresThisMonth': 5
+                'totalEmployees': total,
+                'activeEmployees': active,
+                'totalDepartments': Department.query.count(),
+                'averageSalary': round(_f(avg_salary), 2),
+                'newHiresThisMonth': 0,
             }
             return v2_success_response(stats)
         except Exception as e:
             return v2_error_response('STATISTICS_FETCH_ERROR', 'Failed to fetch statistics', str(e), 500)
-    
+
     # ========================================
     # V2 PAYROLL ROUTES
     # ========================================
-    
+
     @app.route('/api/v2/payroll/process', methods=['POST'])
     def v2_process_payroll():
         """V2: Process payroll for a single employee"""
         try:
             data = request.get_json()
             employee_id = data.get('employeeId')
-            gross_pay = data.get('grossPay', 6250)
-            deductions = data.get('deductions', 1000)
-            tax_withheld = gross_pay * 0.2
-            net_pay = gross_pay - deductions - tax_withheld
-            
-            result = {
-                'id': 'pay-' + str(datetime.utcnow().timestamp()),
-                'employeeId': employee_id,
-                'payPeriodStart': data.get('payPeriodStart'),
-                'payPeriodEnd': data.get('payPeriodEnd'),
-                'grossPay': gross_pay,
-                'deductions': deductions,
-                'taxWithheld': tax_withheld,
-                'netPay': net_pay,
-                'status': 'pending',
-                'processedAt': datetime.utcnow().isoformat() + 'Z'
-            }
-            return v2_success_response(result, 201)
+            from datetime import date as date_type
+
+            def _parse_date(s):
+                if not s:
+                    return None
+                try:
+                    return date_type.fromisoformat(s)
+                except ValueError:
+                    return None
+
+            emp = db.session.get(Employee, employee_id) if employee_id else None
+            if emp and emp.salary:
+                gross_pay = float(emp.salary) / 12
+            else:
+                gross_pay = float(data.get('grossPay', 6250))
+            gross_pay += float(data.get('bonus', 0)) + float(data.get('overtime', 0))
+            deductions = float(data.get('deductions', 0))
+            tax_withheld = round(gross_pay * 0.2, 2)
+            net_pay = round(gross_pay - deductions - tax_withheld, 2)
+            record = PayrollRecord(
+                id='pay-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                employee_id=employee_id,
+                pay_period_start=_parse_date(data.get('payPeriodStart')),
+                pay_period_end=_parse_date(data.get('payPeriodEnd')),
+                gross_pay=round(gross_pay, 2),
+                deductions=deductions,
+                tax_withheld=tax_withheld,
+                net_pay=net_pay,
+                status='pending',
+            )
+            db.session.add(record)
+            db.session.commit()
+            return v2_success_response(serialize_payroll(record), 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('PAYROLL_PROCESS_ERROR', 'Failed to process payroll', str(e), 400)
-    
+
     @app.route('/api/v2/payroll/process-batch', methods=['POST'])
-    @app.route('/api/v2/payroll/batch-process', methods=['POST'])
     def v2_process_batch_payroll():
-        """V2: Process payroll for multiple employees (returns 202 Accepted)."""
+        """V2: Process batch payroll (202 Accepted).
+
+        Contract input: payPeriodStart, payPeriodEnd, optional departmentId and
+        excludeEmployees. `employeeIds` is also accepted for pre-GA v2 clients.
+        """
         try:
             data = request.get_json()
-            employee_ids = data.get('employeeIds', [])
-            
-            results = []
+            if not data.get('payPeriodStart') or not data.get('payPeriodEnd'):
+                return v2_error_response('INVALID_REQUEST', 'payPeriodStart and payPeriodEnd are required', None, 400)
+            from datetime import date as date_type
+
+            def _parse_date(s):
+                if not s:
+                    return None
+                try:
+                    return date_type.fromisoformat(s)
+                except ValueError:
+                    return None
+
+            employee_ids = data.get('employeeIds')
+            if employee_ids is None:
+                query = Employee.query.filter_by(status='active')
+                if data.get('departmentId'):
+                    query = query.filter_by(department_id=data['departmentId'])
+                exclude = set(data.get('excludeEmployees', []))
+                employee_ids = [e.id for e in query.all() if e.id not in exclude]
+
+            processed = 0
             for emp_id in employee_ids:
-                results.append({
-                    'employeeId': emp_id,
-                    'status': 'processed',
-                    'netPay': 5000
-                })
-            
+                emp = db.session.get(Employee, emp_id)
+                gross = round(float(emp.salary) / 12, 2) if emp and emp.salary else 6250.0
+                tax = round(gross * 0.2, 2)
+                db.session.add(PayrollRecord(
+                    id='pay-' + str(int(datetime.utcnow().timestamp() * 1000)) + '-' + str(emp_id),
+                    employee_id=emp_id,
+                    pay_period_start=_parse_date(data.get('payPeriodStart')),
+                    pay_period_end=_parse_date(data.get('payPeriodEnd')),
+                    gross_pay=gross,
+                    deductions=0,
+                    tax_withheld=tax,
+                    net_pay=round(gross - tax, 2),
+                    status='pending',
+                ))
+                processed += 1
+            db.session.commit()
+
             batch_result = {
-                'batchId': 'batch-' + str(datetime.utcnow().timestamp()),
-                'totalProcessed': len(employee_ids),
-                'results': results
+                'batchId': 'batch-' + str(int(datetime.utcnow().timestamp())),
+                'status': 'completed',
+                'totalEmployees': len(employee_ids),
+                'processedCount': processed,
+                'estimatedCompletionTime': datetime.utcnow().isoformat() + 'Z',
             }
             return v2_success_response(batch_result, 202)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('BATCH_PAYROLL_ERROR', 'Failed to process batch payroll', str(e), 400)
-    
+
     @app.route('/api/v2/payroll/<payroll_id>/approve', methods=['POST'])
     def v2_approve_payroll(payroll_id):
         """V2: Approve a payroll record"""
         try:
-            result = {
-                'id': payroll_id,
-                'status': 'approved',
-                'approvedAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Payroll approved successfully'
-            }
-            return v2_success_response(result)
+            p = db.session.get(PayrollRecord, payroll_id)
+            if p is None:
+                return v2_error_response('PAYROLL_NOT_FOUND', f'Payroll record {payroll_id} not found', None, 404)
+            p.status = 'approved'
+            db.session.commit()
+            return v2_success_response(serialize_payroll(p))
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('PAYROLL_APPROVE_ERROR', 'Failed to approve payroll', str(e), 400)
-    
+
     @app.route('/api/v2/payroll', methods=['GET'])
     def v2_get_all_payroll():
-        """V2: Get all payroll records with pagination"""
+        """V2: Get all payroll records with pagination and status/employeeId filters"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            payroll_records = []
-            if mock_data and hasattr(mock_data, 'mock_payroll_records'):
-                payroll_records = [convert_to_camel_case(rec) for rec in mock_data.mock_payroll_records]
-            
-            paginated = paginate_list(payroll_records, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            query = PayrollRecord.query
+            status_filter = request.args.get('status')
+            if status_filter:
+                query = query.filter_by(status=status_filter)
+            employee_filter = request.args.get('employeeId')
+            if employee_filter:
+                query = query.filter_by(employee_id=employee_filter)
+            records = [serialize_payroll(p) for p in query.all()]
+            return v2_list_response(records, page, limit)
         except Exception as e:
             return v2_error_response('PAYROLL_FETCH_ERROR', 'Failed to fetch payroll records', str(e), 500)
-    
+
     @app.route('/api/v2/payroll/<payroll_id>', methods=['GET'])
     def v2_get_payroll_by_id(payroll_id):
         """V2: Get payroll record by ID"""
         try:
-            result = {
-                'id': payroll_id,
-                'employeeId': 'emp-001',
-                'grossPay': 6250,
-                'netPay': 5000,
-                'status': 'approved'
-            }
-            return v2_success_response(result)
+            p = db.session.get(PayrollRecord, payroll_id)
+            if p is None:
+                return v2_error_response('PAYROLL_NOT_FOUND', f'Payroll record {payroll_id} not found', None, 404)
+            return v2_success_response(serialize_payroll(p))
         except Exception as e:
             return v2_error_response('PAYROLL_FETCH_ERROR', 'Failed to fetch payroll record', str(e), 500)
-    
+
     @app.route('/api/v2/payroll/employee/<employee_id>', methods=['GET'])
     def v2_get_employee_payroll_history(employee_id):
         """V2: Get payroll history for an employee with pagination"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            history = [
-                {
-                    'id': 'pay-001',
-                    'employeeId': employee_id,
-                    'payPeriodStart': '2024-01-01',
-                    'payPeriodEnd': '2024-01-31',
-                    'netPay': 5000
-                }
-            ]
-            
-            paginated = paginate_list(history, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            records = PayrollRecord.query.filter_by(employee_id=employee_id).all()
+            return v2_list_response([serialize_payroll(p) for p in records], page, limit)
         except Exception as e:
             return v2_error_response('PAYROLL_HISTORY_ERROR', 'Failed to fetch payroll history', str(e), 500)
-    
+
     # ========================================
     # V2 ACCOUNTING ROUTES
     # ========================================
-    
+
     @app.route('/api/v2/accounting/journal-entries', methods=['POST'])
     def v2_create_journal_entry():
         """V2: Create a journal entry"""
@@ -1993,55 +2190,41 @@ def create_app() -> Flask:
             return v2_success_response(entry, 201)
         except Exception as e:
             return v2_error_response('JOURNAL_ENTRY_ERROR', 'Failed to create journal entry', str(e), 400)
-    
+
     @app.route('/api/v2/accounting/transactions', methods=['GET'])
     def v2_get_all_transactions():
         """V2: Get all accounting transactions with pagination"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            transactions = []
-            if mock_data and hasattr(mock_data, 'mock_transactions'):
-                transactions = [convert_to_camel_case(txn) for txn in mock_data.mock_transactions]
-            
-            paginated = paginate_list(transactions, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            transactions = [serialize_transaction(t) for t in Transaction.query.all()]
+            return v2_list_response(transactions, page, limit)
         except Exception as e:
             return v2_error_response('TRANSACTIONS_FETCH_ERROR', 'Failed to fetch transactions', str(e), 500)
-    
+
     @app.route('/api/v2/accounting/transactions/<transaction_id>', methods=['GET'])
     def v2_get_transaction_by_id(transaction_id):
         """V2: Get transaction by ID"""
         try:
-            result = {
-                'id': transaction_id,
-                'date': '2024-01-15',
-                'description': 'Sample transaction',
-                'amount': 1000,
-                'type': 'debit'
-            }
-            return v2_success_response(result)
+            t = db.session.get(Transaction, transaction_id)
+            if t is None:
+                return v2_error_response('TRANSACTION_NOT_FOUND', f'Transaction {transaction_id} not found', None, 404)
+            return v2_success_response(serialize_transaction(t))
         except Exception as e:
             return v2_error_response('TRANSACTION_FETCH_ERROR', 'Failed to fetch transaction', str(e), 500)
-    
+
     @app.route('/api/v2/accounting/general-ledger', methods=['GET'])
     def v2_get_general_ledger():
         """V2: Get general ledger with pagination"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
+            page, limit = v2_page_args()
             accounts = [
                 {'code': '1000', 'name': 'Cash', 'balance': 50000},
                 {'code': '2000', 'name': 'Accounts Payable', 'balance': 25000}
             ]
-            
-            paginated = paginate_list(accounts, page, limit)
-            return v2_success_response(paginated)
+            return v2_list_response(accounts, page, limit)
         except Exception as e:
             return v2_error_response('LEDGER_FETCH_ERROR', 'Failed to fetch general ledger', str(e), 500)
-    
+
     @app.route('/api/v2/accounting/trial-balance', methods=['GET'])
     def v2_get_trial_balance():
         """V2: Get trial balance"""
@@ -2055,105 +2238,105 @@ def create_app() -> Flask:
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('TRIAL_BALANCE_ERROR', 'Failed to fetch trial balance', str(e), 500)
-    
+
     # ========================================
     # V2 FINANCE ROUTES
     # ========================================
-    
+
     @app.route('/api/v2/finance/budgets', methods=['POST'])
     def v2_create_budget():
         """V2: Create a new budget"""
         try:
             data = request.get_json()
-            budget = {
-                'id': 'budget-' + str(datetime.utcnow().timestamp()),
-                'departmentId': data.get('departmentId'),
-                'fiscalYear': data.get('fiscalYear'),
-                'quarter': data.get('quarter'),
-                'allocatedAmount': data.get('allocatedAmount'),
-                'spentAmount': 0,
-                'remainingAmount': data.get('allocatedAmount'),
-                'status': 'active'
-            }
-            return v2_success_response(budget, 201)
+            budget = Budget(
+                id='budget-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                department_id=data.get('departmentId'),
+                fiscal_year=data.get('fiscalYear'),
+                quarter=data.get('quarter'),
+                allocated_amount=data.get('allocatedAmount'),
+                spent_amount=0,
+                status='active',
+            )
+            db.session.add(budget)
+            db.session.commit()
+            return v2_success_response(serialize_budget(budget), 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('BUDGET_CREATE_ERROR', 'Failed to create budget', str(e), 400)
-    
+
     @app.route('/api/v2/finance/budgets', methods=['GET'])
     def v2_get_all_budgets():
         """V2: Get all budgets with pagination"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            budgets = []
-            if mock_data and hasattr(mock_data, 'mock_budgets'):
-                budgets = [convert_to_camel_case(b) for b in mock_data.mock_budgets]
-            
-            paginated = paginate_list(budgets, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            budgets = [serialize_budget(b) for b in Budget.query.all()]
+            return v2_list_response(budgets, page, limit)
         except Exception as e:
             return v2_error_response('BUDGETS_FETCH_ERROR', 'Failed to fetch budgets', str(e), 500)
-    
+
     @app.route('/api/v2/finance/budgets/<budget_id>', methods=['GET'])
     def v2_get_budget_by_id(budget_id):
         """V2: Get budget by ID"""
         try:
-            result = {
-                'id': budget_id,
-                'departmentId': 'dept-001',
-                'allocatedAmount': 100000,
-                'spentAmount': 50000,
-                'remainingAmount': 50000
-            }
-            return v2_success_response(result)
+            b = db.session.get(Budget, budget_id)
+            if b is None:
+                return v2_error_response('BUDGET_NOT_FOUND', f'Budget {budget_id} not found', None, 404)
+            return v2_success_response(serialize_budget(b))
         except Exception as e:
             return v2_error_response('BUDGET_FETCH_ERROR', 'Failed to fetch budget', str(e), 500)
-    
+
     @app.route('/api/v2/finance/budgets/<budget_id>/close', methods=['POST'])
     def v2_close_budget(budget_id):
         """V2: Close a budget"""
         try:
-            result = {
-                'id': budget_id,
-                'status': 'closed',
-                'closedAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Budget closed successfully'
-            }
-            return v2_success_response(result)
+            b = db.session.get(Budget, budget_id)
+            if b is None:
+                return v2_error_response('BUDGET_NOT_FOUND', f'Budget {budget_id} not found', None, 404)
+            b.status = 'closed'
+            db.session.commit()
+            return v2_success_response(serialize_budget(b))
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('BUDGET_CLOSE_ERROR', 'Failed to close budget', str(e), 400)
-    
+
     @app.route('/api/v2/finance/budgets/<budget_id>/utilization', methods=['GET'])
     def v2_get_budget_utilization(budget_id):
         """V2: Get budget utilization"""
         try:
+            b = db.session.get(Budget, budget_id)
+            if b is None:
+                return v2_error_response('BUDGET_NOT_FOUND', f'Budget {budget_id} not found', None, 404)
+            allocated = _f(b.allocated_amount)
+            spent = _f(b.spent_amount)
             result = {
                 'budgetId': budget_id,
-                'utilizationPercentage': 75,
-                'allocatedAmount': 100000,
-                'spentAmount': 75000,
-                'remainingAmount': 25000
+                'utilizationPercentage': round(spent / allocated * 100, 2) if allocated else 0,
+                'allocatedAmount': allocated,
+                'spentAmount': spent,
+                'remainingAmount': round(allocated - spent, 2),
             }
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('UTILIZATION_FETCH_ERROR', 'Failed to fetch budget utilization', str(e), 500)
-    
+
     @app.route('/api/v2/finance/departments/<department_id>/budget-summary', methods=['GET'])
     def v2_get_department_budget_summary(department_id):
         """V2: Get department budget summary"""
         try:
+            budgets = Budget.query.filter_by(department_id=department_id).all()
+            allocated = sum(_f(b.allocated_amount) for b in budgets)
+            spent = sum(_f(b.spent_amount) for b in budgets)
             result = {
                 'departmentId': department_id,
-                'totalAllocated': 500000,
-                'totalSpent': 350000,
-                'totalRemaining': 150000,
-                'utilizationPercentage': 70
+                'totalAllocated': allocated,
+                'totalSpent': spent,
+                'totalRemaining': round(allocated - spent, 2),
+                'utilizationPercentage': round(spent / allocated * 100, 2) if allocated else 0,
             }
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('BUDGET_SUMMARY_ERROR', 'Failed to fetch budget summary', str(e), 500)
-    
+
     @app.route('/api/v2/finance/reports', methods=['GET'])
     def v2_generate_financial_report():
         """V2: Generate financial report"""
@@ -2171,150 +2354,170 @@ def create_app() -> Flask:
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('REPORT_GENERATE_ERROR', 'Failed to generate report', str(e), 500)
-    
+
     # ========================================
     # V2 BILLING ROUTES
     # ========================================
-    
+
     @app.route('/api/v2/billing/customers', methods=['POST'])
     def v2_create_customer():
         """V2: Create a new customer"""
         try:
             data = request.get_json()
-            customer = {
-                'id': 'cust-' + str(datetime.utcnow().timestamp()),
-                'name': data.get('name'),
-                'email': data.get('email'),
-                'phone': data.get('phone'),
-                'address': data.get('address'),
-                'creditLimit': data.get('creditLimit', 50000),
-                'currentBalance': 0,
-                'status': 'active'
-            }
-            return v2_success_response(customer, 201)
+            cust = Customer(
+                id='cust-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                name=data.get('name', ''),
+                email=data.get('email'),
+                phone=data.get('phone'),
+                address=data.get('address'),
+                credit_limit=data.get('creditLimit', 50000),
+                current_balance=0,
+                status='active',
+            )
+            db.session.add(cust)
+            db.session.commit()
+            result = serialize_customer(cust)
+            # paymentTerms is part of the contract but not yet persisted
+            result['paymentTerms'] = data.get('paymentTerms')
+            return v2_success_response(result, 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('CUSTOMER_CREATE_ERROR', 'Failed to create customer', str(e), 400)
-    
+
     @app.route('/api/v2/billing/customers', methods=['GET'])
     def v2_get_all_customers():
-        """V2: Get all customers with pagination"""
+        """V2: Get all customers with pagination and status filter"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            customers = []
-            if mock_data and hasattr(mock_data, 'mock_customers'):
-                customers = [convert_to_camel_case(c) for c in mock_data.mock_customers]
-            
-            paginated = paginate_list(customers, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            query = Customer.query
+            status_filter = request.args.get('status')
+            if status_filter:
+                query = query.filter_by(status=status_filter)
+            customers = [serialize_customer(c) for c in query.all()]
+            return v2_list_response(customers, page, limit)
         except Exception as e:
             return v2_error_response('CUSTOMERS_FETCH_ERROR', 'Failed to fetch customers', str(e), 500)
-    
+
     @app.route('/api/v2/billing/customers/<customer_id>', methods=['GET'])
     def v2_get_customer_by_id(customer_id):
         """V2: Get customer by ID"""
         try:
-            result = {
-                'id': customer_id,
-                'name': 'Sample Customer',
-                'email': 'customer@example.com',
-                'currentBalance': 5000
-            }
-            return v2_success_response(result)
+            c = db.session.get(Customer, customer_id)
+            if c is None:
+                return v2_error_response('CUSTOMER_NOT_FOUND', f'Customer {customer_id} not found', None, 404)
+            return v2_success_response(serialize_customer(c))
         except Exception as e:
             return v2_error_response('CUSTOMER_FETCH_ERROR', 'Failed to fetch customer', str(e), 500)
-    
+
     @app.route('/api/v2/billing/customers/<customer_id>/balance', methods=['GET'])
     def v2_get_customer_balance(customer_id):
         """V2: Get customer balance"""
         try:
+            c = db.session.get(Customer, customer_id)
+            if c is None:
+                return v2_error_response('CUSTOMER_NOT_FOUND', f'Customer {customer_id} not found', None, 404)
+            current = _f(c.current_balance)
+            limit_ = _f(c.credit_limit)
             result = {
                 'customerId': customer_id,
-                'currentBalance': 5000,
-                'creditLimit': 50000,
-                'availableCredit': 45000
+                'currentBalance': current,
+                'creditLimit': limit_,
+                'availableCredit': round(limit_ - current, 2),
             }
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('BALANCE_FETCH_ERROR', 'Failed to fetch customer balance', str(e), 500)
-    
+
     @app.route('/api/v2/billing/invoices', methods=['POST'])
     def v2_create_invoice():
-        """V2: Create a new invoice"""
+        """V2: Create a new invoice (contract fields: invoiceDate, tax, total)."""
         try:
             data = request.get_json()
-            subtotal = data.get('subtotal', 0)
-            tax_rate = 0.08
-            tax_amount = subtotal * tax_rate
-            total = subtotal + tax_amount
-            
-            invoice = {
-                'id': 'inv-' + str(datetime.utcnow().timestamp()),
-                'invoiceNumber': 'INV-' + str(int(datetime.utcnow().timestamp())),
-                'customerId': data.get('customerId'),
-                'issueDate': data.get('issueDate'),
-                'dueDate': data.get('dueDate'),
-                'subtotal': subtotal,
-                'taxAmount': tax_amount,
-                'totalAmount': total,
-                'balanceDue': total,
-                'status': 'draft',
-                'items': data.get('items', [])
-            }
-            return v2_success_response(invoice, 201)
+            from datetime import date as date_type
+
+            def _parse_date(s):
+                if not s:
+                    return None
+                try:
+                    return date_type.fromisoformat(s)
+                except ValueError:
+                    return None
+
+            subtotal = float(data.get('subtotal', 0))
+            tax_amount = float(data.get('tax') if data.get('tax') is not None else subtotal * 0.08)
+            total_amount = float(data.get('total') if data.get('total') is not None else subtotal + tax_amount)
+            issue_date_str = data.get('invoiceDate') or data.get('issueDate')
+            inv = Invoice(
+                id='inv-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                invoice_number='INV-' + str(int(datetime.utcnow().timestamp())),
+                customer_id=data.get('customerId'),
+                issue_date=_parse_date(issue_date_str),
+                due_date=_parse_date(data.get('dueDate')),
+                subtotal=subtotal,
+                tax_amount=tax_amount,
+                total_amount=total_amount,
+                status='draft',
+            )
+            db.session.add(inv)
+            db.session.commit()
+            result = serialize_invoice(inv)
+            result['items'] = data.get('items', [])
+            return v2_success_response(result, 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('INVOICE_CREATE_ERROR', 'Failed to create invoice', str(e), 400)
-    
+
     @app.route('/api/v2/billing/invoices', methods=['GET'])
     def v2_get_all_invoices():
-        """V2: Get all invoices with pagination"""
+        """V2: Get all invoices with pagination and status/customerId filters"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            invoices = []
-            if mock_data and hasattr(mock_data, 'mock_invoices'):
-                invoices = [convert_to_camel_case(inv) for inv in mock_data.mock_invoices]
-            
-            paginated = paginate_list(invoices, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            query = Invoice.query
+            status_filter = request.args.get('status')
+            if status_filter:
+                query = query.filter_by(status=status_filter)
+            customer_filter = request.args.get('customerId')
+            if customer_filter:
+                query = query.filter_by(customer_id=customer_filter)
+            invoices = [serialize_invoice(i) for i in query.all()]
+            return v2_list_response(invoices, page, limit)
         except Exception as e:
             return v2_error_response('INVOICES_FETCH_ERROR', 'Failed to fetch invoices', str(e), 500)
-    
+
     @app.route('/api/v2/billing/invoices/<invoice_id>', methods=['GET'])
     def v2_get_invoice_by_id(invoice_id):
         """V2: Get invoice by ID"""
         try:
-            result = {
-                'id': invoice_id,
-                'invoiceNumber': 'INV-001',
-                'customerId': 'cust-001',
-                'totalAmount': 10000,
-                'status': 'pending'
-            }
-            return v2_success_response(result)
+            i = db.session.get(Invoice, invoice_id)
+            if i is None:
+                return v2_error_response('INVOICE_NOT_FOUND', f'Invoice {invoice_id} not found', None, 404)
+            return v2_success_response(serialize_invoice(i))
         except Exception as e:
             return v2_error_response('INVOICE_FETCH_ERROR', 'Failed to fetch invoice', str(e), 500)
-    
+
     @app.route('/api/v2/billing/invoices/<invoice_id>/send', methods=['POST'])
     def v2_send_invoice(invoice_id):
         """V2: Send invoice to customer"""
         try:
-            result = {
-                'id': invoice_id,
-                'status': 'sent',
-                'sentAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Invoice sent successfully'
-            }
+            i = db.session.get(Invoice, invoice_id)
+            if i is None:
+                return v2_error_response('INVOICE_NOT_FOUND', f'Invoice {invoice_id} not found', None, 404)
+            i.status = 'pending'
+            db.session.commit()
+            result = serialize_invoice(i)
+            result['sentAt'] = datetime.utcnow().isoformat() + 'Z'
             return v2_success_response(result)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('INVOICE_SEND_ERROR', 'Failed to send invoice', str(e), 400)
-    
+
     @app.route('/api/v2/billing/invoices/<invoice_id>/payments', methods=['POST'])
     def v2_record_payment(invoice_id):
         """V2: Record a payment for an invoice"""
         try:
+            i = db.session.get(Invoice, invoice_id)
+            if i is None:
+                return v2_error_response('INVOICE_NOT_FOUND', f'Invoice {invoice_id} not found', None, 404)
             data = request.get_json()
             result = {
                 'invoiceId': invoice_id,
@@ -2322,225 +2525,220 @@ def create_app() -> Flask:
                 'amount': data.get('amount'),
                 'paymentDate': data.get('paymentDate'),
                 'paymentMethod': data.get('paymentMethod'),
-                'message': 'Payment recorded successfully'
             }
             return v2_success_response(result, 201)
         except Exception as e:
             return v2_error_response('PAYMENT_RECORD_ERROR', 'Failed to record payment', str(e), 400)
-    
+
+    @app.route('/api/v2/billing/invoices/overdue', methods=['GET'])
+    def v2_check_overdue_invoices():
+        """V2: List overdue invoices with pagination"""
+        try:
+            page, limit = v2_page_args()
+            overdue = [serialize_invoice(i) for i in Invoice.query.filter_by(status='overdue').all()]
+            return v2_list_response(overdue, page, limit)
+        except Exception as e:
+            return v2_error_response('OVERDUE_CHECK_ERROR', 'Failed to check overdue invoices', str(e), 500)
+
     @app.route('/api/v2/billing/invoices/<invoice_id>/cancel', methods=['POST'])
     def v2_cancel_invoice(invoice_id):
         """V2: Cancel an invoice"""
         try:
-            result = {
-                'id': invoice_id,
-                'status': 'cancelled',
-                'cancelledAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Invoice cancelled successfully'
-            }
-            return v2_success_response(result)
+            i = db.session.get(Invoice, invoice_id)
+            if i is None:
+                return v2_error_response('INVOICE_NOT_FOUND', f'Invoice {invoice_id} not found', None, 404)
+            i.status = 'cancelled'
+            db.session.commit()
+            return v2_success_response(serialize_invoice(i))
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('INVOICE_CANCEL_ERROR', 'Failed to cancel invoice', str(e), 400)
-    
-    @app.route('/api/v2/billing/invoices/overdue', methods=['GET'])
-    def v2_check_overdue_invoices():
-        """V2: Check for overdue invoices with pagination"""
-        try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            overdue_invoices = []
-            result = {
-                'overdueCount': 5,
-                'totalOverdueAmount': 25000,
-                'invoices': paginate_list(overdue_invoices, page, limit)
-            }
-            return v2_success_response(result)
-        except Exception as e:
-            return v2_error_response('OVERDUE_CHECK_ERROR', 'Failed to check overdue invoices', str(e), 500)
-    
+
     # ========================================
     # V2 PROCUREMENT ROUTES
     # ========================================
-    
+
     @app.route('/api/v2/procurement/vendors', methods=['POST'])
     def v2_create_vendor():
         """V2: Create a new vendor"""
         try:
             data = request.get_json()
-            vendor = {
-                'id': 'vendor-' + str(datetime.utcnow().timestamp()),
-                'name': data.get('name'),
-                'email': data.get('email'),
-                'phone': data.get('phone'),
-                'address': data.get('address'),
-                'paymentTerms': data.get('paymentTerms', 'Net 30'),
-                'status': 'active'
-            }
-            return v2_success_response(vendor, 201)
+            vendor = Vendor(
+                id='vendor-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                name=data.get('name', ''),
+                email=data.get('email'),
+                phone=data.get('phone'),
+                address=data.get('address'),
+                payment_terms=data.get('paymentTerms', 'Net 30'),
+                category=data.get('category'),
+                status='active',
+            )
+            db.session.add(vendor)
+            db.session.commit()
+            return v2_success_response(serialize_vendor(vendor), 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('VENDOR_CREATE_ERROR', 'Failed to create vendor', str(e), 400)
-    
+
     @app.route('/api/v2/procurement/vendors', methods=['GET'])
     def v2_get_all_vendors():
-        """V2: Get all vendors with pagination"""
+        """V2: Get all vendors with pagination and status filter"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            vendors = []
-            if mock_data and hasattr(mock_data, 'mock_vendors'):
-                vendors = [convert_to_camel_case(v) for v in mock_data.mock_vendors]
-            
-            paginated = paginate_list(vendors, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            query = Vendor.query
+            status_filter = request.args.get('status')
+            if status_filter:
+                query = query.filter_by(status=status_filter)
+            vendors = [serialize_vendor(v) for v in query.all()]
+            return v2_list_response(vendors, page, limit)
         except Exception as e:
             return v2_error_response('VENDORS_FETCH_ERROR', 'Failed to fetch vendors', str(e), 500)
-    
+
     @app.route('/api/v2/procurement/vendors/<vendor_id>', methods=['GET'])
     def v2_get_vendor_by_id(vendor_id):
         """V2: Get vendor by ID"""
         try:
-            result = {
-                'id': vendor_id,
-                'name': 'Sample Vendor',
-                'email': 'vendor@example.com',
-                'status': 'active'
-            }
-            return v2_success_response(result)
+            v = db.session.get(Vendor, vendor_id)
+            if v is None:
+                return v2_error_response('VENDOR_NOT_FOUND', f'Vendor {vendor_id} not found', None, 404)
+            return v2_success_response(serialize_vendor(v))
         except Exception as e:
             return v2_error_response('VENDOR_FETCH_ERROR', 'Failed to fetch vendor', str(e), 500)
-    
+
     @app.route('/api/v2/procurement/vendors/<vendor_id>/performance', methods=['GET'])
     def v2_get_vendor_performance(vendor_id):
         """V2: Get vendor performance metrics"""
         try:
+            v = db.session.get(Vendor, vendor_id)
+            if v is None:
+                return v2_error_response('VENDOR_NOT_FOUND', f'Vendor {vendor_id} not found', None, 404)
+            total_orders = PurchaseOrder.query.filter_by(vendor_id=vendor_id).count()
+            from sqlalchemy import func
+            total_spent = db.session.query(func.sum(PurchaseOrder.total_amount)).filter_by(vendor_id=vendor_id).scalar()
             result = {
                 'vendorId': vendor_id,
                 'onTimeDeliveryRate': 95,
                 'qualityScore': 4.5,
-                'totalOrders': 50,
-                'totalSpent': 250000
+                'totalOrders': total_orders,
+                'totalSpent': _f(total_spent),
             }
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('PERFORMANCE_FETCH_ERROR', 'Failed to fetch vendor performance', str(e), 500)
-    
+
     @app.route('/api/v2/procurement/purchase-orders', methods=['POST'])
     def v2_create_purchase_order():
-        """V2: Create a new purchase order"""
+        """V2: Create a new purchase order (contract fields: subtotal, tax, total)."""
         try:
             data = request.get_json()
-            po = {
-                'id': 'po-' + str(datetime.utcnow().timestamp()),
-                'poNumber': 'PO-' + str(int(datetime.utcnow().timestamp())),
-                'vendorId': data.get('vendorId'),
-                'orderDate': data.get('orderDate'),
-                'expectedDeliveryDate': data.get('expectedDeliveryDate'),
-                'items': data.get('items', []),
-                'totalAmount': data.get('totalAmount', 0),
-                'status': 'draft'
-            }
-            return v2_success_response(po, 201)
+            from datetime import date as date_type
+
+            def _parse_date(s):
+                if not s:
+                    return None
+                try:
+                    return date_type.fromisoformat(s)
+                except ValueError:
+                    return None
+
+            total = data.get('total')
+            if total is None:
+                total = float(data.get('subtotal', 0)) + float(data.get('tax', 0))
+            po = PurchaseOrder(
+                id='po-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                po_number='PO-' + str(int(datetime.utcnow().timestamp())),
+                vendor_id=data.get('vendorId'),
+                order_date=_parse_date(data.get('orderDate')),
+                expected_delivery_date=_parse_date(data.get('expectedDeliveryDate')),
+                total_amount=total,
+                status='draft',
+            )
+            db.session.add(po)
+            db.session.commit()
+            result = serialize_po_v2(po)
+            result['items'] = data.get('items', [])
+            result['subtotal'] = float(data.get('subtotal', 0))
+            result['tax'] = float(data.get('tax', 0))
+            return v2_success_response(result, 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('PO_CREATE_ERROR', 'Failed to create purchase order', str(e), 400)
-    
+
     @app.route('/api/v2/procurement/purchase-orders', methods=['GET'])
     def v2_get_all_purchase_orders():
-        """V2: Get all purchase orders with pagination"""
+        """V2: Get all purchase orders with pagination and status filter"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            pos = []
-            if mock_data and hasattr(mock_data, 'mock_purchase_orders'):
-                pos = [convert_to_camel_case(po) for po in mock_data.mock_purchase_orders]
-            
-            paginated = paginate_list(pos, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            query = PurchaseOrder.query
+            status_filter = request.args.get('status')
+            if status_filter:
+                query = query.filter_by(status=_v2_status_to_db(status_filter))
+            pos = [serialize_po_v2(p) for p in query.all()]
+            return v2_list_response(pos, page, limit)
         except Exception as e:
             return v2_error_response('PO_FETCH_ERROR', 'Failed to fetch purchase orders', str(e), 500)
-    
+
     @app.route('/api/v2/procurement/purchase-orders/<po_id>', methods=['GET'])
     def v2_get_purchase_order_by_id(po_id):
         """V2: Get purchase order by ID"""
         try:
-            result = {
-                'id': po_id,
-                'poNumber': 'PO-001',
-                'vendorId': 'vendor-001',
-                'totalAmount': 10000,
-                'status': 'pending'
-            }
-            return v2_success_response(result)
+            p = db.session.get(PurchaseOrder, po_id)
+            if p is None:
+                return v2_error_response('PO_NOT_FOUND', f'Purchase order {po_id} not found', None, 404)
+            return v2_success_response(serialize_po_v2(p))
         except Exception as e:
             return v2_error_response('PO_FETCH_ERROR', 'Failed to fetch purchase order', str(e), 500)
-    
+
+    def _v2_transition_po(po_id, new_status, error_code):
+        """Update PO status in the DB and return the v2 envelope."""
+        try:
+            p = db.session.get(PurchaseOrder, po_id)
+            if p is None:
+                return v2_error_response('PO_NOT_FOUND', f'Purchase order {po_id} not found', None, 404)
+            is_first_receive = new_status == 'received' and p.status != 'received'
+            p.status = new_status
+            if is_first_receive:
+                db.session.add(Transaction(
+                    id='txn-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                    date=datetime.utcnow().date(),
+                    description=f'PO received: {p.po_number} from vendor {p.vendor_id}',
+                    amount=p.total_amount or 0,
+                    type='debit',
+                ))
+            db.session.commit()
+            return v2_success_response(serialize_po_v2(p))
+        except Exception as e:
+            db.session.rollback()
+            return v2_error_response(error_code, f'Failed to update purchase order {po_id}', str(e), 400)
+
     @app.route('/api/v2/procurement/purchase-orders/<po_id>/approve', methods=['POST'])
     def v2_approve_purchase_order(po_id):
         """V2: Approve a purchase order"""
-        try:
-            result = {
-                'id': po_id,
-                'status': 'approved',
-                'approvedAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Purchase order approved successfully'
-            }
-            return v2_success_response(result)
-        except Exception as e:
-            return v2_error_response('PO_APPROVE_ERROR', 'Failed to approve purchase order', str(e), 400)
-    
+        return _v2_transition_po(po_id, 'approved', 'PO_APPROVE_ERROR')
+
     @app.route('/api/v2/procurement/purchase-orders/<po_id>/place', methods=['POST'])
     def v2_place_purchase_order(po_id):
         """V2: Place a purchase order with vendor"""
-        try:
-            result = {
-                'id': po_id,
-                'status': 'placed',
-                'placedAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Purchase order placed with vendor'
-            }
-            return v2_success_response(result)
-        except Exception as e:
-            return v2_error_response('PO_PLACE_ERROR', 'Failed to place purchase order', str(e), 400)
-    
+        return _v2_transition_po(po_id, 'placed', 'PO_PLACE_ERROR')
+
     @app.route('/api/v2/procurement/purchase-orders/<po_id>/receive', methods=['POST'])
     def v2_receive_purchase_order(po_id):
         """V2: Mark purchase order as received"""
-        try:
-            result = {
-                'id': po_id,
-                'status': 'received',
-                'receivedAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Purchase order received'
-            }
-            return v2_success_response(result)
-        except Exception as e:
-            return v2_error_response('PO_RECEIVE_ERROR', 'Failed to receive purchase order', str(e), 400)
-    
+        return _v2_transition_po(po_id, 'received', 'PO_RECEIVE_ERROR')
+
     @app.route('/api/v2/procurement/purchase-orders/<po_id>/cancel', methods=['POST'])
     def v2_cancel_purchase_order(po_id):
         """V2: Cancel a purchase order"""
-        try:
-            result = {
-                'id': po_id,
-                'status': 'cancelled',
-                'cancelledAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Purchase order cancelled'
-            }
-            return v2_success_response(result)
-        except Exception as e:
-            return v2_error_response('PO_CANCEL_ERROR', 'Failed to cancel purchase order', str(e), 400)
-    
+        return _v2_transition_po(po_id, 'cancelled', 'PO_CANCEL_ERROR')
+
     # ========================================
     # V2 SUPPLY CHAIN ROUTES
     # ========================================
-    
+
     @app.route('/api/v2/supply-chain/shipments', methods=['POST'])
     def v2_create_shipment():
-        """V2: Create a new shipment"""
+        """V2: Create a new shipment (contract requires client-supplied trackingNumber)."""
         try:
-            # Check if request has JSON content type
             if not request.is_json:
                 return v2_error_response(
                     'INVALID_CONTENT_TYPE',
@@ -2548,11 +2746,7 @@ def create_app() -> Flask:
                     None,
                     400
                 )
-
-            # Get JSON data
             data = request.get_json()
-
-            # Check if JSON data was provided
             if data is None:
                 return v2_error_response(
                     'MISSING_JSON_DATA',
@@ -2560,59 +2754,69 @@ def create_app() -> Flask:
                     None,
                     400
                 )
+            from datetime import date as date_type
 
-            # Create shipment with provided data
-            shipment = {
-                'id': 'ship-' + str(datetime.utcnow().timestamp()),
-                'trackingNumber': 'TRK-' + str(int(datetime.utcnow().timestamp())),
-                'orderId': data.get('orderId'),
-                'carrier': data.get('carrier'),
-                'origin': data.get('origin'),
-                'destination': data.get('destination'),
-                'shipDate': data.get('shipDate'),
-                'estimatedDelivery': data.get('estimatedDelivery'),
-                'status': 'pending'
-            }
+            def _parse_date(s):
+                if not s:
+                    return None
+                try:
+                    return date_type.fromisoformat(s)
+                except ValueError:
+                    return None
 
-            # Store the created shipment in the in-memory list
-            created_shipments.append(shipment)
-            return v2_success_response(shipment, 201)
-
+            shipment = Shipment(
+                id='ship-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                tracking_number=data.get('trackingNumber') or 'TRK-' + str(int(datetime.utcnow().timestamp())),
+                order_id=data.get('orderId'),
+                carrier=data.get('carrier'),
+                origin=_addr_to_db(data.get('origin')),
+                destination=_addr_to_db(data.get('destination')),
+                ship_date=_parse_date(data.get('shipDate')),
+                estimated_delivery=_parse_date(data.get('estimatedDeliveryDate') or data.get('estimatedDelivery')),
+                status='pending',
+            )
+            db.session.add(shipment)
+            db.session.commit()
+            return v2_success_response(serialize_shipment_v2(shipment), 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('SHIPMENT_CREATE_ERROR', 'Failed to create shipment', str(e), 400)
-    
+
     @app.route('/api/v2/supply-chain/shipments', methods=['GET'])
     def v2_get_all_shipments():
-        """V2: Get all shipments with pagination"""
+        """V2: Get all shipments with pagination and status/carrier filters"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-
-            # Return shipments from the in-memory storage
-            paginated = paginate_list(created_shipments, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            query = Shipment.query
+            status_filter = request.args.get('status')
+            if status_filter:
+                query = query.filter_by(status=_v2_status_to_db(status_filter))
+            carrier_filter = request.args.get('carrier')
+            if carrier_filter:
+                query = query.filter_by(carrier=carrier_filter)
+            shipments = [serialize_shipment_v2(s) for s in query.all()]
+            return v2_list_response(shipments, page, limit)
         except Exception as e:
             return v2_error_response('SHIPMENTS_FETCH_ERROR', 'Failed to fetch shipments', str(e), 500)
-    
+
     @app.route('/api/v2/supply-chain/shipments/<shipment_id>', methods=['GET'])
     def v2_get_shipment_by_id(shipment_id):
         """V2: Get shipment by ID"""
         try:
-            result = {
-                'id': shipment_id,
-                'trackingNumber': 'TRK-001',
-                'status': 'in_transit',
-                'estimatedDelivery': '2024-02-01'
-            }
-            return v2_success_response(result)
+            s = db.session.get(Shipment, shipment_id)
+            if s is None:
+                return v2_error_response('SHIPMENT_NOT_FOUND', f'Shipment {shipment_id} not found', None, 404)
+            return v2_success_response(serialize_shipment_v2(s))
         except Exception as e:
             return v2_error_response('SHIPMENT_FETCH_ERROR', 'Failed to fetch shipment', str(e), 500)
+
+    # Valid v2 shipment statuses (camelCase per contract)
+    _V2_SHIPMENT_STATUSES = ['pending', 'dispatched', 'inTransit', 'delivered', 'cancelled']
 
     @app.route('/api/v2/supply-chain/shipments/<shipment_id>', methods=['PUT'])
     def v2_update_shipment(shipment_id):
         """V2: Update a shipment by ID"""
         try:
-            # Check if request has JSON content type
             if not request.is_json:
                 return v2_error_response(
                     'INVALID_CONTENT_TYPE',
@@ -2620,11 +2824,7 @@ def create_app() -> Flask:
                     None,
                     400
                 )
-
-            # Get JSON data
             data = request.get_json()
-
-            # Check if JSON data was provided
             if data is None:
                 return v2_error_response(
                     'MISSING_JSON_DATA',
@@ -2632,72 +2832,41 @@ def create_app() -> Flask:
                     None,
                     400
                 )
-
-            # Find the shipment in created_shipments list
-            shipment = None
-            shipment_index = None
-            for idx, ship in enumerate(created_shipments):
-                if ship['id'] == shipment_id:
-                    shipment = ship
-                    shipment_index = idx
-                    break
-
-            # Return 404 if shipment not found
-            if not shipment:
+            s = db.session.get(Shipment, shipment_id)
+            if s is None:
                 return v2_error_response(
                     'SHIPMENT_NOT_FOUND',
                     f'Shipment with ID {shipment_id} not found',
                     None,
                     404
                 )
-
-            # Validate required fields if provided
             if 'carrier' in data and not data['carrier']:
-                return v2_error_response(
-                    'VALIDATION_ERROR',
-                    'Carrier cannot be empty',
-                    None,
-                    400
-                )
-
+                return v2_error_response('VALIDATION_ERROR', 'Carrier cannot be empty', None, 400)
             if 'trackingNumber' in data and not data['trackingNumber']:
-                return v2_error_response(
-                    'VALIDATION_ERROR',
-                    'Tracking number cannot be empty',
-                    None,
-                    400
-                )
-
+                return v2_error_response('VALIDATION_ERROR', 'Tracking number cannot be empty', None, 400)
             if 'status' in data:
-                valid_statuses = ['pending', 'in_transit', 'delivered', 'cancelled', 'delayed']
-                if data['status'] not in valid_statuses:
+                if data['status'] not in _V2_SHIPMENT_STATUSES:
                     return v2_error_response(
                         'VALIDATION_ERROR',
-                        f'Invalid status. Must be one of: {", ".join(valid_statuses)}',
+                        f'Invalid status. Must be one of: {", ".join(_V2_SHIPMENT_STATUSES)}',
                         None,
                         400
                     )
-
-            # Update the shipment with provided data
+                s.status = _v2_status_to_db(data['status'])
             if 'carrier' in data:
-                shipment['carrier'] = data['carrier']
+                s.carrier = data['carrier']
             if 'trackingNumber' in data:
-                shipment['trackingNumber'] = data['trackingNumber']
-            if 'status' in data:
-                shipment['status'] = data['status']
+                s.tracking_number = data['trackingNumber']
             if 'estimatedDeliveryDate' in data:
-                shipment['estimatedDelivery'] = data['estimatedDeliveryDate']
-
-            # Update the timestamp
-            shipment['updatedAt'] = datetime.utcnow().isoformat() + 'Z'
-
-            # Update the shipment in the list
-            created_shipments[shipment_index] = shipment
-
-            # Return the updated shipment
-            return v2_success_response(shipment)
-
+                from datetime import date as date_type
+                try:
+                    s.estimated_delivery = date_type.fromisoformat(data['estimatedDeliveryDate'])
+                except (TypeError, ValueError):
+                    pass
+            db.session.commit()
+            return v2_success_response(serialize_shipment_v2(s))
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('SHIPMENT_UPDATE_ERROR', 'Failed to update shipment', str(e), 500)
 
     @app.route('/api/v2/supply-chain/shipments/<shipment_id>', methods=['PATCH'])
@@ -2705,150 +2874,117 @@ def create_app() -> Flask:
         """V2: Partially update shipment"""
         try:
             data = request.get_json()
-
             if not data:
                 return v2_error_response('INVALID_DATA', 'No data provided for update', None, 400)
-
-            # Find the shipment in created_shipments list
-            shipment = None
-            for ship in created_shipments:
-                if ship['id'] == shipment_id:
-                    shipment = ship
-                    break
-
-            if not shipment:
+            s = db.session.get(Shipment, shipment_id)
+            if s is None:
                 return v2_error_response('SHIPMENT_NOT_FOUND', 'Shipment not found', None, 404)
-
-            # Update only the provided fields (partial update)
-            updateable_fields = ['status', 'trackingNumber', 'orderId', 'items', 'origin', 'destination', 'estimatedDelivery', 'location']
-            updated_fields = []
-
-            for field in updateable_fields:
-                if field in data:
-                    shipment[field] = data[field]
-                    updated_fields.append(field)
-
-            # Update the timestamp
-            shipment['updatedAt'] = datetime.utcnow().isoformat() + 'Z'
-
-            # Return the updated shipment
-            result = shipment.copy()
-            result['updatedFields'] = updated_fields
-
-            return v2_success_response(result)
-
+            if 'status' in data:
+                if data['status'] not in _V2_SHIPMENT_STATUSES:
+                    return v2_error_response(
+                        'VALIDATION_ERROR',
+                        f'Invalid status. Must be one of: {", ".join(_V2_SHIPMENT_STATUSES)}',
+                        None,
+                        400
+                    )
+                s.status = _v2_status_to_db(data['status'])
+            if 'trackingNumber' in data:
+                s.tracking_number = data['trackingNumber']
+            if 'orderId' in data:
+                s.order_id = data['orderId']
+            if 'origin' in data:
+                s.origin = _addr_to_db(data['origin'])
+            if 'destination' in data:
+                s.destination = _addr_to_db(data['destination'])
+            if 'estimatedDeliveryDate' in data or 'estimatedDelivery' in data:
+                from datetime import date as date_type
+                try:
+                    s.estimated_delivery = date_type.fromisoformat(
+                        data.get('estimatedDeliveryDate') or data.get('estimatedDelivery'))
+                except (TypeError, ValueError):
+                    pass
+            db.session.commit()
+            return v2_success_response(serialize_shipment_v2(s))
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('SHIPMENT_UPDATE_ERROR', 'Failed to update shipment', str(e), 500)
 
     @app.route('/api/v2/supply-chain/shipments/tracking/<tracking_number>', methods=['GET'])
     def v2_get_shipment_by_tracking(tracking_number):
         """V2: Get shipment by tracking number"""
         try:
-            result = {
-                'trackingNumber': tracking_number,
-                'status': 'in_transit',
-                'currentLocation': 'Distribution Center',
-                'estimatedDelivery': '2024-02-01'
-            }
-            return v2_success_response(result)
+            s = Shipment.query.filter_by(tracking_number=tracking_number).first()
+            if s is None:
+                return v2_error_response('SHIPMENT_NOT_FOUND', f'Shipment with tracking number {tracking_number} not found', None, 404)
+            return v2_success_response(serialize_shipment_v2(s))
         except Exception as e:
             return v2_error_response('TRACKING_FETCH_ERROR', 'Failed to fetch tracking info', str(e), 500)
-    
+
     @app.route('/api/v2/supply-chain/shipments/order/<order_id>', methods=['GET'])
     def v2_get_shipments_by_order(order_id):
         """V2: Get shipments for an order with pagination"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            shipments = [
-                {
-                    'id': 'ship-001',
-                    'orderId': order_id,
-                    'trackingNumber': 'TRK-001',
-                    'status': 'delivered'
-                }
-            ]
-            
-            paginated = paginate_list(shipments, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            shipments = [serialize_shipment_v2(s) for s in Shipment.query.filter_by(order_id=order_id).all()]
+            return v2_list_response(shipments, page, limit)
         except Exception as e:
             return v2_error_response('ORDER_SHIPMENTS_ERROR', 'Failed to fetch order shipments', str(e), 500)
-    
+
+    def _v2_transition_shipment(shipment_id, new_status, error_code):
+        """Update shipment status in the DB and return the v2 envelope."""
+        try:
+            s = db.session.get(Shipment, shipment_id)
+            if s is None:
+                return v2_error_response('SHIPMENT_NOT_FOUND', f'Shipment {shipment_id} not found', None, 404)
+            s.status = new_status
+            db.session.commit()
+            return v2_success_response(serialize_shipment_v2(s))
+        except Exception as e:
+            db.session.rollback()
+            return v2_error_response(error_code, f'Failed to update shipment {shipment_id}', str(e), 400)
+
     @app.route('/api/v2/supply-chain/shipments/<shipment_id>/dispatch', methods=['POST'])
     def v2_dispatch_shipment(shipment_id):
         """V2: Dispatch a shipment"""
-        try:
-            result = {
-                'id': shipment_id,
-                'status': 'dispatched',
-                'dispatchedAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Shipment dispatched successfully'
-            }
-            return v2_success_response(result)
-        except Exception as e:
-            return v2_error_response('SHIPMENT_DISPATCH_ERROR', 'Failed to dispatch shipment', str(e), 400)
-    
+        return _v2_transition_shipment(shipment_id, 'dispatched', 'SHIPMENT_DISPATCH_ERROR')
+
     @app.route('/api/v2/supply-chain/shipments/<shipment_id>/status', methods=['PUT'])
     def v2_update_shipment_status(shipment_id):
         """V2: Update shipment status"""
-        try:
-            data = request.get_json()
-            result = {
-                'id': shipment_id,
-                'status': data.get('status'),
-                'location': data.get('location'),
-                'updatedAt': datetime.utcnow().isoformat() + 'Z'
-            }
-            return v2_success_response(result)
-        except Exception as e:
-            return v2_error_response('STATUS_UPDATE_ERROR', 'Failed to update shipment status', str(e), 400)
-    
+        data = request.get_json()
+        status = data.get('status')
+        if status not in _V2_SHIPMENT_STATUSES:
+            return v2_error_response(
+                'VALIDATION_ERROR',
+                f'Invalid status. Must be one of: {", ".join(_V2_SHIPMENT_STATUSES)}',
+                None,
+                400
+            )
+        return _v2_transition_shipment(shipment_id, _v2_status_to_db(status), 'STATUS_UPDATE_ERROR')
+
     @app.route('/api/v2/supply-chain/shipments/<shipment_id>/deliver', methods=['POST'])
     def v2_mark_delivered(shipment_id):
         """V2: Mark shipment as delivered"""
-        try:
-            result = {
-                'id': shipment_id,
-                'status': 'delivered',
-                'deliveredAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Shipment marked as delivered'
-            }
-            return v2_success_response(result)
-        except Exception as e:
-            return v2_error_response('DELIVERY_ERROR', 'Failed to mark shipment as delivered', str(e), 400)
-    
+        return _v2_transition_shipment(shipment_id, 'delivered', 'DELIVERY_ERROR')
+
     @app.route('/api/v2/supply-chain/shipments/<shipment_id>/cancel', methods=['POST'])
     def v2_cancel_shipment(shipment_id):
         """V2: Cancel a shipment"""
-        try:
-            result = {
-                'id': shipment_id,
-                'status': 'cancelled',
-                'cancelledAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Shipment cancelled'
-            }
-            return v2_success_response(result)
-        except Exception as e:
-            return v2_error_response('SHIPMENT_CANCEL_ERROR', 'Failed to cancel shipment', str(e), 400)
-    
+        return _v2_transition_shipment(shipment_id, 'cancelled', 'SHIPMENT_CANCEL_ERROR')
+
     @app.route('/api/v2/supply-chain/carriers/performance', methods=['GET'])
     def v2_get_carrier_performance():
         """V2: Get carrier performance metrics with pagination"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
+            page, limit = v2_page_args()
             carriers = [
                 {'name': 'FedEx', 'onTimeRate': 95, 'avgDeliveryTime': 2.5},
                 {'name': 'UPS', 'onTimeRate': 93, 'avgDeliveryTime': 2.8}
             ]
-            
-            paginated = paginate_list(carriers, page, limit)
-            return v2_success_response(paginated)
+            return v2_list_response(carriers, page, limit)
         except Exception as e:
             return v2_error_response('CARRIER_PERFORMANCE_ERROR', 'Failed to fetch carrier performance', str(e), 500)
-    
+
     @app.route('/api/v2/supply-chain/inbound/summary', methods=['GET'])
     def v2_get_inbound_summary():
         """V2: Get inbound shipment summary"""
@@ -2862,7 +2998,7 @@ def create_app() -> Flask:
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('INBOUND_SUMMARY_ERROR', 'Failed to fetch inbound summary', str(e), 500)
-    
+
     @app.route('/api/v2/supply-chain/outbound/summary', methods=['GET'])
     def v2_get_outbound_summary():
         """V2: Get outbound shipment summary"""
@@ -2876,109 +3012,131 @@ def create_app() -> Flask:
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('OUTBOUND_SUMMARY_ERROR', 'Failed to fetch outbound summary', str(e), 500)
-    
+
     # ========================================
     # V2 INVENTORY ROUTES
     # ========================================
-    
+
     @app.route('/api/v2/inventory/items', methods=['POST'])
     def v2_create_inventory_item():
-        """V2: Create a new inventory item"""
+        """V2: Create a new inventory item (contract field: quantity)."""
         try:
             data = request.get_json()
-            item = {
-                'id': 'item-' + str(datetime.utcnow().timestamp()),
-                'sku': data.get('sku'),
-                'name': data.get('name'),
-                'description': data.get('description'),
-                'category': data.get('category'),
-                'unitPrice': data.get('unitPrice'),
-                'quantityOnHand': data.get('quantityOnHand', 0),
-                'reorderPoint': data.get('reorderPoint', 10),
-                'reorderQuantity': data.get('reorderQuantity', 50)
-            }
-            return v2_success_response(item, 201)
+            qty = data.get('quantity') if data.get('quantity') is not None else data.get('quantityOnHand', 0)
+            item = InventoryItem(
+                id='item-' + str(int(datetime.utcnow().timestamp() * 1000)),
+                sku=data.get('sku'),
+                name=data.get('name', ''),
+                description=data.get('description'),
+                category=data.get('category'),
+                unit_price=data.get('unitPrice'),
+                quantity_on_hand=int(qty),
+                reorder_point=data.get('reorderPoint', 10),
+                reorder_quantity=data.get('reorderQuantity', 50),
+            )
+            db.session.add(item)
+            db.session.commit()
+            return v2_success_response(serialize_inventory_item_v2(item), 201)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('ITEM_CREATE_ERROR', 'Failed to create inventory item', str(e), 400)
-    
+
     @app.route('/api/v2/inventory/items', methods=['GET'])
     def v2_get_all_inventory_items():
-        """V2: Get all inventory items with pagination"""
+        """V2: Get all inventory items with pagination and category/status/lowStock filters"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            items = []
-            if mock_data and hasattr(mock_data, 'mock_inventory_items'):
-                items = [convert_to_camel_case(item) for item in mock_data.mock_inventory_items]
-            
-            paginated = paginate_list(items, page, limit)
-            return v2_success_response(paginated)
+            page, limit = v2_page_args()
+            query = InventoryItem.query
+            category_filter = request.args.get('category')
+            if category_filter:
+                query = query.filter_by(category=category_filter)
+            if request.args.get('lowStock', '').lower() == 'true':
+                query = query.filter(InventoryItem.quantity_on_hand < InventoryItem.reorder_point)
+            items = [serialize_inventory_item_v2(i) for i in query.all()]
+            status_filter = request.args.get('status')
+            if status_filter:
+                items = [i for i in items if i['status'] == status_filter]
+            return v2_list_response(items, page, limit)
         except Exception as e:
             return v2_error_response('ITEMS_FETCH_ERROR', 'Failed to fetch inventory items', str(e), 500)
-    
+
     @app.route('/api/v2/inventory/items/<item_id>', methods=['GET'])
     def v2_get_inventory_item_by_id(item_id):
         """V2: Get inventory item by ID"""
         try:
-            result = {
-                'id': item_id,
-                'sku': 'SKU-001',
-                'name': 'Sample Item',
-                'quantityOnHand': 100,
-                'unitPrice': 25.00
-            }
-            return v2_success_response(result)
+            i = db.session.get(InventoryItem, item_id)
+            if i is None:
+                return v2_error_response('ITEM_NOT_FOUND', f'Inventory item {item_id} not found', None, 404)
+            return v2_success_response(serialize_inventory_item_v2(i))
         except Exception as e:
             return v2_error_response('ITEM_FETCH_ERROR', 'Failed to fetch inventory item', str(e), 500)
-    
+
     @app.route('/api/v2/inventory/items/sku/<sku>', methods=['GET'])
     def v2_get_inventory_item_by_sku(sku):
         """V2: Get inventory item by SKU"""
         try:
-            result = {
-                'sku': sku,
-                'name': 'Sample Item',
-                'quantityOnHand': 100,
-                'unitPrice': 25.00
-            }
-            return v2_success_response(result)
+            i = InventoryItem.query.filter_by(sku=sku).first()
+            if i is None:
+                return v2_error_response('ITEM_NOT_FOUND', f'Inventory item with SKU {sku} not found', None, 404)
+            return v2_success_response(serialize_inventory_item_v2(i))
         except Exception as e:
             return v2_error_response('ITEM_FETCH_ERROR', 'Failed to fetch inventory item by SKU', str(e), 500)
-    
+
     @app.route('/api/v2/inventory/items/<item_id>', methods=['PUT'])
     def v2_update_inventory_item(item_id):
         """V2: Update inventory item"""
         try:
+            i = db.session.get(InventoryItem, item_id)
+            if i is None:
+                return v2_error_response('ITEM_NOT_FOUND', f'Inventory item {item_id} not found', None, 404)
             data = request.get_json()
-            result = {
-                'id': item_id,
-                'name': data.get('name'),
-                'unitPrice': data.get('unitPrice'),
-                'reorderPoint': data.get('reorderPoint'),
-                'message': 'Inventory item updated successfully'
-            }
-            return v2_success_response(result)
+            if 'name' in data:
+                i.name = data['name']
+            if 'description' in data:
+                i.description = data['description']
+            if 'category' in data:
+                i.category = data['category']
+            if 'unitPrice' in data:
+                i.unit_price = data['unitPrice']
+            if 'reorderPoint' in data:
+                i.reorder_point = data['reorderPoint']
+            if 'reorderQuantity' in data:
+                i.reorder_quantity = data['reorderQuantity']
+            qty = data.get('quantity') if data.get('quantity') is not None else data.get('quantityOnHand')
+            if qty is not None:
+                i.quantity_on_hand = int(qty)
+            db.session.commit()
+            return v2_success_response(serialize_inventory_item_v2(i))
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('ITEM_UPDATE_ERROR', 'Failed to update inventory item', str(e), 400)
-    
+
     @app.route('/api/v2/inventory/stock/adjust', methods=['POST'])
     def v2_adjust_stock():
         """V2: Adjust stock quantity"""
         try:
             data = request.get_json()
+            item = db.session.get(InventoryItem, data.get('itemId')) if data.get('itemId') else None
+            if item is None:
+                return v2_error_response('ITEM_NOT_FOUND', f"Inventory item {data.get('itemId')} not found", None, 404)
+            quantity = int(data.get('quantity', 0))
+            if data.get('adjustmentType') == 'decrease':
+                quantity = -quantity
+            item.quantity_on_hand = (item.quantity_on_hand or 0) + quantity
+            db.session.commit()
             result = {
-                'itemId': data.get('itemId'),
+                'itemId': item.id,
                 'adjustmentType': data.get('adjustmentType'),
                 'quantity': data.get('quantity'),
-                'newQuantity': data.get('newQuantity', 0),
+                'newQuantity': item.quantity_on_hand,
                 'reason': data.get('reason'),
                 'adjustedAt': datetime.utcnow().isoformat() + 'Z'
             }
             return v2_success_response(result)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('STOCK_ADJUST_ERROR', 'Failed to adjust stock', str(e), 400)
-    
+
     @app.route('/api/v2/inventory/stock/reserve', methods=['POST'])
     def v2_reserve_stock():
         """V2: Reserve stock for an order"""
@@ -2994,7 +3152,7 @@ def create_app() -> Flask:
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('STOCK_RESERVE_ERROR', 'Failed to reserve stock', str(e), 400)
-    
+
     @app.route('/api/v2/inventory/stock/release', methods=['POST'])
     def v2_release_reserved_stock():
         """V2: Release reserved stock"""
@@ -3005,12 +3163,11 @@ def create_app() -> Flask:
                 'itemId': data.get('itemId'),
                 'quantity': data.get('quantity'),
                 'releasedAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Stock reservation released'
             }
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('STOCK_RELEASE_ERROR', 'Failed to release stock', str(e), 400)
-    
+
     @app.route('/api/v2/inventory/stock/fulfill', methods=['POST'])
     def v2_fulfill_reservation():
         """V2: Fulfill a stock reservation"""
@@ -3021,87 +3178,95 @@ def create_app() -> Flask:
                 'itemId': data.get('itemId'),
                 'quantity': data.get('quantity'),
                 'fulfilledAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Reservation fulfilled'
             }
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('FULFILL_ERROR', 'Failed to fulfill reservation', str(e), 400)
-    
+
     @app.route('/api/v2/inventory/stock/receive', methods=['POST'])
     def v2_receive_stock():
         """V2: Receive stock from purchase order"""
         try:
             data = request.get_json()
+            item = db.session.get(InventoryItem, data.get('itemId')) if data.get('itemId') else None
+            if item is None:
+                return v2_error_response('ITEM_NOT_FOUND', f"Inventory item {data.get('itemId')} not found", None, 404)
+            item.quantity_on_hand = (item.quantity_on_hand or 0) + int(data.get('quantity', 0))
+            db.session.commit()
             result = {
-                'itemId': data.get('itemId'),
+                'itemId': item.id,
                 'quantity': data.get('quantity'),
+                'newQuantityOnHand': item.quantity_on_hand,
                 'purchaseOrderId': data.get('purchaseOrderId'),
                 'receivedAt': datetime.utcnow().isoformat() + 'Z',
-                'message': 'Stock received successfully'
             }
             return v2_success_response(result)
         except Exception as e:
+            db.session.rollback()
             return v2_error_response('STOCK_RECEIVE_ERROR', 'Failed to receive stock', str(e), 400)
-    
+
     @app.route('/api/v2/inventory/low-stock', methods=['GET'])
     def v2_get_low_stock_items():
         """V2: Get items with low stock with pagination"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
-            low_stock_items = [
-                {'id': 'item-001', 'sku': 'SKU-001', 'quantityOnHand': 5, 'reorderPoint': 10}
-            ]
-            
-            result = {
-                'lowStockCount': 5,
-                'items': paginate_list(low_stock_items, page, limit)
-            }
-            return v2_success_response(result)
+            page, limit = v2_page_args()
+            low = InventoryItem.query.filter(
+                InventoryItem.quantity_on_hand < InventoryItem.reorder_point
+            ).all()
+            return v2_list_response([serialize_inventory_item_v2(i) for i in low], page, limit)
         except Exception as e:
             return v2_error_response('LOW_STOCK_ERROR', 'Failed to fetch low stock items', str(e), 500)
-    
+
     @app.route('/api/v2/inventory/valuation', methods=['GET'])
     def v2_get_inventory_valuation():
         """V2: Get total inventory valuation"""
         try:
+            from sqlalchemy import func
+            rows = db.session.query(
+                func.sum(InventoryItem.unit_price * InventoryItem.quantity_on_hand),
+                func.count(InventoryItem.id),
+            ).one()
+            total_value = _f(rows[0])
+            total_items = rows[1] or 0
             result = {
-                'totalValue': 250000,
-                'totalItems': 450,
-                'averageValue': 555.56,
-                'valuationDate': datetime.utcnow().isoformat() + 'Z'
+                'totalValue': total_value,
+                'totalItems': total_items,
+                'averageValue': round(total_value / total_items, 2) if total_items else 0,
+                'valuationDate': datetime.utcnow().isoformat() + 'Z',
             }
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('VALUATION_ERROR', 'Failed to fetch inventory valuation', str(e), 500)
-    
+
     @app.route('/api/v2/inventory/categories', methods=['GET'])
     def v2_get_category_breakdown():
         """V2: Get inventory breakdown by category with pagination"""
         try:
-            page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 10))
-            
+            page, limit = v2_page_args()
+            from sqlalchemy import func
+            rows = db.session.query(
+                InventoryItem.category,
+                func.count(InventoryItem.id),
+                func.sum(InventoryItem.unit_price * InventoryItem.quantity_on_hand),
+            ).group_by(InventoryItem.category).all()
             categories = [
-                {'name': 'Electronics', 'itemCount': 150, 'totalValue': 100000},
-                {'name': 'Office Supplies', 'itemCount': 200, 'totalValue': 50000}
+                {'name': row[0] or 'Uncategorized', 'itemCount': row[1], 'totalValue': _f(row[2])}
+                for row in rows
             ]
-            
-            paginated = paginate_list(categories, page, limit)
-            return v2_success_response(paginated)
+            return v2_list_response(categories, page, limit)
         except Exception as e:
             return v2_error_response('CATEGORIES_ERROR', 'Failed to fetch category breakdown', str(e), 500)
-    
+
     # ========================================
     # END OF V2 API ROUTES
     # ========================================
 
     # Mount all module routes - ALL IN ONE APPLICATION
     # Using Flask blueprints for modular route organization
-    if hr_routes:
-        app.register_blueprint(hr_routes.bp, url_prefix='/api/hr')
-    
+    # NOTE: hr_routes.bp is intentionally NOT registered. Its mock-data routes
+    # (snake_case responses, integer IDs) duplicate the /api/hr/* routes defined
+    # above and shadow them for numeric IDs, breaking the API contract.
+
     if payroll_routes:
         app.register_blueprint(payroll_routes.bp, url_prefix='/api/payroll')
     
