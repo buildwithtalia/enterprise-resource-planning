@@ -284,7 +284,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   /hr/employees/{id}/promote:
-    post:
+    patch:
       tags:
         - Human Resources
       summary: Promote Employee
@@ -1702,6 +1702,12 @@ components:
           type: string
           format: date
           example: "2024-01-15"
+        # Explicit employee list; omit to process all active employees
+        employeeIds:
+          type: array
+          items:
+            type: string
+          example: ["emp_1234567890", "emp_0987654321"]
         departmentId:
           type: string
           example: "dept_engineering"
@@ -2370,7 +2376,6 @@ components:
         - sku
         - name
         - category
-        - quantity
         - unitPrice
         - reorderPoint
         - reorderQuantity
@@ -2389,7 +2394,13 @@ components:
         category:
           type: string
           example: "Office Furniture"
+        # `quantity` is the canonical field; `quantityOnHand` is accepted as an alias
         quantity:
+          type: number
+          format: double
+          minimum: 0
+          example: 50
+        quantityOnHand:
           type: number
           format: double
           minimum: 0
