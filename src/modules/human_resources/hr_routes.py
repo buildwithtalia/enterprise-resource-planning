@@ -83,7 +83,7 @@ def get_employees():
         "timestamp": datetime.utcnow().isoformat() + 'Z'
     })
 
-@bp.route('/employees/<int:employee_id>', methods=['GET'])
+@bp.route('/employees/<employee_id>', methods=['GET'])
 def get_employee(employee_id):
     """Get employee by ID"""
     employee = next((emp for emp in mock_employees if emp['id'] == employee_id), None)
@@ -147,7 +147,7 @@ def get_departments():
         "timestamp": datetime.utcnow().isoformat() + 'Z'
     })
 
-@bp.route('/departments/<int:department_id>', methods=['GET'])
+@bp.route('/departments/<department_id>', methods=['GET'])
 def get_department(department_id):
     """Get department by ID"""
     department = next((dept for dept in mock_departments if dept['id'] == department_id), None)
@@ -165,7 +165,7 @@ def get_department(department_id):
         "timestamp": datetime.utcnow().isoformat() + 'Z'
     })
 
-@bp.route('/departments/<int:department_id>/employees', methods=['GET'])
+@bp.route('/departments/<department_id>/employees', methods=['GET'])
 def get_department_employees(department_id):
     """Get all employees in a specific department"""
     department = next((dept for dept in mock_departments if dept['id'] == department_id), None)

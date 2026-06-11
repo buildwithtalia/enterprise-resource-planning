@@ -32,6 +32,8 @@ class Employee(db.Model):
     email = db.Column(db.String, unique=True, nullable=False)
     department_id = db.Column(db.String, db.ForeignKey("departments.id"))
     position = db.Column(db.String)
+    job_title = db.Column(db.String)
+    phone_number = db.Column(db.String)
     salary = db.Column(db.Numeric(12, 2))
     hire_date = db.Column(db.Date)
     status = db.Column(db.String, default="active")
@@ -79,6 +81,7 @@ class Customer(db.Model):
     address = db.Column(db.String)
     credit_limit = db.Column(db.Numeric(15, 2), default=50000)
     current_balance = db.Column(db.Numeric(15, 2), default=0)
+    payment_terms = db.Column(db.String, default="Net 30")
     status = db.Column(db.String, default="active")
 
 
@@ -92,6 +95,8 @@ class Invoice(db.Model):
     subtotal = db.Column(db.Numeric(15, 2))
     tax_amount = db.Column(db.Numeric(15, 2))
     total_amount = db.Column(db.Numeric(15, 2))
+    paid_amount = db.Column(db.Numeric(15, 2), default=0)
+    balance_due = db.Column(db.Numeric(15, 2))
     status = db.Column(db.String, default="draft")
 
 
@@ -103,8 +108,8 @@ class Vendor(db.Model):
     phone = db.Column(db.String)
     address = db.Column(db.String)
     payment_terms = db.Column(db.String, default="Net 30")
-    # category is required by the API contract
     category = db.Column(db.String)
+    rating = db.Column(db.Numeric(3, 2))
     status = db.Column(db.String, default="active")
 
 

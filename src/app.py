@@ -9,7 +9,11 @@ from sqlalchemy import text
 from datetime import datetime
 import logging
 import os
+import time
 from typing import Dict, Any
+
+APP_START_TIME = time.time()
+APP_VERSION = "1.0.0"
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -77,10 +81,9 @@ def serialize_employee(e):
         "lastName": e.last_name,
         "email": e.email,
         "departmentId": e.department_id,
-        # Both field names are surfaced: contract/collection uses jobTitle,
-        # legacy callers may use position.
         "position": e.position,
-        "jobTitle": e.position,
+        "jobTitle": e.job_title or e.position,
+        "phoneNumber": e.phone_number,
         "salary": _f(e.salary),
         "hireDate": _date(e.hire_date),
         "status": e.status,
@@ -134,11 +137,14 @@ def serialize_customer(c):
         "address": c.address,
         "creditLimit": _f(c.credit_limit),
         "currentBalance": _f(c.current_balance),
+        "paymentTerms": c.payment_terms,
         "status": c.status,
     }
 
 
 def serialize_invoice(i):
+    total = _f(i.total_amount)
+    paid = _f(i.paid_amount)
     return {
         "id": i.id,
         "invoiceNumber": i.invoice_number,
@@ -147,7 +153,9 @@ def serialize_invoice(i):
         "dueDate": _date(i.due_date),
         "subtotal": _f(i.subtotal),
         "taxAmount": _f(i.tax_amount),
-        "totalAmount": _f(i.total_amount),
+        "totalAmount": total,
+        "paidAmount": paid,
+        "balanceDue": _f(i.balance_due) if i.balance_due is not None else round(total - paid, 2),
         "status": i.status,
     }
 
@@ -161,6 +169,7 @@ def serialize_vendor(v):
         "address": v.address,
         "paymentTerms": v.payment_terms,
         "category": v.category,
+        "rating": _f(v.rating) if v.rating is not None else None,
         "status": v.status,
     }
 
@@ -300,8 +309,9 @@ def create_app() -> Flask:
         """Health check endpoint to verify service status"""
         return jsonify({
             'status': 'healthy',
-            'service': 'ERP Monolith',
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
+            'timestamp': datetime.utcnow().isoformat() + 'Z',
+            'uptime': round(time.time() - APP_START_TIME, 3),
+            'version': APP_VERSION,
         })
 
     @app.route('/debug-sentry', methods=['GET'])
@@ -506,6 +516,8 @@ def create_app() -> Flask:
             email=data.get('email', ''),
             department_id=data.get('departmentId'),
             position=position,
+            job_title=data.get('jobTitle') or position,
+            phone_number=data.get('phoneNumber'),
             salary=data.get('salary'),
             hire_date=hire_date,
             status='active',
@@ -920,6 +932,7 @@ def create_app() -> Flask:
             address=data.get('address'),
             credit_limit=data.get('creditLimit', 50000),
             current_balance=0,
+            payment_terms=data.get('paymentTerms', 'Net 30'),
             status='active',
         )
         db.session.add(cust)
@@ -2570,7 +2583,7 @@ def create_app() -> Flask:
                 'origin': data.get('origin'),
                 'destination': data.get('destination'),
                 'shipDate': data.get('shipDate'),
-                'estimatedDelivery': data.get('estimatedDelivery'),
+                'estimatedDeliveryDate': data.get('estimatedDeliveryDate') or data.get('estimatedDelivery'),
                 'status': 'pending'
             }
 
@@ -2669,7 +2682,7 @@ def create_app() -> Flask:
                 )
 
             if 'status' in data:
-                valid_statuses = ['pending', 'in_transit', 'delivered', 'cancelled', 'delayed']
+                valid_statuses = ['pending', 'dispatched', 'inTransit', 'delivered', 'cancelled']
                 if data['status'] not in valid_statuses:
                     return v2_error_response(
                         'VALIDATION_ERROR',
@@ -2746,7 +2759,7 @@ def create_app() -> Flask:
         try:
             result = {
                 'trackingNumber': tracking_number,
-                'status': 'in_transit',
+                'status': 'inTransit',
                 'currentLocation': 'Distribution Center',
                 'estimatedDelivery': '2024-02-01'
             }
