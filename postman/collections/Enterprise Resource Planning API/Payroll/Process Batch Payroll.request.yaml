@@ -51,7 +51,7 @@ description: |-
   ### Example Request
 
   ```
-  POST {{baseUrl}}/api/payroll/batch-process
+  POST {{baseUrl}}/api/payroll/process-batch
   Content-Type: application/json
 
   {
