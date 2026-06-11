@@ -9,8 +9,9 @@ body:
   type: json
   content: |-
     {
-      "employeeIds": ["emp-001", "emp-002", "emp-003"],
       "payPeriodStart": "2024-01-01",
-      "payPeriodEnd": "2024-01-31"
+      "payPeriodEnd": "2024-01-31",
+      "departmentId": "dept-001",
+      "excludeEmployees": []
     }
 order: 4000
