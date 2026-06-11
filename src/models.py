@@ -35,6 +35,9 @@ class Employee(db.Model):
     salary = db.Column(db.Numeric(12, 2))
     hire_date = db.Column(db.Date)
     status = db.Column(db.String, default="active")
+    phone_number = db.Column(db.String)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class PayrollRecord(db.Model):
@@ -47,6 +50,8 @@ class PayrollRecord(db.Model):
     deductions = db.Column(db.Numeric(12, 2))
     tax_withheld = db.Column(db.Numeric(12, 2))
     net_pay = db.Column(db.Numeric(12, 2))
+    bonus = db.Column(db.Numeric(12, 2), default=0)
+    overtime = db.Column(db.Numeric(12, 2), default=0)
     status = db.Column(db.String, default="pending")
 
 
@@ -104,8 +109,8 @@ class Vendor(db.Model):
     phone = db.Column(db.String)
     address = db.Column(db.String)
     payment_terms = db.Column(db.String, default="Net 30")
-    # category is required by the API contract
     category = db.Column(db.String)
+    rating = db.Column(db.Numeric(3, 2))
     status = db.Column(db.String, default="active")
 
 
@@ -116,6 +121,7 @@ class PurchaseOrder(db.Model):
     vendor_id = db.Column(db.String, db.ForeignKey("vendors.id"))
     order_date = db.Column(db.Date)
     expected_delivery_date = db.Column(db.Date)
+    actual_delivery_date = db.Column(db.Date)
     total_amount = db.Column(db.Numeric(15, 2))
     status = db.Column(db.String, default="draft")
 
@@ -131,6 +137,8 @@ class InventoryItem(db.Model):
     quantity_on_hand = db.Column(db.Integer, default=0)
     reorder_point = db.Column(db.Integer, default=10)
     reorder_quantity = db.Column(db.Integer, default=50)
+    location = db.Column(db.String)
+    status = db.Column(db.String, default="active")
 
 
 class Shipment(db.Model):
@@ -143,4 +151,6 @@ class Shipment(db.Model):
     destination = db.Column(db.String)
     ship_date = db.Column(db.Date)
     estimated_delivery = db.Column(db.Date)
+    total_weight = db.Column(db.Numeric(10, 2))
+    shipping_cost = db.Column(db.Numeric(10, 2))
     status = db.Column(db.String, default="pending")

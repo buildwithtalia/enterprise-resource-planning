@@ -99,6 +99,8 @@ def serialize_payroll(p):
         "deductions": _f(p.deductions),
         "taxWithheld": _f(p.tax_withheld),
         "netPay": _f(p.net_pay),
+        "bonus": _f(p.bonus),
+        "overtime": _f(p.overtime),
         "status": p.status,
     }
 
@@ -170,6 +172,7 @@ def serialize_vendor(v):
         "address": v.address,
         "paymentTerms": v.payment_terms,
         "category": v.category,
+        "rating": _f(v.rating) if v.rating is not None else None,
         "status": v.status,
     }
 
@@ -181,6 +184,7 @@ def serialize_purchase_order(p):
         "vendorId": p.vendor_id,
         "orderDate": _date(p.order_date),
         "expectedDeliveryDate": _date(p.expected_delivery_date),
+        "actualDeliveryDate": _date(p.actual_delivery_date),
         "totalAmount": _f(p.total_amount),
         "status": p.status,
     }
@@ -188,6 +192,13 @@ def serialize_purchase_order(p):
 
 def serialize_inventory_item(i):
     qty = i.quantity_on_hand or 0
+    stored_status = i.status if hasattr(i, 'status') and i.status else None
+    if stored_status == 'discontinued':
+        derived_status = 'discontinued'
+    elif qty <= 0:
+        derived_status = 'out_of_stock'
+    else:
+        derived_status = 'active'
     return {
         "id": i.id,
         "sku": i.sku,
@@ -195,15 +206,14 @@ def serialize_inventory_item(i):
         "description": i.description,
         "category": i.category,
         "unitPrice": _f(i.unit_price),
-        # Contract uses `quantity`; also expose `quantityOnHand` for legacy callers.
         "quantity": qty,
         "quantityOnHand": qty,
         "reservedQuantity": 0,
         "availableQuantity": qty,
         "reorderPoint": i.reorder_point or 0,
         "reorderQuantity": i.reorder_quantity or 0,
-        # Status is derived: the model does not persist a status column
-        "status": "out_of_stock" if qty <= 0 else "active",
+        "location": i.location if hasattr(i, 'location') else None,
+        "status": derived_status,
     }
 
 
@@ -221,7 +231,6 @@ def v1_pagination(total_items):
 
 def serialize_shipment(s):
     return {
-        # Contract uses `shipmentId`; also expose `id` for legacy callers
         "id": s.id,
         "shipmentId": s.id,
         "trackingNumber": s.tracking_number,
@@ -230,9 +239,10 @@ def serialize_shipment(s):
         "origin": s.origin,
         "destination": s.destination,
         "shipDate": _date(s.ship_date),
-        # Contract field name is `estimatedDeliveryDate`
         "estimatedDeliveryDate": _date(s.estimated_delivery),
         "estimatedDelivery": _date(s.estimated_delivery),
+        "totalWeight": _f(s.total_weight) if s.total_weight is not None else None,
+        "shippingCost": _f(s.shipping_cost) if s.shipping_cost is not None else None,
         "status": s.status,
     }
 
@@ -523,6 +533,7 @@ def create_app() -> Flask:
             salary=data.get('salary'),
             hire_date=hire_date,
             status='active',
+            phone_number=data.get('phoneNumber'),
         )
         db.session.add(emp)
         db.session.commit()
@@ -574,9 +585,11 @@ def create_app() -> Flask:
             e.salary = data['salary']
         if 'status' in data:
             e.status = data['status']
+        if 'phoneNumber' in data:
+            e.phone_number = data['phoneNumber']
         db.session.commit()
         return jsonify(serialize_employee(e))
-    
+
     @app.route('/api/hr/employees/<employee_id>/promote', methods=['PATCH'])
     def promote_employee(employee_id):
         """Promote an employee and persist changes to DB.
@@ -1104,6 +1117,7 @@ def create_app() -> Flask:
             address=data.get('address'),
             payment_terms=data.get('paymentTerms', 'Net 30'),
             category=data.get('category'),
+            rating=data.get('rating'),
             status='active',
         )
         db.session.add(vendor)
@@ -1280,12 +1294,14 @@ def create_app() -> Flask:
             destination=data.get('destination'),
             ship_date=_parse_date(data.get('shipDate')),
             estimated_delivery=_parse_date(data.get('estimatedDeliveryDate') or data.get('estimatedDelivery')),
+            total_weight=data.get('totalWeight'),
+            shipping_cost=data.get('shippingCost'),
             status='pending',
         )
         db.session.add(shipment)
         db.session.commit()
         return jsonify(serialize_shipment(shipment)), 201
-    
+
     @app.route('/api/supply-chain/shipments', methods=['GET'])
     def get_all_shipments():
         # Optional filters; spec returns {shipments[], pagination}
@@ -1426,11 +1442,13 @@ def create_app() -> Flask:
             quantity_on_hand=int(qty),
             reorder_point=data.get('reorderPoint', 10),
             reorder_quantity=data.get('reorderQuantity', 50),
+            location=data.get('location'),
+            status=data.get('status', 'active'),
         )
         db.session.add(item)
         db.session.commit()
         return jsonify(serialize_inventory_item(item)), 201
-    
+
     @app.route('/api/inventory/items', methods=['GET'])
     def get_all_inventory_items():
         # Optional category/status/lowStock filters per the contract
@@ -1482,13 +1500,16 @@ def create_app() -> Flask:
             i.reorder_point = data['reorderPoint']
         if 'reorderQuantity' in data:
             i.reorder_quantity = data['reorderQuantity']
-        # Accept both `quantity` (contract) and `quantityOnHand` (legacy)
         qty = data.get('quantity') if data.get('quantity') is not None else data.get('quantityOnHand')
         if qty is not None:
             i.quantity_on_hand = int(qty)
+        if 'location' in data:
+            i.location = data['location']
+        if 'status' in data:
+            i.status = data['status']
         db.session.commit()
         return jsonify(serialize_inventory_item(i))
-    
+
     # Stock Operations
     @app.route('/api/inventory/stock/adjust', methods=['POST'])
     def adjust_stock():
@@ -1762,6 +1783,9 @@ def create_app() -> Flask:
             'salary': _f(e.salary),
             'hireDate': _date(e.hire_date),
             'status': _v2_status(e.status),
+            'phoneNumber': e.phone_number,
+            'createdAt': e.created_at.isoformat() + 'Z' if e.created_at else None,
+            'updatedAt': e.updated_at.isoformat() + 'Z' if e.updated_at else None,
         }
 
     def serialize_po_v2(p):
@@ -1771,6 +1795,7 @@ def create_app() -> Flask:
             'vendorId': p.vendor_id,
             'orderDate': _date(p.order_date),
             'expectedDeliveryDate': _date(p.expected_delivery_date),
+            'actualDeliveryDate': _date(p.actual_delivery_date),
             'total': _f(p.total_amount),
             'status': _v2_status(p.status),
         }
@@ -1787,6 +1812,8 @@ def create_app() -> Flask:
             'destination': _addr_from_db(s.destination),
             'shipDate': _date(s.ship_date),
             'estimatedDeliveryDate': _date(s.estimated_delivery),
+            'totalWeight': _f(s.total_weight) if s.total_weight is not None else None,
+            'shippingCost': _f(s.shipping_cost) if s.shipping_cost is not None else None,
         }
 
     def serialize_inventory_item_v2(i):
@@ -1873,6 +1900,7 @@ def create_app() -> Flask:
                 salary=data.get('salary'),
                 hire_date=hire_date,
                 status='active',
+                phone_number=data.get('phoneNumber'),
             )
             db.session.add(emp)
             db.session.commit()
@@ -1931,6 +1959,8 @@ def create_app() -> Flask:
                 e.salary = data['salary']
             if 'status' in data:
                 e.status = _v2_status_to_db(data['status'])
+            if 'phoneNumber' in data:
+                e.phone_number = data['phoneNumber']
             db.session.commit()
             return v2_success_response(serialize_employee_v2(e))
         except Exception as e:
@@ -2077,7 +2107,9 @@ def create_app() -> Flask:
                 gross_pay = float(emp.salary) / 12
             else:
                 gross_pay = float(data.get('grossPay', 6250))
-            gross_pay += float(data.get('bonus', 0)) + float(data.get('overtime', 0))
+            bonus = float(data.get('bonus', 0))
+            overtime = float(data.get('overtime', 0))
+            gross_pay += bonus + overtime
             deductions = float(data.get('deductions', 0))
             tax_withheld = round(gross_pay * 0.2, 2)
             net_pay = round(gross_pay - deductions - tax_withheld, 2)
@@ -2090,6 +2122,8 @@ def create_app() -> Flask:
                 deductions=deductions,
                 tax_withheld=tax_withheld,
                 net_pay=net_pay,
+                bonus=bonus,
+                overtime=overtime,
                 status='pending',
             )
             db.session.add(record)
@@ -2611,6 +2645,7 @@ def create_app() -> Flask:
                 address=data.get('address'),
                 payment_terms=data.get('paymentTerms', 'Net 30'),
                 category=data.get('category'),
+                rating=data.get('rating'),
                 status='active',
             )
             db.session.add(vendor)
@@ -2813,6 +2848,8 @@ def create_app() -> Flask:
                 destination=_addr_to_db(data.get('destination')),
                 ship_date=_parse_date(data.get('shipDate')),
                 estimated_delivery=_parse_date(data.get('estimatedDeliveryDate') or data.get('estimatedDelivery')),
+                total_weight=data.get('totalWeight'),
+                shipping_cost=data.get('shippingCost'),
                 status='pending',
             )
             db.session.add(shipment)
@@ -3073,6 +3110,8 @@ def create_app() -> Flask:
                 quantity_on_hand=int(qty),
                 reorder_point=data.get('reorderPoint', 10),
                 reorder_quantity=data.get('reorderQuantity', 50),
+                location=data.get('location'),
+                status=data.get('status', 'active'),
             )
             db.session.add(item)
             db.session.commit()
@@ -3145,6 +3184,10 @@ def create_app() -> Flask:
             qty = data.get('quantity') if data.get('quantity') is not None else data.get('quantityOnHand')
             if qty is not None:
                 i.quantity_on_hand = int(qty)
+            if 'location' in data:
+                i.location = data['location']
+            if 'status' in data:
+                i.status = _v2_status_to_db(data['status'])
             db.session.commit()
             return v2_success_response(serialize_inventory_item_v2(i))
         except Exception as e:
