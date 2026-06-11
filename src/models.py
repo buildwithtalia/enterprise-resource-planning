@@ -79,6 +79,7 @@ class Customer(db.Model):
     address = db.Column(db.String)
     credit_limit = db.Column(db.Numeric(15, 2), default=50000)
     current_balance = db.Column(db.Numeric(15, 2), default=0)
+    payment_terms = db.Column(db.String)
     status = db.Column(db.String, default="active")
 
 

@@ -62,7 +62,6 @@ def serialize_department(d):
         "description": d.description,
         "managerId": d.manager_id,
         "budget": _f(d.budget),
-        "budgetAllocated": _f(d.budget),
         "location": d.location,
         "createdAt": d.created_at.isoformat() + "Z" if d.created_at else None,
         "updatedAt": d.updated_at.isoformat() + "Z" if d.updated_at else None,
@@ -136,6 +135,7 @@ def serialize_customer(c):
         "address": c.address,
         "creditLimit": _f(c.credit_limit),
         "currentBalance": _f(c.current_balance),
+        "paymentTerms": c.payment_terms,
         "status": c.status,
     }
 
@@ -314,7 +314,8 @@ def create_app() -> Flask:
         return jsonify({
             'status': 'healthy',
             'service': 'ERP Monolith',
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
+            'timestamp': datetime.utcnow().isoformat() + 'Z',
+            'version': '2.0.0',
         })
 
     @app.route('/debug-sentry', methods=['GET'])
@@ -944,6 +945,7 @@ def create_app() -> Flask:
             address=data.get('address'),
             credit_limit=data.get('creditLimit', 50000),
             current_balance=0,
+            payment_terms=data.get('paymentTerms'),
             status='active',
         )
         db.session.add(cust)
@@ -1806,6 +1808,46 @@ def create_app() -> Flask:
     # - No demo endpoints in v2
 
     # ========================================
+    # V2 SYSTEM ROUTES
+    # ========================================
+
+    @app.route('/api/v2/health', methods=['GET'])
+    def v2_health_check():
+        """V2 health check — returns HealthResponse as defined in the OpenAPI spec."""
+        try:
+            db.session.execute(text('SELECT 1'))
+            db_ok = True
+        except Exception:
+            db_ok = False
+        status = 'healthy' if db_ok else 'degraded'
+        code = 200 if db_ok else 503
+        return jsonify({
+            'status': status,
+            'timestamp': datetime.utcnow().isoformat() + 'Z',
+            'version': '2.0.0',
+        }), code
+
+    @app.route('/api/v2', methods=['GET'], strict_slashes=False)
+    def v2_api_info():
+        """V2 API info — matches the getApiInfo operationId in the OpenAPI spec."""
+        return jsonify({
+            'name': 'Enterprise Resource Planning API',
+            'version': '2.0.0',
+            'description': 'Comprehensive ERP API covering HR, Payroll, Accounting, Finance, Billing, Procurement, Supply Chain, and Inventory.',
+            'architecture': 'monolithic',
+            'modules': [
+                {'name': 'Human Resources', 'path': '/api/v2/hr', 'description': 'Employee and department management', 'endpoints': 9},
+                {'name': 'Payroll', 'path': '/api/v2/payroll', 'description': 'Salary processing and tax calculations', 'endpoints': 5},
+                {'name': 'Accounting', 'path': '/api/v2/accounting', 'description': 'General ledger and financial transactions', 'endpoints': 4},
+                {'name': 'Finance', 'path': '/api/v2/finance', 'description': 'Budgeting and financial reporting', 'endpoints': 5},
+                {'name': 'Billing', 'path': '/api/v2/billing', 'description': 'Invoicing and customer billing', 'endpoints': 9},
+                {'name': 'Procurement', 'path': '/api/v2/procurement', 'description': 'Purchase orders and vendor management', 'endpoints': 8},
+                {'name': 'Supply Chain', 'path': '/api/v2/supply-chain', 'description': 'Shipments and logistics', 'endpoints': 11},
+                {'name': 'Inventory', 'path': '/api/v2/inventory', 'description': 'Stock tracking and management', 'endpoints': 10},
+            ],
+        })
+
+    # ========================================
     # V2 HUMAN RESOURCES ROUTES
     # ========================================
 
@@ -2372,14 +2414,12 @@ def create_app() -> Flask:
                 address=data.get('address'),
                 credit_limit=data.get('creditLimit', 50000),
                 current_balance=0,
+                payment_terms=data.get('paymentTerms'),
                 status='active',
             )
             db.session.add(cust)
             db.session.commit()
-            result = serialize_customer(cust)
-            # paymentTerms is part of the contract but not yet persisted
-            result['paymentTerms'] = data.get('paymentTerms')
-            return v2_success_response(result, 201)
+            return v2_success_response(serialize_customer(cust), 201)
         except Exception as e:
             db.session.rollback()
             return v2_error_response('CUSTOMER_CREATE_ERROR', 'Failed to create customer', str(e), 400)
