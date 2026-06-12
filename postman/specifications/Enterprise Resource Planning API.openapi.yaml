@@ -2186,6 +2186,65 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
+  /api/finance/budgets:
+    get:
+      tags:
+        - Finance
+      summary: Get All Budgets
+      description: Retrieves a list of all budgets in the system.
+      operationId: getAllBudgets
+      responses:
+        '200':
+          description: Budgets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Budget'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      tags:
+        - Finance
+      summary: Create Budget
+      description: Creates a new budget for a department and fiscal period.
+      operationId: createBudget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - departmentId
+                - fiscalYear
+                - allocatedAmount
+              properties:
+                departmentId:
+                  type: string
+                fiscalYear:
+                  type: number
+                quarter:
+                  type: number
+                allocatedAmount:
+                  type: number
+      responses:
+        '201':
+          description: Budget created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
   /api/finance/budgets/{id}:
     get:
       tags:
