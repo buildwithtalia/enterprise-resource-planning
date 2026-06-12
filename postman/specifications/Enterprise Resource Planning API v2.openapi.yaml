@@ -50,11 +50,17 @@ info:
 
 servers:
   - url: '{baseUrl}/api/v2'
-    description: API v2 base URL
+    description: API v2 base URL (all versioned endpoints)
     variables:
       baseUrl:
         default: http://localhost:3001
         description: Base URL for the API (configure for different environments)
+  - url: '{baseUrl}'
+    description: Root base URL (health check only)
+    variables:
+      baseUrl:
+        default: http://localhost:3001
+        description: Base URL for unversioned root endpoints
 
 security:
   - bearerAuth: []
@@ -284,7 +290,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   /hr/employees/{id}/promote:
-    post:
+    patch:
       tags:
         - Human Resources
       summary: Promote Employee
@@ -1694,6 +1700,12 @@ components:
         - payPeriodStart
         - payPeriodEnd
       properties:
+        employeeIds:
+          type: array
+          description: List of employee IDs to include in batch payroll processing
+          items:
+            type: string
+          example: ["emp_1234567890", "emp_0987654321"]
         payPeriodStart:
           type: string
           format: date
@@ -1704,12 +1716,8 @@ components:
           example: "2024-01-15"
         departmentId:
           type: string
+          description: Filter batch to a specific department (ignored when employeeIds is provided)
           example: "dept_engineering"
-        excludeEmployees:
-          type: array
-          items:
-            type: string
-          example: ["emp_1234567890"]
 
     BatchPayrollResponse:
       type: object
@@ -1717,20 +1725,25 @@ components:
         batchId:
           type: string
           example: "batch_1234567890"
-        status:
-          type: string
-          enum: [processing, completed, failed]
-          example: "processing"
-        totalEmployees:
+        totalProcessed:
           type: integer
+          description: Number of employee payroll records processed
           example: 50
-        processedCount:
-          type: integer
-          example: 0
-        estimatedCompletionTime:
-          type: string
-          format: date-time
-          example: "2024-01-15T10:35:00Z"
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              employeeId:
+                type: string
+                example: "emp_1234567890"
+              status:
+                type: string
+                example: "processed"
+              netPay:
+                type: number
+                format: double
+                example: 5000.00
 
     Customer:
       type: object

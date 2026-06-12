@@ -13,7 +13,7 @@ body:
       "name": "Dell Latitude 5520",
       "description": "15.6 inch business laptop",
       "category": "Electronics",
-      "quantityOnHand": 50,
+      "quantity": 50,
       "unitPrice": 1200.00,
       "reorderPoint": 10,
       "reorderQuantity": 25
