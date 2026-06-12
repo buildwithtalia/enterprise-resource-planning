@@ -536,12 +536,12 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /api/payroll/batch-process:
+  /api/payroll/process-batch:
     post:
       tags:
         - Payroll
       summary: Process Batch Payroll
-      description: Processes payroll for all active employees in the organization for a specified pay period.
+      description: Processes payroll for multiple employees in the organization for a specified pay period.
       operationId: processBatchPayroll
       requestBody:
         required: true
@@ -553,6 +553,11 @@ paths:
                 - payPeriodStart
                 - payPeriodEnd
               properties:
+                employeeIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Employee IDs to process; if omitted all active employees are included
                 payPeriodStart:
                   type: string
                   format: date
@@ -572,6 +577,15 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  batchId:
+                    type: string
+                  totalProcessed:
+                    type: number
+                  results:
+                    type: array
+                    items:
+                      type: object
         '400':
           description: Invalid input data
           content:
@@ -602,6 +616,79 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Payroll'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/payroll:
+    get:
+      tags:
+        - Payroll
+      summary: Get All Payroll Records
+      description: Retrieves a list of all payroll records.
+      operationId: getAllPayroll
+      responses:
+        '200':
+          description: Payroll records retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payroll'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/payroll/{id}:
+    get:
+      tags:
+        - Payroll
+      summary: Get Payroll by ID
+      description: Retrieves a specific payroll record by its unique identifier.
+      operationId: getPayrollById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payroll record ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payroll record retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payroll'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/payroll/employee/{id}:
+    get:
+      tags:
+        - Payroll
+      summary: Get Employee Payroll History
+      description: Retrieves all payroll records for a specific employee.
+      operationId: getEmployeePayrollHistory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Employee ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Employee payroll history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payroll'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -723,6 +810,254 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
+  /api/billing/customers/{id}:
+    get:
+      tags:
+        - Billing
+      summary: Get Customer by ID
+      description: Retrieves a specific customer record by its unique identifier.
+      operationId: getCustomerById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Customer ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/billing/customers/{id}/balance:
+    get:
+      tags:
+        - Billing
+      summary: Get Customer Balance
+      description: Retrieves the current balance and credit information for a specific customer.
+      operationId: getCustomerBalance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Customer ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer balance retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customerId:
+                    type: string
+                  currentBalance:
+                    type: number
+                  creditLimit:
+                    type: number
+                  availableCredit:
+                    type: number
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/billing/invoices/{id}:
+    get:
+      tags:
+        - Billing
+      summary: Get Invoice by ID
+      description: Retrieves a specific invoice by its unique identifier.
+      operationId: getInvoiceById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Invoice ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/billing/invoices/{id}/send:
+    post:
+      tags:
+        - Billing
+      summary: Send Invoice
+      description: Sends an invoice to the customer via email.
+      operationId: sendInvoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Invoice ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+                  sentAt:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/billing/invoices/{id}/payments:
+    post:
+      tags:
+        - Billing
+      summary: Record Payment
+      description: Records a payment against an invoice.
+      operationId: recordPayment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Invoice ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - paymentDate
+              properties:
+                amount:
+                  type: number
+                paymentDate:
+                  type: string
+                  format: date
+                paymentMethod:
+                  type: string
+      responses:
+        '201':
+          description: Payment recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoiceId:
+                    type: string
+                  paymentId:
+                    type: string
+                  amount:
+                    type: number
+                  paymentDate:
+                    type: string
+                    format: date
+                  paymentMethod:
+                    type: string
+                  message:
+                    type: string
+        '400':
+          description: Invalid payment data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/billing/invoices/{id}/cancel:
+    post:
+      tags:
+        - Billing
+      summary: Cancel Invoice
+      description: Cancels an invoice.
+      operationId: cancelInvoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Invoice ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice cancelled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+                  cancelledAt:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/billing/invoices/overdue:
+    get:
+      tags:
+        - Billing
+      summary: Get Overdue Invoices
+      description: Retrieves all overdue invoices.
+      operationId: getOverdueInvoices
+      responses:
+        '200':
+          description: Overdue invoices retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  overdueCount:
+                    type: number
+                  totalOverdueAmount:
+                    type: number
+                  invoices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
   /api/procurement/vendors:
     get:
       tags:
@@ -827,6 +1162,199 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
+  /api/procurement/vendors/{id}:
+    get:
+      tags:
+        - Procurement
+      summary: Get Vendor by ID
+      description: Retrieves a specific vendor record by its unique identifier.
+      operationId: getVendorById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Vendor ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Vendor retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/procurement/vendors/{id}/performance:
+    get:
+      tags:
+        - Procurement
+      summary: Get Vendor Performance
+      description: Retrieves performance metrics for a specific vendor.
+      operationId: getVendorPerformance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Vendor ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Vendor performance metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vendorId:
+                    type: string
+                  onTimeDeliveryRate:
+                    type: number
+                  qualityScore:
+                    type: number
+                  totalOrders:
+                    type: number
+                  totalSpent:
+                    type: number
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/procurement/purchase-orders/{id}:
+    get:
+      tags:
+        - Procurement
+      summary: Get Purchase Order by ID
+      description: Retrieves a specific purchase order by its unique identifier.
+      operationId: getPurchaseOrderById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Purchase order ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Purchase order retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/procurement/purchase-orders/{id}/approve:
+    post:
+      tags:
+        - Procurement
+      summary: Approve Purchase Order
+      description: Approves a draft or pending purchase order.
+      operationId: approvePurchaseOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Purchase order ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Purchase order approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/procurement/purchase-orders/{id}/place:
+    post:
+      tags:
+        - Procurement
+      summary: Place Purchase Order
+      description: Places an approved purchase order with the vendor.
+      operationId: placePurchaseOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Purchase order ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Purchase order placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/procurement/purchase-orders/{id}/receive:
+    post:
+      tags:
+        - Procurement
+      summary: Receive Purchase Order
+      description: Marks a purchase order as received.
+      operationId: receivePurchaseOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Purchase order ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Purchase order received successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/procurement/purchase-orders/{id}/cancel:
+    post:
+      tags:
+        - Procurement
+      summary: Cancel Purchase Order
+      description: Cancels a purchase order.
+      operationId: cancelPurchaseOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Purchase order ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Purchase order cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
   /api/supply-chain/shipments:
     get:
       tags:
@@ -890,6 +1418,289 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
+  /api/supply-chain/shipments/{id}:
+    get:
+      tags:
+        - Supply Chain
+      summary: Get Shipment by ID
+      description: Retrieves a specific shipment by its unique identifier.
+      operationId: getShipmentById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Shipment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/supply-chain/shipments/tracking/{trackingNumber}:
+    get:
+      tags:
+        - Supply Chain
+      summary: Get Shipment by Tracking Number
+      description: Retrieves a shipment by its tracking number.
+      operationId: getShipmentByTracking
+      parameters:
+        - name: trackingNumber
+          in: path
+          required: true
+          description: Carrier tracking number
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/supply-chain/shipments/order/{orderId}:
+    get:
+      tags:
+        - Supply Chain
+      summary: Get Shipments by Order
+      description: Retrieves all shipments associated with a specific purchase order.
+      operationId: getShipmentsByOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: Purchase order ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Shipment'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/supply-chain/shipments/{id}/dispatch:
+    post:
+      tags:
+        - Supply Chain
+      summary: Dispatch Shipment
+      description: Dispatches a pending shipment.
+      operationId: dispatchShipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Shipment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipment dispatched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/supply-chain/shipments/{id}/status:
+    put:
+      tags:
+        - Supply Chain
+      summary: Update Shipment Status
+      description: Updates the status of a shipment.
+      operationId: updateShipmentStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Shipment ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, dispatched, in_transit, delivered, cancelled]
+                location:
+                  type: string
+      responses:
+        '200':
+          description: Shipment status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+        '400':
+          description: Invalid status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/supply-chain/shipments/{id}/deliver:
+    post:
+      tags:
+        - Supply Chain
+      summary: Mark Delivered
+      description: Marks a shipment as delivered.
+      operationId: markDelivered
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Shipment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipment marked as delivered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/supply-chain/shipments/{id}/cancel:
+    post:
+      tags:
+        - Supply Chain
+      summary: Cancel Shipment
+      description: Cancels a shipment.
+      operationId: cancelShipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Shipment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipment cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/supply-chain/carriers/performance:
+    get:
+      tags:
+        - Supply Chain
+      summary: Get Carrier Performance
+      description: Retrieves performance metrics for all carriers.
+      operationId: getCarrierPerformance
+      responses:
+        '200':
+          description: Carrier performance metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  carriers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        onTimeRate:
+                          type: number
+                        avgDeliveryTime:
+                          type: number
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/supply-chain/inbound/summary:
+    get:
+      tags:
+        - Supply Chain
+      summary: Get Inbound Summary
+      description: Retrieves a summary of inbound shipments.
+      operationId: getInboundSummary
+      responses:
+        '200':
+          description: Inbound summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalInbound:
+                    type: number
+                  inTransit:
+                    type: number
+                  arrived:
+                    type: number
+                  expectedToday:
+                    type: number
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/supply-chain/outbound/summary:
+    get:
+      tags:
+        - Supply Chain
+      summary: Get Outbound Summary
+      description: Retrieves a summary of outbound shipments.
+      operationId: getOutboundSummary
+      responses:
+        '200':
+          description: Outbound summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalOutbound:
+                    type: number
+                  pending:
+                    type: number
+                  dispatched:
+                    type: number
+                  delivered:
+                    type: number
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
   /api/inventory/items:
     get:
       tags:
@@ -950,6 +1761,399 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/inventory/items/{id}:
+    get:
+      tags:
+        - Inventory
+      summary: Get Inventory Item by ID
+      description: Retrieves a specific inventory item by its unique identifier.
+      operationId: getInventoryItemById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Inventory item ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Inventory item retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      tags:
+        - Inventory
+      summary: Update Inventory Item
+      description: Updates an existing inventory item.
+      operationId: updateInventoryItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Inventory item ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItemInput'
+      responses:
+        '200':
+          description: Inventory item updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/inventory/items/sku/{sku}:
+    get:
+      tags:
+        - Inventory
+      summary: Get Inventory Item by SKU
+      description: Retrieves a specific inventory item by its SKU code.
+      operationId: getInventoryItemBySku
+      parameters:
+        - name: sku
+          in: path
+          required: true
+          description: Item SKU code
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Inventory item retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/inventory/stock/adjust:
+    post:
+      tags:
+        - Inventory
+      summary: Adjust Stock
+      description: Adjusts the stock quantity of an inventory item.
+      operationId: adjustStock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - itemId
+                - quantity
+                - adjustmentType
+              properties:
+                itemId:
+                  type: string
+                adjustmentType:
+                  type: string
+                  enum: [increase, decrease, set]
+                quantity:
+                  type: number
+                newQuantity:
+                  type: number
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Stock adjusted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/inventory/stock/reserve:
+    post:
+      tags:
+        - Inventory
+      summary: Reserve Stock
+      description: Reserves a quantity of stock for an order.
+      operationId: reserveStock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - itemId
+                - quantity
+                - orderId
+              properties:
+                itemId:
+                  type: string
+                quantity:
+                  type: number
+                orderId:
+                  type: string
+      responses:
+        '200':
+          description: Stock reserved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid input data or insufficient stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/inventory/stock/release:
+    post:
+      tags:
+        - Inventory
+      summary: Release Reserved Stock
+      description: Releases a previously reserved stock reservation.
+      operationId: releaseReservedStock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reservationId
+              properties:
+                reservationId:
+                  type: string
+                itemId:
+                  type: string
+                quantity:
+                  type: number
+      responses:
+        '200':
+          description: Stock reservation released successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/inventory/stock/fulfill:
+    post:
+      tags:
+        - Inventory
+      summary: Fulfill Reservation
+      description: Fulfills a stock reservation by deducting reserved inventory.
+      operationId: fulfillReservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reservationId
+              properties:
+                reservationId:
+                  type: string
+                itemId:
+                  type: string
+                quantity:
+                  type: number
+      responses:
+        '200':
+          description: Reservation fulfilled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/inventory/stock/receive:
+    post:
+      tags:
+        - Inventory
+      summary: Receive Stock
+      description: Receives stock from a purchase order into inventory.
+      operationId: receiveStock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - itemId
+                - quantity
+                - purchaseOrderId
+              properties:
+                itemId:
+                  type: string
+                quantity:
+                  type: number
+                purchaseOrderId:
+                  type: string
+      responses:
+        '200':
+          description: Stock received successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/inventory/low-stock:
+    get:
+      tags:
+        - Inventory
+      summary: Get Low Stock Items
+      description: Retrieves all inventory items where quantity is below the reorder point.
+      operationId: getLowStockItems
+      responses:
+        '200':
+          description: Low stock items retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lowStockCount:
+                    type: number
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventoryItem'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/inventory/valuation:
+    get:
+      tags:
+        - Inventory
+      summary: Get Inventory Valuation
+      description: Retrieves the total monetary valuation of all inventory.
+      operationId: getInventoryValuation
+      responses:
+        '200':
+          description: Inventory valuation retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalValue:
+                    type: number
+                  totalItems:
+                    type: number
+                  averageValue:
+                    type: number
+                  valuationDate:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/inventory/categories:
+    get:
+      tags:
+        - Inventory
+      summary: Get Category Breakdown
+      description: Retrieves inventory breakdown by category.
+      operationId: getCategoryBreakdown
+      responses:
+        '200':
+          description: Category breakdown retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        itemCount:
+                          type: number
+                        totalValue:
+                          type: number
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/hr/statistics:
+    get:
+      tags:
+        - Human Resources
+      summary: Get HR Statistics
+      description: Retrieves aggregate HR statistics including employee counts and average salary.
+      operationId: getHrStatistics
+      responses:
+        '200':
+          description: HR statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalEmployees:
+                    type: number
+                  activeEmployees:
+                    type: number
+                  totalDepartments:
+                    type: number
+                  averageSalary:
+                    type: number
+                  newHiresThisMonth:
+                    type: number
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
@@ -1045,6 +2249,12 @@ components:
               type: string
             name:
               type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     EmployeeInput:
       type: object
