@@ -1694,6 +1694,12 @@ components:
         - payPeriodStart
         - payPeriodEnd
       properties:
+        employeeIds:
+          type: array
+          items:
+            type: string
+          description: Specific employee IDs to process; if omitted all active employees are included
+          example: ["emp_1234567890", "emp_0987654321"]
         payPeriodStart:
           type: string
           format: date

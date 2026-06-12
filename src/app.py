@@ -134,21 +134,29 @@ def serialize_customer(c):
         "address": c.address,
         "creditLimit": _f(c.credit_limit),
         "currentBalance": _f(c.current_balance),
+        "paymentTerms": c.payment_terms,
         "status": c.status,
     }
 
 
 def serialize_invoice(i):
+    customer = db.session.get(Customer, i.customer_id) if i.customer_id else None
+    total = _f(i.total_amount)
+    paid = _f(i.paid_amount) if hasattr(i, "paid_amount") and i.paid_amount is not None else 0.0
     return {
         "id": i.id,
         "invoiceNumber": i.invoice_number,
         "customerId": i.customer_id,
+        "customerName": customer.name if customer else None,
         "issueDate": _date(i.issue_date),
         "dueDate": _date(i.due_date),
         "subtotal": _f(i.subtotal),
         "taxAmount": _f(i.tax_amount),
-        "totalAmount": _f(i.total_amount),
+        "totalAmount": total,
+        "paidAmount": paid,
+        "balanceDue": round(total - paid, 2),
         "status": i.status,
+        "items": [],
     }
 
 
@@ -166,13 +174,20 @@ def serialize_vendor(v):
 
 
 def serialize_purchase_order(p):
+    # Spec schema exposes subtotal/tax/total; store only keeps total_amount.
+    # Surface total_amount as both `total` (spec canonical) and `totalAmount`
+    # (legacy alias) so existing callers are not broken.
+    total = _f(p.total_amount)
     return {
         "id": p.id,
         "poNumber": p.po_number,
         "vendorId": p.vendor_id,
         "orderDate": _date(p.order_date),
         "expectedDeliveryDate": _date(p.expected_delivery_date),
-        "totalAmount": _f(p.total_amount),
+        "subtotal": total,
+        "tax": 0.0,
+        "total": total,
+        "totalAmount": total,
         "status": p.status,
     }
 
@@ -920,6 +935,7 @@ def create_app() -> Flask:
             address=data.get('address'),
             credit_limit=data.get('creditLimit', 50000),
             current_balance=0,
+            payment_terms=data.get('paymentTerms', 'Net 30'),
             status='active',
         )
         db.session.add(cust)
@@ -1753,9 +1769,9 @@ def create_app() -> Flask:
         except Exception as e:
             return v2_error_response('EMPLOYEE_DELETE_ERROR', 'Failed to delete employee', str(e), 500)
     
-    @app.route('/api/v2/hr/employees/<employee_id>/promote', methods=['PATCH'])
+    @app.route('/api/v2/hr/employees/<employee_id>/promote', methods=['POST', 'PATCH'])
     def v2_promote_employee(employee_id):
-        """V2: Promote an employee. Accepts title/salaryIncrease per spec."""
+        """V2: Promote an employee. Spec uses POST; PATCH kept for backward compat."""
         try:
             data = request.get_json()
             # Accept spec field names (title/salaryIncrease) with fallback to legacy names
@@ -2241,23 +2257,24 @@ def create_app() -> Flask:
     
     @app.route('/api/v2/billing/invoices', methods=['POST'])
     def v2_create_invoice():
-        """V2: Create a new invoice"""
+        """V2: Create a new invoice. Uses `invoiceDate` (v2 spec); `issueDate` accepted as alias."""
         try:
             data = request.get_json()
-            subtotal = data.get('subtotal', 0)
-            tax_rate = 0.08
-            tax_amount = subtotal * tax_rate
-            total = subtotal + tax_amount
-            
+            subtotal = float(data.get('subtotal', 0))
+            tax_amount = float(data.get('tax', subtotal * 0.08))
+            total = float(data.get('total', subtotal + tax_amount))
+            # V2 canonical: invoiceDate; accept issueDate as backward-compat alias
+            issue_date = data.get('invoiceDate') or data.get('issueDate')
             invoice = {
                 'id': 'inv-' + str(datetime.utcnow().timestamp()),
                 'invoiceNumber': 'INV-' + str(int(datetime.utcnow().timestamp())),
                 'customerId': data.get('customerId'),
-                'issueDate': data.get('issueDate'),
+                'issueDate': issue_date,
                 'dueDate': data.get('dueDate'),
                 'subtotal': subtotal,
                 'taxAmount': tax_amount,
                 'totalAmount': total,
+                'paidAmount': 0.0,
                 'balanceDue': total,
                 'status': 'draft',
                 'items': data.get('items', [])
@@ -2883,9 +2900,11 @@ def create_app() -> Flask:
     
     @app.route('/api/v2/inventory/items', methods=['POST'])
     def v2_create_inventory_item():
-        """V2: Create a new inventory item"""
+        """V2: Create a new inventory item. Accepts `quantity` per v2 spec."""
         try:
             data = request.get_json()
+            # V2 spec field is `quantity`; accept `quantityOnHand` as compat alias
+            qty = data.get('quantity') if data.get('quantity') is not None else data.get('quantityOnHand', 0)
             item = {
                 'id': 'item-' + str(datetime.utcnow().timestamp()),
                 'sku': data.get('sku'),
@@ -2893,7 +2912,9 @@ def create_app() -> Flask:
                 'description': data.get('description'),
                 'category': data.get('category'),
                 'unitPrice': data.get('unitPrice'),
-                'quantityOnHand': data.get('quantityOnHand', 0),
+                'quantity': qty,
+                'reservedQuantity': data.get('reservedQuantity', 0),
+                'availableQuantity': qty,
                 'reorderPoint': data.get('reorderPoint', 10),
                 'reorderQuantity': data.get('reorderQuantity', 50)
             }
@@ -2919,28 +2940,49 @@ def create_app() -> Flask:
     
     @app.route('/api/v2/inventory/items/<item_id>', methods=['GET'])
     def v2_get_inventory_item_by_id(item_id):
-        """V2: Get inventory item by ID"""
+        """V2: Get inventory item by ID. Returns `quantity` per v2 spec."""
         try:
+            i = db.session.get(InventoryItem, item_id)
+            if i is None:
+                return v2_error_response('ITEM_NOT_FOUND', f'Inventory item {item_id} not found', None, 404)
+            qty = i.quantity_on_hand or 0
             result = {
-                'id': item_id,
-                'sku': 'SKU-001',
-                'name': 'Sample Item',
-                'quantityOnHand': 100,
-                'unitPrice': 25.00
+                'id': i.id,
+                'sku': i.sku,
+                'name': i.name,
+                'description': i.description,
+                'category': i.category,
+                'quantity': qty,
+                'reservedQuantity': 0,
+                'availableQuantity': qty,
+                'unitPrice': _f(i.unit_price),
+                'reorderPoint': i.reorder_point or 0,
+                'reorderQuantity': i.reorder_quantity or 0,
             }
             return v2_success_response(result)
         except Exception as e:
             return v2_error_response('ITEM_FETCH_ERROR', 'Failed to fetch inventory item', str(e), 500)
-    
+
     @app.route('/api/v2/inventory/items/sku/<sku>', methods=['GET'])
     def v2_get_inventory_item_by_sku(sku):
-        """V2: Get inventory item by SKU"""
+        """V2: Get inventory item by SKU. Returns `quantity` per v2 spec."""
         try:
+            i = InventoryItem.query.filter_by(sku=sku).first()
+            if i is None:
+                return v2_error_response('ITEM_NOT_FOUND', f'Inventory item with SKU {sku} not found', None, 404)
+            qty = i.quantity_on_hand or 0
             result = {
-                'sku': sku,
-                'name': 'Sample Item',
-                'quantityOnHand': 100,
-                'unitPrice': 25.00
+                'id': i.id,
+                'sku': i.sku,
+                'name': i.name,
+                'description': i.description,
+                'category': i.category,
+                'quantity': qty,
+                'reservedQuantity': 0,
+                'availableQuantity': qty,
+                'unitPrice': _f(i.unit_price),
+                'reorderPoint': i.reorder_point or 0,
+                'reorderQuantity': i.reorder_quantity or 0,
             }
             return v2_success_response(result)
         except Exception as e:

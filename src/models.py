@@ -79,6 +79,7 @@ class Customer(db.Model):
     address = db.Column(db.String)
     credit_limit = db.Column(db.Numeric(15, 2), default=50000)
     current_balance = db.Column(db.Numeric(15, 2), default=0)
+    payment_terms = db.Column(db.String, default="Net 30")
     status = db.Column(db.String, default="active")
 
 
@@ -92,6 +93,7 @@ class Invoice(db.Model):
     subtotal = db.Column(db.Numeric(15, 2))
     tax_amount = db.Column(db.Numeric(15, 2))
     total_amount = db.Column(db.Numeric(15, 2))
+    paid_amount = db.Column(db.Numeric(15, 2), default=0)
     status = db.Column(db.String, default="draft")
 
 
