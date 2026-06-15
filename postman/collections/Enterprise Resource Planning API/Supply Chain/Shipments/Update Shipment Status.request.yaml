@@ -174,11 +174,12 @@ description: |-
 url: "{{baseUrl}}/api/supply-chain/shipments/:id/status"
 method: PUT
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 pathVariables:
   id: ship-123
 body:
-  type: text
+  type: json
   content: |-
     {
       "status": "in_transit",

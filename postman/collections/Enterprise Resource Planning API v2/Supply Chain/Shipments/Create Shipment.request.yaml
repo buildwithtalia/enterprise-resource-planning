@@ -1,0 +1,35 @@
+$kind: http-request
+description: Create a new shipment record. Returns 201 on success.
+url: '{{baseUrl}}/api/v2/supply-chain/shipments'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "orderId": "po-001",
+      "carrier": "UPS",
+      "trackingNumber": "1Z999AA10123456784",
+      "origin": {
+        "address": "123 Warehouse St",
+        "city": "Chicago",
+        "state": "IL",
+        "zipCode": "60601"
+      },
+      "destination": {
+        "address": "456 Customer Ave",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001"
+      },
+      "estimatedDeliveryDate": "2024-01-30",
+      "items": [
+        {
+          "itemId": "item-001",
+          "quantity": 10
+        }
+      ]
+    }
+order: 3000

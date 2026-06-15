@@ -123,11 +123,13 @@ description: |-
 url: "{{baseUrl}}/api/payroll/:id/approve"
 method: POST
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 pathVariables:
   id: f9a4e110-4daa-4011-a1d3-0955d78fe6c4
 auth:
   type: bearer
   credentials:
-    token: "{{authToken}}"
+    - key: token
+      value: \'{{authToken}}\'
 order: 3000

@@ -1,0 +1,19 @@
+$kind: http-request
+description: Terminate an employee's employment. Sets status to terminated.
+url: '{{baseUrl}}/api/v2/hr/employees/:id/terminate'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+pathVariables:
+  - key: id
+    value: emp-001
+body:
+  type: json
+  content: |-
+    {
+      "terminationDate": "2024-12-31",
+      "reason": "Voluntary resignation",
+      "notes": "Employee accepted position at another company"
+    }
+order: 6000

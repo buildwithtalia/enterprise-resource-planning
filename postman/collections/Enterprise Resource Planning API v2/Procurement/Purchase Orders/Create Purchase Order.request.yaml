@@ -1,0 +1,28 @@
+$kind: http-request
+description: Create a new purchase order. Returns 201 on success.
+url: '{{baseUrl}}/api/v2/procurement/purchase-orders'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "vendorId": "vendor-001",
+      "orderDate": "2024-01-15",
+      "expectedDeliveryDate": "2024-01-30",
+      "items": [
+        {
+          "itemId": "item-001",
+          "description": "Ergonomic Office Chair",
+          "quantity": 10,
+          "unitPrice": 500.00,
+          "amount": 5000.00
+        }
+      ],
+      "subtotal": 5000.00,
+      "tax": 400.00,
+      "total": 5400.00
+    }
+order: 3000

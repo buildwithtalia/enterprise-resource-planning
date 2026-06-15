@@ -145,12 +145,13 @@ description: |-
   - **Tax Reporting**: Generate annual tax documents (W-2, etc.)
   - **Audit**: Review complete payroll history for compliance
   - **Dispute Resolution**: Investigate historical payroll questions
-url: "{{baseUrl}}/api/payroll/employee/:employeeId/history"
+url: '{{baseUrl}}/api/payroll/employee/:employeeId'
 method: GET
 pathVariables:
   employeeId: 123e4567-e89b-12d3-a456-426614174000
 auth:
   type: bearer
   credentials:
-    token: "{{authToken}}"
+    - key: token
+      value: \'{{authToken}}\'
 order: 6000

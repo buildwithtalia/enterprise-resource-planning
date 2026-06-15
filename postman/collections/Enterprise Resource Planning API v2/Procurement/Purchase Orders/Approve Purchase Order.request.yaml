@@ -1,0 +1,15 @@
+$kind: http-request
+description: Approve a purchase order, transitioning it to approved status.
+url: '{{baseUrl}}/api/v2/procurement/purchase-orders/:id/approve'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+pathVariables:
+  - key: id
+    value: po-001
+body:
+  type: json
+  content: |-
+    {}
+order: 4000

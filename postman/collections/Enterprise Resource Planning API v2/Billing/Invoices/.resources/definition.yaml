@@ -1,0 +1,3 @@
+$kind: collection
+name: Invoices
+description: Invoice generation and payment tracking.

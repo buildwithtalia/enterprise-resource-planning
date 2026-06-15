@@ -1,0 +1,19 @@
+$kind: http-request
+description: Create a new customer record. Returns 201 on success.
+url: '{{baseUrl}}/api/v2/billing/customers'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Acme Corporation",
+      "email": "billing@acme.com",
+      "phone": "+1-555-0199",
+      "address": "123 Business St, Suite 100, New York, NY 10001",
+      "creditLimit": 50000.00,
+      "paymentTerms": "Net 30"
+    }
+order: 3000

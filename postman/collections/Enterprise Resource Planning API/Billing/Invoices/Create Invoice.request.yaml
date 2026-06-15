@@ -3,9 +3,10 @@ description: Create a new invoice. Requires 'billing_manager' or 'admin' role.
 url: "{{baseUrl}}/api/billing/invoices"
 method: POST
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 body:
-  type: text
+  type: json
   content: |-
     {
       "customerId": "cust-123",

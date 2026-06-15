@@ -133,5 +133,6 @@ pathVariables:
 auth:
   type: bearer
   credentials:
-    token: "{{authToken}}"
+    - key: token
+      value: \'{{authToken}}\'
 order: 5000

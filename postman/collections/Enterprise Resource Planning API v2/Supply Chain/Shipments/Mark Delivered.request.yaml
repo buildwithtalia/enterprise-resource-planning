@@ -1,0 +1,15 @@
+$kind: http-request
+description: Mark a shipment as delivered.
+url: '{{baseUrl}}/api/v2/supply-chain/shipments/:id/deliver'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+pathVariables:
+  - key: id
+    value: ship-001
+body:
+  type: json
+  content: |-
+    {}
+order: 5000

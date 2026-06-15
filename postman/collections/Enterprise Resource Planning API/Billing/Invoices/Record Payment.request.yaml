@@ -3,11 +3,12 @@ description: Record a payment for an invoice. Requires 'billing_manager' or 'adm
 url: '{{baseUrl}}/api/billing/invoices/:id/payments'
 method: POST
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 pathVariables:
   id: inv-123
 body:
-  type: text
+  type: json
   content: |-
     {
       "amount": 6480

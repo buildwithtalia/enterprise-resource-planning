@@ -165,12 +165,13 @@ description: |-
   - All payroll records are created with "pending" status and require approval
   - Processing may take several seconds for large organizations
   - Failed records do not prevent successful processing of other employees
-url: '{{baseUrl}}/api/payroll/process-batch'
+url: '{{baseUrl}}/api/payroll/batch-process'
 method: POST
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 body:
-  type: text
+  type: json
   content: |-
     {
       "payPeriodStart": "2024-01-01",
@@ -179,5 +180,6 @@ body:
 auth:
   type: bearer
   credentials:
-    token: "{{authToken}}"
+    - key: token
+      value: \'{{authToken}}\'
 order: 2000

@@ -1,0 +1,12 @@
+$kind: http-request
+description: Get a paginated list of all departments.
+url: '{{baseUrl}}/api/v2/hr/departments'
+method: GET
+queryParams:
+  - key: page
+    value: '1'
+    description: Page number (1-indexed)
+  - key: limit
+    value: '20'
+    description: Items per page
+order: 1000

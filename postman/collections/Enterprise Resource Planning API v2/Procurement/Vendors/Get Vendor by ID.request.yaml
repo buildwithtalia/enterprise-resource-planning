@@ -1,0 +1,8 @@
+$kind: http-request
+description: Get a specific vendor by their unique ID.
+url: '{{baseUrl}}/api/v2/procurement/vendors/:id'
+method: GET
+pathVariables:
+  - key: id
+    value: vendor-001
+order: 2000

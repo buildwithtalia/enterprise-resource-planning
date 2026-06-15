@@ -505,6 +505,119 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
+  /api/hr/statistics:
+    get:
+      tags:
+        - Human Resources
+      summary: Get HR Statistics
+      description: Retrieves comprehensive HR statistics and metrics for the organization.
+      operationId: getHrStatistics
+      responses:
+        '200':
+          description: HR statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalEmployees:
+                    type: number
+                  activeEmployees:
+                    type: number
+                  totalDepartments:
+                    type: number
+                  averageSalary:
+                    type: number
+                  newHiresThisMonth:
+                    type: number
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/payroll:
+    get:
+      tags:
+        - Payroll
+      summary: Get All Payroll
+      description: Retrieves all payroll records with optional filtering by status or employee.
+      operationId: getAllPayroll
+      parameters:
+        - name: status
+          in: query
+          description: Filter by payroll status
+          schema:
+            type: string
+            enum: [pending, approved, paid]
+        - name: employeeId
+          in: query
+          description: Filter by employee ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payroll records retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payroll'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/payroll/{id}:
+    get:
+      tags:
+        - Payroll
+      summary: Get Payroll by ID
+      description: Retrieves a specific payroll record by its unique identifier.
+      operationId: getPayrollById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payroll record ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payroll record retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payroll'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/payroll/employee/{employeeId}:
+    get:
+      tags:
+        - Payroll
+      summary: Get Employee Payroll History
+      description: Retrieves the complete payroll history for a specific employee.
+      operationId: getEmployeePayrollHistory
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          description: Employee ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Employee payroll history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payroll'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
   /api/payroll/process:
     post:
       tags:
@@ -541,7 +654,7 @@ paths:
       tags:
         - Payroll
       summary: Process Batch Payroll
-      description: Processes payroll for all active employees in the organization for a specified pay period.
+      description: 'Processes payroll for all active employees in the organization for a specified pay period. Also accessible at /api/payroll/process-batch.'
       operationId: processBatchPayroll
       requestBody:
         required: true

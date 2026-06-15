@@ -1,0 +1,8 @@
+$kind: http-request
+description: Get a specific customer by their unique ID.
+url: '{{baseUrl}}/api/v2/billing/customers/:id'
+method: GET
+pathVariables:
+  - key: id
+    value: cust-001
+order: 2000

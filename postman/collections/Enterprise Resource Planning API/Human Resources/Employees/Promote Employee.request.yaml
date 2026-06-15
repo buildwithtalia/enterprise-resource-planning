@@ -136,11 +136,12 @@ description: |-
 url: "{{baseUrl}}/api/hr/employees/:id/promote"
 method: PATCH
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 pathVariables:
   id: "{{lastCreatedEmployeeId}}"
 body:
-  type: text
+  type: json
   content: |-
     {
       "title": "Senior Software Engineer",

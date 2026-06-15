@@ -1,0 +1,8 @@
+$kind: http-request
+description: Delete an employee record. Returns 204 No Content on success.
+url: '{{baseUrl}}/api/v2/hr/employees/:id'
+method: DELETE
+pathVariables:
+  - key: id
+    value: emp-001
+order: 7000

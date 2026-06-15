@@ -1,0 +1,21 @@
+$kind: http-request
+description: Create a new employee record. Returns 201 on success.
+url: '{{baseUrl}}/api/v2/hr/employees'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com",
+      "departmentId": "dept-001",
+      "position": "Software Engineer",
+      "salary": 95000.00,
+      "hireDate": "2024-01-15",
+      "phoneNumber": "+1-555-0123"
+    }
+order: 3000

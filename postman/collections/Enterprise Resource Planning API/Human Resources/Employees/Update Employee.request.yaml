@@ -139,11 +139,12 @@ description: |-
 url: "{{baseUrl}}/api/hr/employees/{{lastCreatedEmployeeId}}"
 method: PUT
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 pathVariables:
   id: "{{lastCreatedEmployeeId}}"
 body:
-  type: text
+  type: json
   content: |-
     {
       "position": "Senior Software Engineer",

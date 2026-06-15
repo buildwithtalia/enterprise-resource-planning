@@ -116,7 +116,8 @@ description: |-
 url: "{{baseUrl}}/api/hr/employees"
 method: POST
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 body:
   type: json
   content: |-
@@ -133,7 +134,8 @@ body:
 auth:
   type: bearer
   credentials:
-    token: "{{authToken}}"
+    - key: token
+      value: \'{{authToken}}\'
 scripts:
   - type: beforeRequest
     code: |-

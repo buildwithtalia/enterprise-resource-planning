@@ -1,0 +1,20 @@
+$kind: http-request
+description: Get a paginated list of all employees. Filter by status or departmentId.
+url: '{{baseUrl}}/api/v2/hr/employees'
+method: GET
+queryParams:
+  - key: page
+    value: '1'
+    description: Page number (1-indexed)
+  - key: limit
+    value: '20'
+    description: Items per page
+  - key: status
+    value: ''
+    description: 'Filter: active, inactive, onLeave, terminated'
+    disabled: true
+  - key: departmentId
+    value: ''
+    description: Filter by department ID
+    disabled: true
+order: 1000

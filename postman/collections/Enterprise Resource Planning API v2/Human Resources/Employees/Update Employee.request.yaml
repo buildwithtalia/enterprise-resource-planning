@@ -1,0 +1,19 @@
+$kind: http-request
+description: Update an existing employee's information.
+url: '{{baseUrl}}/api/v2/hr/employees/:id'
+method: PUT
+headers:
+  - key: Content-Type
+    value: application/json
+pathVariables:
+  - key: id
+    value: emp-001
+body:
+  type: json
+  content: |-
+    {
+      "position": "Senior Software Engineer",
+      "salary": 105000.00,
+      "status": "active"
+    }
+order: 4000

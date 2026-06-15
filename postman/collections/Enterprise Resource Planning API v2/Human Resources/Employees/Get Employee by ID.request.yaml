@@ -1,0 +1,8 @@
+$kind: http-request
+description: Get a specific employee by their unique ID.
+url: '{{baseUrl}}/api/v2/hr/employees/:id'
+method: GET
+pathVariables:
+  - key: id
+    value: emp-001
+order: 2000

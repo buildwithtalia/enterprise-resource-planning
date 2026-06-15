@@ -1,0 +1,27 @@
+$kind: http-request
+description: Create a new invoice for a customer. Returns 201 on success.
+url: '{{baseUrl}}/api/v2/billing/invoices'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "customerId": "cust-001",
+      "invoiceDate": "2024-01-15",
+      "dueDate": "2024-02-14",
+      "items": [
+        {
+          "description": "Professional Services - January 2024",
+          "quantity": 40,
+          "unitPrice": 250.00,
+          "amount": 10000.00
+        }
+      ],
+      "subtotal": 10000.00,
+      "tax": 800.00,
+      "total": 10800.00
+    }
+order: 3000

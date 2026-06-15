@@ -1,0 +1,8 @@
+$kind: http-request
+description: Get a specific department by its unique ID.
+url: '{{baseUrl}}/api/v2/hr/departments/:id'
+method: GET
+pathVariables:
+  - key: id
+    value: dept-001
+order: 2000

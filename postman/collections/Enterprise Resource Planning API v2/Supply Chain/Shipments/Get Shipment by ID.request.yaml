@@ -1,0 +1,8 @@
+$kind: http-request
+description: Get a specific shipment by its unique ID.
+url: '{{baseUrl}}/api/v2/supply-chain/shipments/:id'
+method: GET
+pathVariables:
+  - key: id
+    value: ship-001
+order: 2000

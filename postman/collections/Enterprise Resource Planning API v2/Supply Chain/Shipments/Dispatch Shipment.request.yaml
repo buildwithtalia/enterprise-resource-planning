@@ -1,0 +1,15 @@
+$kind: http-request
+description: Dispatch a shipment, transitioning it to dispatched status.
+url: '{{baseUrl}}/api/v2/supply-chain/shipments/:id/dispatch'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+pathVariables:
+  - key: id
+    value: ship-001
+body:
+  type: json
+  content: |-
+    {}
+order: 4000

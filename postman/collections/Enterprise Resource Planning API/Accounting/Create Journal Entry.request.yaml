@@ -123,9 +123,10 @@ description: |-
 url: "{{baseUrl}}/api/accounting/journal-entries"
 method: POST
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 body:
-  type: text
+  type: json
   content: |-
     {
       "date": "2024-01-15",

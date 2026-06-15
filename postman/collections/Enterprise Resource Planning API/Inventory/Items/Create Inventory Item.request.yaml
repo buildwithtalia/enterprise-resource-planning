@@ -3,9 +3,10 @@ description: Create a new inventory item. Requires 'warehouse_manager' or 'admin
 url: "{{baseUrl}}/api/inventory/items"
 method: POST
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 body:
-  type: text
+  type: json
   content: |-
     {
       "sku": "ITEM-001",

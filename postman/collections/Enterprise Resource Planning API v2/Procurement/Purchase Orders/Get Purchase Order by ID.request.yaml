@@ -1,0 +1,8 @@
+$kind: http-request
+description: Get a specific purchase order by its unique ID.
+url: '{{baseUrl}}/api/v2/procurement/purchase-orders/:id'
+method: GET
+pathVariables:
+  - key: id
+    value: po-001
+order: 2000

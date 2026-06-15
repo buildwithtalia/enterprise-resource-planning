@@ -1,0 +1,19 @@
+$kind: http-request
+description: Create a new vendor record. Returns 201 on success.
+url: '{{baseUrl}}/api/v2/procurement/vendors'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Office Supplies Inc",
+      "email": "sales@officesupplies.com",
+      "phone": "+1-555-0188",
+      "address": "456 Vendor Ave, Chicago, IL 60601",
+      "paymentTerms": "Net 45",
+      "category": "Office Supplies"
+    }
+order: 3000

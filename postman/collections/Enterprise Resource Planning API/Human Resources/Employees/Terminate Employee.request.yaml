@@ -133,11 +133,12 @@ description: |-
 url: "{{baseUrl}}/api/hr/employees/{{lastCreatedEmployeeId}}/terminate"
 method: POST
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 pathVariables:
   id: emp-123
 body:
-  type: text
+  type: json
   content: |-
     {
       "terminationDate": "2024-12-31"

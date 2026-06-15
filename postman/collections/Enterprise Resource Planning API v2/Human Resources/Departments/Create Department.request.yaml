@@ -1,0 +1,18 @@
+$kind: http-request
+description: Create a new department. Returns 201 on success.
+url: '{{baseUrl}}/api/v2/hr/departments'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Engineering",
+      "code": "ENG",
+      "description": "Software development and engineering team",
+      "budget": 1500000.00,
+      "location": "Building A, Floor 3"
+    }
+order: 3000

@@ -1,0 +1,20 @@
+$kind: http-request
+description: Get a paginated list of all invoices with optional filters.
+url: '{{baseUrl}}/api/v2/billing/invoices'
+method: GET
+queryParams:
+  - key: page
+    value: '1'
+    description: Page number (1-indexed)
+  - key: limit
+    value: '20'
+    description: Items per page
+  - key: status
+    value: ''
+    description: 'Filter: draft, pending, paid, overdue, cancelled'
+    disabled: true
+  - key: customerId
+    value: ''
+    description: Filter by customer ID
+    disabled: true
+order: 1000

@@ -185,9 +185,10 @@ description: |-
 url: "{{baseUrl}}/api/procurement/purchase-orders"
 method: POST
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 body:
-  type: text
+  type: json
   content: |-
     {
       "vendorId": "vendor-123",

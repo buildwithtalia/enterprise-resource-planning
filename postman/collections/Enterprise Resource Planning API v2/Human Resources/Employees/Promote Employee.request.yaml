@@ -1,0 +1,20 @@
+$kind: http-request
+description: Promote an employee to a new position with an updated job title and salary increase.
+url: '{{baseUrl}}/api/v2/hr/employees/:id/promote'
+method: PATCH
+headers:
+  - key: Content-Type
+    value: application/json
+pathVariables:
+  - key: id
+    value: emp-001
+body:
+  type: json
+  content: |-
+    {
+      "title": "Senior Software Engineer",
+      "salaryIncrease": 10000.00,
+      "effectiveDate": "2024-07-01",
+      "notes": "Promoted for exceptional performance"
+    }
+order: 5000
