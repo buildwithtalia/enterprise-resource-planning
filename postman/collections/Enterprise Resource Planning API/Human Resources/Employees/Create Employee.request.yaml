@@ -121,13 +121,14 @@ body:
   type: json
   content: |-
     {
-      "first_name": "{{firstName}}",
-      "last_name": "{{lastName}}",
+      "firstName": "{{firstName}}",
+      "lastName": "{{lastName}}",
       "email": "{{email}}",
-      "department": "Engineering",
-      "position": "{{position}}",
+      "departmentId": "{{departmentId}}",
+      "jobTitle": "{{position}}",
       "salary": {{salary}},
-      "hire_date": "{{hireDate}}"
+      "hireDate": "{{hireDate}}",
+      "phoneNumber": "{{phoneNumber}}"
     }
 auth:
   type: bearer

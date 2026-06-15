@@ -488,25 +488,54 @@ def create_app() -> Flask:
     @app.route('/api/hr/employees', methods=['POST'])
     def create_employee():
         """Create a new employee and persist to DB."""
-        data = request.get_json()
-        # Accept both `jobTitle` (contract/collection) and `position` (legacy)
-        position = data.get('jobTitle') or data.get('position')
-        hire_date_str = data.get('hireDate')
         from datetime import date as date_type
-        hire_date = None
-        if hire_date_str:
-            try:
-                hire_date = date_type.fromisoformat(hire_date_str)
-            except ValueError:
-                pass
+        data = request.get_json() or {}
+
+        first_name = (data.get('firstName') or '').strip()
+        last_name = (data.get('lastName') or '').strip()
+        email = (data.get('email') or '').strip()
+        department_id = (data.get('departmentId') or '').strip()
+        # Accept both `jobTitle` (contract/collection) and `position` (legacy)
+        position = (data.get('jobTitle') or data.get('position') or '').strip()
+        salary = data.get('salary')
+        hire_date_str = data.get('hireDate')
+
+        missing = [k for k, v in {
+            'firstName': first_name,
+            'lastName': last_name,
+            'email': email,
+            'departmentId': department_id,
+            'position': position,
+            'salary': salary,
+            'hireDate': hire_date_str,
+        }.items() if v in (None, '')]
+        if missing:
+            return jsonify({'error': f"Missing required field(s): {', '.join(missing)}"}), 400
+
+        try:
+            hire_date = date_type.fromisoformat(hire_date_str)
+        except (TypeError, ValueError):
+            return jsonify({'error': 'hireDate must be an ISO date (YYYY-MM-DD)'}), 400
+
+        try:
+            salary_value = float(salary)
+        except (TypeError, ValueError):
+            return jsonify({'error': 'salary must be a number'}), 400
+
+        if db.session.get(Department, department_id) is None:
+            return jsonify({'error': f'Department {department_id} not found'}), 400
+
+        if Employee.query.filter_by(email=email).first() is not None:
+            return jsonify({'error': f'Employee with email {email} already exists'}), 409
+
         emp = Employee(
             id='emp-' + str(int(datetime.utcnow().timestamp() * 1000)),
-            first_name=data.get('firstName', ''),
-            last_name=data.get('lastName', ''),
-            email=data.get('email', ''),
-            department_id=data.get('departmentId'),
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            department_id=department_id,
             position=position,
-            salary=data.get('salary'),
+            salary=salary_value,
             hire_date=hire_date,
             status='active',
         )
