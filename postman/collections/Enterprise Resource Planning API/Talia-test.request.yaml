@@ -1,0 +1,5 @@
+$kind: http-request
+name: Talia-test
+method: GET
+url: '{{baseUrl}}'
+order: 9000
