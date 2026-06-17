@@ -186,7 +186,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/Employee'
+                        $ref: '#/components/schemas/CreateEmployeeResponse'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -1342,6 +1342,67 @@ components:
         documentation:
           type: string
           format: uri
+
+    CreateEmployeeResponse:
+      type: object
+      description: Response schema for the Create Employee endpoint. Uses "employee-id" as the identifier field.
+      required:
+        - employee-id
+        - firstName
+        - lastName
+        - email
+        - department
+        - position
+        - salary
+        - hireDate
+        - status
+      properties:
+        employee-id:
+          type: string
+          description: Unique identifier for the newly created employee
+          example: "emp_1234567890"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        department:
+          type: string
+          example: "Engineering"
+        departmentId:
+          type: string
+          example: "dept_engineering"
+        position:
+          type: string
+          example: "Senior Software Engineer"
+        salary:
+          type: number
+          format: double
+          example: 95000.00
+        hireDate:
+          type: string
+          format: date
+          example: "2024-01-15"
+        status:
+          type: string
+          enum: [active, inactive, onLeave, terminated]
+          example: "active"
+        phoneNumber:
+          type: string
+          example: "+1-555-0123"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
 
     Employee:
       type: object
