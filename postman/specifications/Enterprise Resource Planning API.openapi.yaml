@@ -1127,7 +1127,7 @@ components:
     Employee:
       type: object
       properties:
-        employee-id:
+        id:
           type: string
         firstName:
           type: string
