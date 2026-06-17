@@ -1,0 +1,28 @@
+$kind: http-example
+name: 201 Created
+request:
+  url: '{{baseUrl}}/api/hr/employees'
+  method: POST
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "employee-id": "emp-789",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john.doe@example.com",
+        "departmentId": "dept-001",
+        "position": "Software Engineer",
+        "salary": 75000,
+        "hireDate": "2024-01-15",
+        "phoneNumber": "(555) 123-4567",
+        "status": "active",
+        "createdAt": "2024-01-15T10:30:00Z",
+        "updatedAt": "2024-01-15T10:30:00Z"
+      }

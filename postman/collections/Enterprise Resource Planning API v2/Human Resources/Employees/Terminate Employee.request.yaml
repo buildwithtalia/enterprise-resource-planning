@@ -7,7 +7,7 @@ headers:
     value: application/json
 pathVariables:
   - key: id
-    value: emp-001
+    value: '{{employeeId}}'
 body:
   type: json
   content: |-

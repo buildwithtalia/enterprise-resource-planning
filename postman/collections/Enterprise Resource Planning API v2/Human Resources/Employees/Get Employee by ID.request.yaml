@@ -4,5 +4,5 @@ url: '{{baseUrl}}/api/v2/hr/employees/:id'
 method: GET
 pathVariables:
   - key: id
-    value: emp-001
+    value: '{{employeeId}}'
 order: 2000

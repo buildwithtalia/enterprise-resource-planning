@@ -12,6 +12,9 @@ variables:
     value: 'http://localhost:3004'
   - key: authToken
     value: ''
+  - key: employeeId
+    value: ''
+    description: Set automatically by the Create Employee request (employee-id from response)
 auth:
   type: bearer
   credentials:

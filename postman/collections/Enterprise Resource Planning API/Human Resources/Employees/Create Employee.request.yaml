@@ -374,4 +374,5 @@ scripts:
           console.log("Employee ID saved to collection variable 'employeeId': " + responseData["employee-id"]);
       }
     language: text/javascript
+examples: './.resources/Create Employee.resources/examples'
 order: 1000

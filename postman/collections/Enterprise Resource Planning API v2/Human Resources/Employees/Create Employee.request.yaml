@@ -18,4 +18,45 @@ body:
       "hireDate": "2024-01-15",
       "phoneNumber": "+1-555-0123"
     }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 201 Created", function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test("Response is JSON", function () {
+          pm.response.to.be.json;
+      });
+
+      const raw = pm.response.json();
+      // Unwrap {success, data} envelope
+      const employee = (raw && raw.data) ? raw.data : raw;
+
+      pm.test("Response contains employee-id", function () {
+          pm.expect(employee).to.have.property("employee-id");
+          pm.expect(employee["employee-id"]).to.be.a("string").and.not.empty;
+      });
+
+      pm.test("Response contains required fields", function () {
+          pm.expect(employee).to.have.property("firstName");
+          pm.expect(employee).to.have.property("lastName");
+          pm.expect(employee).to.have.property("email");
+          pm.expect(employee).to.have.property("status");
+      });
+
+      pm.test("Status is active", function () {
+          pm.expect(employee.status).to.equal("active");
+      });
+
+      pm.test("Email has valid format", function () {
+          pm.expect(employee.email).to.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+      });
+
+      // Save employee-id for downstream requests
+      if (employee["employee-id"]) {
+          pm.collectionVariables.set("employeeId", employee["employee-id"]);
+      }
+examples: './.resources/Create Employee.resources/examples'
 order: 3000
