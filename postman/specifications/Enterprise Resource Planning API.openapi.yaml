@@ -274,7 +274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateEmployeeResponse'
+                $ref: '#/components/schemas/Employee'
         '400':
           description: Invalid input data
           content:
@@ -1123,41 +1123,6 @@ components:
           type: boolean
         hasPreviousPage:
           type: boolean
-
-    CreateEmployeeResponse:
-      type: object
-      description: Response schema for the Create Employee endpoint. Uses "employee-id" as the identifier field.
-      properties:
-        employee-id:
-          type: string
-        firstName:
-          type: string
-        lastName:
-          type: string
-        email:
-          type: string
-          format: email
-        departmentId:
-          type: string
-        position:
-          type: string
-        jobTitle:
-          type: string
-        salary:
-          type: number
-        hireDate:
-          type: string
-          format: date
-        status:
-          type: string
-          enum: [active, inactive, on_leave, terminated]
-        department:
-          type: object
-          properties:
-            id:
-              type: string
-            name:
-              type: string
 
     Employee:
       type: object
