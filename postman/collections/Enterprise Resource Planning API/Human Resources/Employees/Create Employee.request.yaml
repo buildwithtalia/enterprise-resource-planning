@@ -56,7 +56,7 @@ description: |-
 
   ``` json
   {
-    "employee-id": "emp-789",
+    "id": "emp-789",
     "firstName": "John",
     "lastName": "Doe",
     "email": "john.doe@example.com",
@@ -322,8 +322,8 @@ scripts:
 
       // Test 4: Response contains employee ID
       pm.test("Response contains employee ID", function () {
-          pm.expect(responseData).to.have.property("employee-id");
-          pm.expect(responseData["employee-id"]).to.not.be.empty;
+          pm.expect(responseData).to.have.property("id");
+          pm.expect(responseData.id).to.not.be.empty;
       });
 
       // Test 5: Verify all required fields are in response
@@ -363,15 +363,15 @@ scripts:
       });
 
       // Save employee ID for potential use in other requests
-      if (pm.response.code === 201 && responseData && responseData["employee-id"]) {
-          pm.collectionVariables.set("lastCreatedEmployeeId", responseData["employee-id"]);
-          console.log("Created employee ID saved to collection variable: " + responseData["employee-id"]);
+      if (pm.response.code === 201 && responseData && responseData.id) {
+          pm.collectionVariables.set("lastCreatedEmployeeId", responseData.id);
+          console.log("Created employee ID saved to collection variable: " + responseData.id);
       }
 
       // Extract employeeId from response and save to collection variable
-      if (responseData && responseData["employee-id"]) {
-          pm.collectionVariables.set("employeeId", responseData["employee-id"]);
-          console.log("Employee ID saved to collection variable 'employeeId': " + responseData["employee-id"]);
+      if (responseData && responseData.id) {
+          pm.collectionVariables.set("employeeId", responseData.id);
+          console.log("Employee ID saved to collection variable 'employeeId': " + responseData.id);
       }
     language: text/javascript
 order: 1000
