@@ -394,8 +394,8 @@ items:
                   // Test 4: Response contains employee ID
 
                   pm.test("Response contains employee ID", function () {
-                      pm.expect(responseData).to.have.property("id");
-                      pm.expect(responseData.id).to.be.a("string").and.not.empty;
+                      pm.expect(responseData).to.have.property("employee-id");
+                      pm.expect(responseData["employee-id"]).to.not.be.empty;
                   });
 
 
@@ -460,18 +460,18 @@ items:
                   // Save employee ID for potential use in other requests
 
                   if (pm.response.code === 201 && responseData &&
-                  responseData.id) {
-                      pm.collectionVariables.set("lastCreatedEmployeeId", responseData.id);
-                      console.log("Created employee ID saved to collection variable: " + responseData.id);
+                  responseData["employee-id"]) {
+                      pm.collectionVariables.set("lastCreatedEmployeeId", responseData["employee-id"]);
+                      console.log("Created employee ID saved to collection variable: " + responseData["employee-id"]);
                   }
 
 
                   // Extract employeeId from response and save to collection
                   variable
 
-                  if (responseData && responseData.id) {
-                      pm.collectionVariables.set("employeeId", responseData.id);
-                      console.log("Employee ID saved to collection variable 'employeeId': " + responseData.id);
+                  if (responseData && responseData["employee-id"]) {
+                      pm.collectionVariables.set("employeeId", responseData["employee-id"]);
+                      console.log("Employee ID saved to collection variable 'employeeId': " + responseData["employee-id"]);
                   }
                 language: text/javascript
           - id: 175eab86-e6f3-4b4f-8953-68f2a0877399

@@ -1127,8 +1127,9 @@ components:
     Employee:
       type: object
       properties:
-        id:
+        employee-id:
           type: string
+          description: Unique employee identifier
         firstName:
           type: string
         lastName:
@@ -1148,9 +1149,17 @@ components:
         hireDate:
           type: string
           format: date
+        phoneNumber:
+          type: string
         status:
           type: string
           enum: [active, inactive, on_leave, terminated]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
         department:
           type: object
           properties:

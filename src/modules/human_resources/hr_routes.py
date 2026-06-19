@@ -112,20 +112,22 @@ def create_employee():
             "error": "No data provided"
         }), 400
 
-    # Generate new ID
-    new_id = max([emp['id'] for emp in mock_employees], default=0) + 1
+    # Generate new ID from existing employee count
+    new_id = len(mock_employees) + 1
 
     new_employee = {
-        "id": new_id,
-        "employee_id": data.get('employee_id', f"EMP{new_id:03d}"),
-        "first_name": data.get('first_name'),
-        "last_name": data.get('last_name'),
+        "employee-id": f"emp-{new_id:03d}",
+        "firstName": data.get('firstName'),
+        "lastName": data.get('lastName'),
         "email": data.get('email'),
-        "department": data.get('department'),
-        "position": data.get('position'),
-        "hire_date": data.get('hire_date', datetime.now().strftime('%Y-%m-%d')),
+        "departmentId": data.get('departmentId'),
+        "position": data.get('jobTitle') or data.get('position'),
         "salary": data.get('salary'),
-        "status": data.get('status', 'active')
+        "hireDate": data.get('hireDate', datetime.now().strftime('%Y-%m-%d')),
+        "phoneNumber": data.get('phoneNumber'),
+        "status": data.get('status', 'active'),
+        "createdAt": datetime.utcnow().isoformat() + 'Z',
+        "updatedAt": datetime.utcnow().isoformat() + 'Z',
     }
 
     mock_employees.append(new_employee)
