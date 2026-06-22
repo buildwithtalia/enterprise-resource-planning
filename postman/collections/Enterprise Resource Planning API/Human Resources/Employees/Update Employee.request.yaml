@@ -72,7 +72,7 @@ description: |-
 
   ```json
   {
-    "id": "emp-789",
+    "employee-id": "emp-789",
     "firstName": "John",
     "lastName": "Doe",
     "email": "john.doe@example.com",

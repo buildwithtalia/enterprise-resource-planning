@@ -41,7 +41,7 @@ description: |-
 
   ``` json
   {
-    "id": "emp-789",
+    "employee-id": "emp-789",
     "firstName": "John",
     "lastName": "Doe",
     "email": "john.doe@example.com",
@@ -91,7 +91,7 @@ description: |-
 
   | Field | Type | Description |
   | --- | --- | --- |
-  | id | string | Unique employee identifier |
+  | employee-id | string | Unique employee identifier |
   | firstName | string | Employee's first name |
   | lastName | string | Employee's last name |
   | email | string | Employee's email address |
