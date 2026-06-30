@@ -1346,7 +1346,7 @@ components:
     Employee:
       type: object
       required:
-        - id
+        - employee-id
         - employeeId
         - firstName
         - lastName
@@ -1357,7 +1357,7 @@ components:
         - hireDate
         - status
       properties:
-        id:
+        employee-id:
           type: string
           description: Internal database ID
           example: "emp_1234567890"
